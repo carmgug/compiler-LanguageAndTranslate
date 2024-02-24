@@ -1,10 +1,7 @@
 package compiler.Lexer;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Queue;
-
+import java.util.*;
 
 
 public class Lexer {
@@ -12,19 +9,28 @@ public class Lexer {
     private Reader input;
     private Queue<Integer> queue;
 
+    private Map<String, Token[]> rules;
 
     public Lexer(Reader input) {
         this.input=input;
-        queue=new ArrayDeque<Integer>();
+        this.queue=new ArrayDeque<Integer>();
+        this.rules=new HashMap<>();
+        setRules();
+    }
 
+    private void setRules(){
+        this.rules.put("isLetter",new Token[]{Token.BasedType,Token.Keywords,Token.BooleanValue,Token.Identifier});
+        this.rules.put("isDigit",new Token[]{Token.FloatNumber, Token.IntNumber});
+        this.rules.put("isOperator",new Token[]{Token.AssignmentOperator,Token.ArithmeticOperator,Token.ComparisonOperator,
+                Token.LogicalOperator,
+                Token.IncrementOperator});
 
+        this.rules.put("SpecialCharacter", new Token[]{Token.SpecialCharacter});
     }
     
     public Symbol getNextSymbol() throws IOException {
         while(true) {
-
             int c = 0;
-
             //Si controlla se nel getSymbol precedente è stato consumato un carattere in piu
             //che deve essere elaborato
             if(!queue.isEmpty()){
@@ -32,11 +38,9 @@ public class Lexer {
             } else { //Altrimenti si legge dal reader
                 c=input.read();
             }
-
             if (c == -1) { //EOF Reached
                 return new Symbol(Token.EOF, "");
             }
-
 
             else if(isWhitespace(c)){
                 continue;
@@ -57,18 +61,13 @@ public class Lexer {
                         break;
                     }
                 }
-                Token basedType = Token.BasedType;
-                Token keyword = Token.Keywords;
-                Token identifier=Token.Identifier;
-                if(basedType.match(sb.toString())){
-                    return new Symbol(basedType,sb.toString());
+
+                for(Token tk:rules.get("isLetter")){
+                    if(tk.match(sb.toString()))
+                        return new Symbol(tk,sb.toString());
                 }
-                if(keyword.match(sb.toString())){
-                    return new Symbol(keyword, sb.toString());
-                }
-                if(identifier.match(sb.toString())){
-                    return new Symbol(identifier, sb.toString());
-                }
+
+
 
             }
             else if(isDigit(c)){
@@ -140,27 +139,38 @@ public class Lexer {
                 StringBuilder sb=new StringBuilder();
                 sb.append((char) c);
                 //Dobbiamo leggere i caratteri successivi
-
                 if(c=='=' || c=='<' || c== '>' || c=='&' || c=='|' || c=='+'){
+
                     c=input.read();
-                    if(isOperator(c)){
+
+                    if(isOperator(c) &&
+                            (sb.charAt(0)==((char)c) ||  //== && || ++
+                                ((sb.charAt(0)=='<' || sb.charAt(0)=='>') && ((char)c)=='=')
+                            ) ){
                         sb.append((char) c);
                     }
+
                     else{
                         queue.add(c);
                     }
                 }
-                Token[] tokens = {Token.AssignmentOperator,
-                        Token.ArithmeticOperator,
-                        Token.ComparisonOperator,
-                        Token.LogicalOperator,
-                        Token.IncrementOperator};
-                for(Token tk:tokens){
+                for(Token tk:rules.get("isOperator")){
                     if(tk.match(sb.toString()))
                         return new Symbol(tk,sb.toString());
                 }
-                return new Symbol(Token.UnknownToken, sb.toString());
+                //&!
+
             }
+            else{ //Si possono avere due possibili situazioni: -SpecialCharactareUnknownToken
+                StringBuilder sb=new StringBuilder();
+                sb.append((char) c);
+                for(Token tk:rules.get("isOperator")){
+                    if(tk.match(sb.toString()))
+                        return new Symbol(tk,sb.toString());
+                }
+            }
+            //Questa cosa va fatta fare al parser o al lexer?
+            return new Symbol(Token.UnknownToken, String.valueOf((char) c));
         }
     }
 
@@ -177,7 +187,7 @@ public class Lexer {
 
     private boolean isDigit(int c){
         char curr_elem= (char) c;
-        return curr_elem>='1' && curr_elem<='9';
+        return curr_elem>='0' && curr_elem<='9';
     }
 
     private boolean isASlide(int c){

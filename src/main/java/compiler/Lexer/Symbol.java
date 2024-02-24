@@ -18,7 +18,7 @@ public class Symbol {
 
     @Override
     public String toString() {
-        return "<"+type+","+e+">";
+        return "< "+type+","+e+" >";
     }
 }
 
@@ -32,12 +32,11 @@ enum Token {
 
     //Operators
     AssignmentOperator("=", "AssignmentOperator"),
-    ArithmeticOperator("+|-|\\*|/|%", "ArithmeticOperator"),
+    ArithmeticOperator("\\+|-|\\*|/|%", "ArithmeticOperator"),
     ComparisonOperator("==|<|>|<=|>=", "ComparisonOperator"),
     LogicalOperator("&&|\\|\\||!", "LogicalOperator"),
 
-    IncrementOperator("++", "IncrementOperator"),
-
+    IncrementOperator("\\+\\+", "IncrementOperator"),
 
     //Tipo, forse aggiungere classi
     BasedType("int|float|boolean|string", "BasedType"),
@@ -45,8 +44,9 @@ enum Token {
 
 
     //Numbers
-    IntNumber("[1-9][0-9]*", "IntNumber"),
+    IntNumber("[1-9][0-9]*|0", "IntNumber"),
     FloatNumber("[-+]?[0-9][0-9]*\\.?[0-9]+", "FloatNumber"), //Dopo il punto . ci va il numero o no?
+    BooleanValue("true|false","BooleanValue"),
     Identifier("_*[a-zA-Z][a-zA-Z0-9_]*|_[0-9][a-zA-Z0-9_]*", "Identifier"),
     EOF("", "EOF"),
     Whitespace("|\t|\n", "Whitespace"),

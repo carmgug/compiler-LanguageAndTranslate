@@ -14,15 +14,36 @@ import static org.junit.Assert.assertNotNull;
 public class Compiler {
     public static void main(String[] args) throws IOException {
 
-        System.out.println("Hello from the compiler !");
-        String input = "float x int = 2.4 && 5 //Prova codice \\n int y=3 ";
-        StringReader reader = new StringReader(input);
-        Lexer lexer = new Lexer(reader);
-        while(true) {
-            Symbol s=lexer.getNextSymbol();
-            System.out.println(s);
-            if(s.isEOF())
-                break;
+        String[] esempi = {
+                "i=0;vector[i]",
+                "int >= = 10;",
+                "float @ = 3.14;",
+                "boolean isTrue = true;",
+                "string message = \"Hello, World!\";",
+                "final int MAX_VALUE = 100;",
+                "for (int i = 0; i < 10; i++) {",
+                "while (x < 100) {",
+                "if (x > 50) {",
+                "else {",
+                "return 0;",
+                "x++;",
+                "y = y * 2;",
+                "System.out.println(\"The value of x is: \" + x);",
+                "// Questo è un commento su una singola linea \\n",
+                "if(x==5 && y==9){return false;}"
+        };
+
+        for (String input : esempi) {
+            System.out.println("Analisi della stringa: " + input);
+            StringReader reader = new StringReader(input);
+            Lexer lexer = new Lexer(reader);
+            while (true) {
+                Symbol s = lexer.getNextSymbol();
+                System.out.println(s);
+                if (s.isEOF())
+                    break;
+            }
+            System.out.println("------------------------");
         }
 
     }
