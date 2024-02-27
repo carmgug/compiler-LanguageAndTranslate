@@ -11,10 +11,12 @@ public class TestLexer {
     
     @Test
     public void test() throws IOException {
-        String input = "var x int = 2;";
+        String input = "var x int = 2;\r\n";
+        System.out.println(input);
         StringReader reader = new StringReader(input);
         Lexer lexer = new Lexer(reader);
-        assertNotNull(lexer.getNextSymbol());
+        Symbol curr_symbol=lexer.getNextSymbol();
+        assertNotNull(curr_symbol);
 
     }
 

@@ -34,7 +34,6 @@ public class Lexer {
         this.curr_line=0;
         this.rules=new HashMap<>();
         this.debugMode=false;
-        LOGGER.isEnabled(Level.DEBUG);
         setRules();
     }
 
@@ -43,9 +42,10 @@ public class Lexer {
         this.queue=new ArrayDeque<Integer>();
         this.curr_line=0;
         this.rules=new HashMap<>();
-        this.debugMode=false;
+        this.debugMode=debugMode;
         setRules();
     }
+
 
     private void setRules(){
         this.rules.put("isLetter",new Token[]{Token.BasedType,Token.Keywords,Token.BooleanValue,Token.Identifier});
@@ -57,7 +57,6 @@ public class Lexer {
     }
     
     public Symbol getNextSymbol() throws IOException {
-        LOGGER.log(Level.DEBUG,"ciao");
 
         while(true) {
             int c = 0;
@@ -65,10 +64,17 @@ public class Lexer {
             //che deve essere elaborato
             if(!queue.isEmpty()){
                 c=queue.poll();
+                if(debugMode) LOGGER.log(Level.DEBUG,"A Character has been consumed from the queue");
             } else { //Altrimenti si legge dal reader
                 c=input.read();
+                if(debugMode) LOGGER.log(Level.DEBUG,"A Character has been consumed from the reader");
+
+
+
             }
             if (c == -1) { //EOF Reached
+                if(debugMode) LOGGER.log(Level.DEBUG,"The end of the file has been reached");
+
                 return new Symbol(Token.EOF, "");
             }
             else if(isWhitespace(c)){
@@ -77,7 +83,9 @@ public class Lexer {
             }
             else if(isLetter(c)){
 
+                if(debugMode) LOGGER.log(Level.DEBUG,"A letter has been encountered");
                 Symbol s=letterHandler(c);
+                if(debugMode) LOGGER.log(Level.DEBUG,"It Was identified as a:"+s);
                 if(s!=null) return s;
                 //altrimenti non ha matchato
             }
@@ -91,9 +99,9 @@ public class Lexer {
                     continue;
                 }
                 return s;
-            } else if (isABackSlash(c)){
-                Symbol s =blackSlashHandler(c);
-                if(s!=null && (s.isTypeof("NewLine") || s.isTypeof("Indent"))) {
+            } else if (isEndOfTheline(c)){
+                Symbol s =endOfTheLineHandler(c);
+                if(s!=null && (s.isTypeof("NewLine"))) {
                     continue;
                 } //dont return and go on
                 //otherwise
@@ -111,9 +119,13 @@ public class Lexer {
                 }
             }
             Symbol curr_symbol=new Symbol(Token.UnknownToken, String.valueOf((char) c));
-            //throw new IOException(" Unrecognized tokens "+curr_symbol+" at line " +curr_line);
-            System.out.println(curr_symbol);
+            throw new IOException(" Unrecognized tokens "+curr_symbol+" at line " +curr_line);
         }
+    }
+
+
+    private boolean isEndOfTheline(int c){
+        return ((char) c)=='\r';
     }
 
 
@@ -168,25 +180,22 @@ public class Lexer {
         boolean preparingExit=false;
         while(true){
             c=input.read();
-
             if((char)c=='/' && !commentFounded){ //Siamo in un commento abbiamo trovato //
                 commentFounded=true;
                 sb.append((char)c);
             }
             else if(commentFounded){ //Dobbiamo aggiungere tutti i caratteri fintanto che non si trova \n
 
-                if((char)c=='\\' && !preparingExit){ //Se si trova '\' si cerca la n
+                if(((char)c)=='\r' && !preparingExit){ //Se si trova '\r' si cerca la '\n'
                     preparingExit=true;
                     sb.append((char)c);
                 }
-                else if(preparingExit && (char)c=='n'){ //Condizione di uscita
-
+                else if(preparingExit && (char)c=='\n'){ //Condizione di uscita
                     //Si è trovato lo \n
                     sb.append((char)c);
                     Token comment = Token.Comment;
                     //Comment finito allora linea successiva
                     curr_line++;
-                    System.out.println(" Nuova Linea");
                     return new Symbol(comment, sb.toString());
                 }
                 else if(preparingExit && (char)c!='n'){
@@ -233,9 +242,7 @@ public class Lexer {
 
     private Symbol blackSlashHandler(int c) throws IOException{
         //ok i Found a BlackSlash so if the next character is a n i need to go to the nextline
-        System.out.println((char)c);
         c=input.read();
-        System.out.println((char)c);
         if((char)c == 'n') {// is a n
             curr_line++;
             return new Symbol(Token.NewLine,"\n");
@@ -243,6 +250,17 @@ public class Lexer {
         //ora potrebbe essere una t e in quel caso va consumata altrimenti va messo nella prossima queue
         if((char) c=='t') return new Symbol(Token.Indent,"\t");
         //negli altri casi va messo in queue
+        queue.add(c);
+        return null;
+    }
+
+    private Symbol endOfTheLineHandler(int c) throws IOException{
+        //OK I found a \r (CarriageReturn) so i expected to find a \n newLine
+        c=input.read();
+        if((char)c =='\n'){
+            curr_line++;
+            return new Symbol(Token.NewLine,"\\n");
+        }
         queue.add(c);
         return null;
     }
@@ -277,6 +295,7 @@ public class Lexer {
 
         return null;
     }
+
 
     private Symbol letterHandler(int c) throws IOException{
 

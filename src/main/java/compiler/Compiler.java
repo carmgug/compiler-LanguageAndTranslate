@@ -39,17 +39,15 @@ public class Compiler {
         FileReader fileReader = new FileReader(filePath);
 
 
-        Lexer lexer = new Lexer(fileReader);
+        Lexer lexer = new Lexer(fileReader,debugModeLexer);
 
         Symbol curr_symbol=lexer.getNextSymbol();
         while (!curr_symbol.isEOF()){
-            try {
+
             System.out.println(curr_symbol);
             curr_symbol=lexer.getNextSymbol();
 
-            }catch (IOException e){
-                System.out.println(e.getMessage());
-            }
+
         }
         System.out.println(curr_symbol);
 

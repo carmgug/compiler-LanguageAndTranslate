@@ -5,7 +5,7 @@
 // The language is strongly and statically typed.
 // Base types are: 
 //    int (signed 32-bit),
-//    float (32-bit), 
+//    float (32-bit),
 //    bool (true/false), 
 //    string.
 // int values are automatically promoted to float values in mixed expressions.
