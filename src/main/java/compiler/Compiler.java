@@ -6,45 +6,55 @@ package compiler;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Symbol;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 
-import static org.junit.Assert.assertNotNull;
 
 public class Compiler {
     public static void main(String[] args) throws IOException {
 
-        String[] esempi = {
-                "i=0;vector[i]",
-                "int >= = 10;",
-                "float @ = 3.14;",
-                "boolean isTrue = true;",
-                "string message = \"Hello, World!\";",
-                "final int MAX_VALUE = 100;",
-                "for (int i = 0; i < 10; i++) {",
-                "while (x < 100) {",
-                "if (x > 50) {",
-                "else {",
-                "return 0;",
-                "x++;",
-                "y = y * 2;",
-                "System.out.println(\"The value of x is: \" + x);",
-                "// Questo è un commento su una singola linea \\n",
-                "if(x==5 && y==9){return false;}"
-        };
 
-        for (String input : esempi) {
-            System.out.println("Analisi della stringa: " + input);
-            StringReader reader = new StringReader(input);
-            Lexer lexer = new Lexer(reader);
-            while (true) {
-                Symbol s = lexer.getNextSymbol();
-                System.out.println(s);
-                if (s.isEOF())
-                    break;
+
+
+        boolean debugModeLexer = false;
+        String filePath = null;
+
+        // Parse command-line arguments
+        for (int i = 0; i < args.length; i++) {
+            if ("-lexer".equals(args[i])) {
+                debugModeLexer = true;
+            } else {
+                // Assuming the file path comes after the -lexer flag
+                filePath = args[i];
             }
-            System.out.println("------------------------");
         }
+        // Check if file path is provided
+        if (filePath == null) {
+            System.err.println("Usage: javac Main.java -lexer <filepath>");
+            System.exit(1); // Exit with error
+        }
+
+        FileReader fileReader = new FileReader(filePath);
+
+
+        Lexer lexer = new Lexer(fileReader);
+
+        Symbol curr_symbol=lexer.getNextSymbol();
+        while (!curr_symbol.isEOF()){
+            try {
+            System.out.println(curr_symbol);
+            curr_symbol=lexer.getNextSymbol();
+
+            }catch (IOException e){
+                System.out.println(e.getMessage());
+            }
+        }
+        System.out.println(curr_symbol);
+
+
+
 
     }
 }
