@@ -1,5 +1,4 @@
 // Source is a single file. No imports, etc.
-
 // Comments look like this. No block comments.
 
 // The language is strongly and statically typed.
@@ -52,11 +51,11 @@
 // Constants must be declared at the top of the source file.
 // Constant declarations can use expressions and other constants that
 // have been declared earlier. Only base types can be used for constants.
-
-final int i = 3;
-final float j = 3.2*5.0;
+final int a_abc_123_ =  3;
+final int a_abc_123_ = 3;
+final float j = 3.256*5.0;
 final k int = i*3;
-final string message = "Hello";
+final string message = "Hello\n";
 final bool isEmpty = true;
 
 // Constant declarations are followed by struct definitions.
@@ -148,7 +147,7 @@ def void main() {
     int value = readInt();                             
     writeln(square(value));
     int i;
-    for (i=1, i<100, i = i+1) {
+    for (i=1, i<=100, i = i+1) {
         while (value!=3) {
             if (i > 10){
                 // ....

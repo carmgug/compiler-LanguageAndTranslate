@@ -6,14 +6,11 @@ package compiler;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Symbol;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 
 
 public class Compiler {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws FileNotFoundException {
 
 
 
@@ -40,16 +37,17 @@ public class Compiler {
 
 
         Lexer lexer = new Lexer(fileReader,debugModeLexer);
+        try {
+            Symbol curr_symbol = lexer.getNextSymbol();
+            while (!curr_symbol.isEOF()) {
 
-        Symbol curr_symbol=lexer.getNextSymbol();
-        while (!curr_symbol.isEOF()){
-
-            System.out.println(curr_symbol);
-            curr_symbol=lexer.getNextSymbol();
-
-
+                //System.out.println(curr_symbol);
+                curr_symbol = lexer.getNextSymbol();
+            }
+            //System.out.println(curr_symbol);
+        }catch (IOException e){
+            System.out.println(e.getMessage());
         }
-        System.out.println(curr_symbol);
 
 
 

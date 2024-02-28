@@ -7,10 +7,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.Reader;
 import java.rmi.UnexpectedException;
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 
 
 public class Lexer {
@@ -31,7 +28,7 @@ public class Lexer {
     public Lexer(Reader input) {
         this.input=input;
         this.queue=new ArrayDeque<Integer>();
-        this.curr_line=0;
+        this.curr_line=1;
         this.rules=new HashMap<>();
         this.debugMode=false;
         setRules();
@@ -40,7 +37,7 @@ public class Lexer {
     public Lexer(Reader input, boolean debugMode) {
         this.input=input;
         this.queue=new ArrayDeque<Integer>();
-        this.curr_line=0;
+        this.curr_line=1;
         this.rules=new HashMap<>();
         this.debugMode=debugMode;
         setRules();
@@ -67,65 +64,69 @@ public class Lexer {
                 if(debugMode) LOGGER.log(Level.DEBUG,"A Character has been consumed from the queue");
             } else { //Altrimenti si legge dal reader
                 c=input.read();
-                if(debugMode) LOGGER.log(Level.DEBUG,"A Character has been consumed from the reader");
-
-
-
             }
-            if (c == -1) { //EOF Reached
-                if(debugMode) LOGGER.log(Level.DEBUG,"The end of the file has been reached");
-
-                return new Symbol(Token.EOF, "");
+            if (c == -1) { //The EOF has been Reached
+                Symbol s= new Symbol(Token.EOF, "",curr_line);
+                if(debugMode) LOGGER.log(Level.DEBUG,"The end of the file has been reached -->"+ s.toString()+ " - at line "+ curr_line);
+                return s;
             }
             else if(isWhitespace(c)){
 
                 continue;
             }
-            else if(isLetter(c)){
-
-                if(debugMode) LOGGER.log(Level.DEBUG,"A letter has been encountered");
+            else if(isLetter(c)){//A letter has been detected so it's possibile to match a //BaseType,KeyWords ecc.
                 Symbol s=letterHandler(c);
-                if(debugMode) LOGGER.log(Level.DEBUG,"It Was identified as a:"+s);
-                if(s!=null) return s;
-                //altrimenti non ha matchato
-            }
-            else if(isDigit(c)){
+                if(debugMode) LOGGER.log(Level.DEBUG,s.toString()+ " - at line "+ curr_line);
+                return s;
 
-                Symbol s = digitHandler(c);
-                if(s!=null) return s;
-            } else if (isASlide(c)) { //potrebbe essere un commento ho una divisione se // commento se / allora commento
+            }
+            else if(isDigit(c)){//A digit has been detected as first character so it's possible to match a
+                Symbol s= digitHandler(c);
+                if(debugMode) LOGGER.log(Level.DEBUG,s.toString()+ " - at line "+ curr_line);
+                return s;
+
+            } else if (isASlide(c)) {
+                //A / as been found, so it's possibile to have a comment (//) or a division operator(/)
                 Symbol s=slideHandler(c);
                 if(s.isTypeof("Comment")){
-                    continue;
+                    LOGGER.log(Level.DEBUG,"Comment at line "+ (curr_line-1));
+                    continue; //don't return Comment to the Parser
                 }
-                return s;
-            } else if (isEndOfTheline(c)){
+            } else if (isEndOfTheline(c)){ //An end of line has been founded
                 Symbol s =endOfTheLineHandler(c);
                 if(s!=null && (s.isTypeof("NewLine"))) {
                     continue;
-                } //dont return and go on
-                //otherwise
-            } else if(isOperator(c)){
+                } //don't return and go on a new line
+            } else if(isOperator(c)){ //An operator has been founded
                 Symbol s= operatorHandler(c);
-                if(s!= null) return s;
-            }
-            else{
-                StringBuilder sb=new StringBuilder();
-                sb.append((char) c);
-                for(Token tk:rules.get("SpecialCharacter")){
-                    if(tk.match(sb.toString())) {
-                        return new Symbol(tk, sb.toString());
-                    }
+                if(s!= null) {
+                    if(debugMode) LOGGER.log(Level.DEBUG,s.toString()+ " - at line "+ curr_line);
+                    return s;
                 }
+            }else if(isQuotationMark(c)){
+                Symbol s= stringHandler(c);
+                if(debugMode) LOGGER.log(Level.DEBUG,s.toString()+ " - at line "+ curr_line);
+                return s;
+            } else if(isSpecialCharacter(c)){
+                Symbol s=new Symbol(Token.SpecialCharacter, String.valueOf((char) c),curr_line);
+                if(debugMode) LOGGER.log(Level.DEBUG,s.toString()+ " - at line "+ curr_line);
+                return s;
+
             }
-            Symbol curr_symbol=new Symbol(Token.UnknownToken, String.valueOf((char) c));
+            Symbol curr_symbol=new Symbol(Token.UnknownToken, String.valueOf((char) c),curr_line);
             throw new IOException(" Unrecognized tokens "+curr_symbol+" at line " +curr_line);
         }
     }
 
 
+    private boolean isQuotationMark(int c){
+        return c=='"';
+
+    }
+
+
     private boolean isEndOfTheline(int c){
-        return ((char) c)=='\r';
+        return (((char) c)=='\r' || ((char) c)=='\n');
     }
 
 
@@ -154,10 +155,12 @@ public class Lexer {
     }
 
     private boolean isSpecialCharacter(int c){
-        //=, +, -, *, /, %, ==, <>, <, >, <=, >=, (, ), {, }, [, ], . (dot), &&, || ; ,(comma)
-        //==  <> <= >= && ||
+        char[] specialCharacters ={'(',')','{','}','[',']','.',';',',','"'};
         //<\\w+> | ( | ) | \\ { | \\ } | [ | ] | . | \ \ | | , | ; " , "SpecialCharacter"),
         char curr_elem= (char) c;
+        for (char e : specialCharacters) {
+            if (curr_elem == e) return true;
+        }
         return false;
     }
 
@@ -180,86 +183,86 @@ public class Lexer {
         boolean preparingExit=false;
         while(true){
             c=input.read();
-            if((char)c=='/' && !commentFounded){ //Siamo in un commento abbiamo trovato //
+            if((char)c=='/' && !commentFounded){ //We found the second / of the start of a comment
                 commentFounded=true;
                 sb.append((char)c);
             }
-            else if(commentFounded){ //Dobbiamo aggiungere tutti i caratteri fintanto che non si trova \n
+            else if(commentFounded){
 
-                if(((char)c)=='\r' && !preparingExit){ //Se si trova '\r' si cerca la '\n'
-                    preparingExit=true;
+                if(((char)c)=='\r'){//We found an \r so if we are in windows we are going outside
+                    sb.append((char)c);
+                    c=input.read();
+                    if((char)c=='\n'){
+                        sb.append((char)c);
+                        Token comment = Token.Comment;
+                        Symbol s=new Symbol(comment, sb.toString(),curr_line);
+                        //Comment finito allora linea successiva
+                        curr_line++;
+                        return s;
+                    }
                     sb.append((char)c);
                 }
-                else if(preparingExit && (char)c=='\n'){ //Condizione di uscita
-                    //Si è trovato lo \n
+                else if((char)c=='\n'){//So we are in unix
                     sb.append((char)c);
                     Token comment = Token.Comment;
-                    //Comment finito allora linea successiva
+                    //Find a comment so increment line;
+                    Symbol s=new Symbol(comment, sb.toString(),curr_line);
                     curr_line++;
-                    return new Symbol(comment, sb.toString());
-                }
-                else if(preparingExit && (char)c!='n'){
-                    preparingExit=false;
-                    sb.append((char) c);
-                }else{
+                    return s;
+                } else{
                     sb.append((char)c);
                 }
             }else{ // si ha uno arithmeticOperator /
                 queue.add(c);
-                return new Symbol(Token.ArithmeticOperator,"/");
+                return new Symbol(Token.ArithmeticOperator,"/",curr_line);
             }
         }
 
     }
     private Symbol operatorHandler(int c) throws IOException {
-
         StringBuilder sb=new StringBuilder();
         sb.append((char) c);
-        //Dobbiamo leggere i caratteri successivi
-        if(c=='=' || c=='<' || c== '>' || c=='&' || c=='|' || c=='+'){
+
+        if(c=='=' || c=='&' || c=='|' || c=='+'){
+            //We need to consume the next character
 
             c=input.read();
 
-            if(isOperator(c) &&
-                    (sb.charAt(0)==((char)c) ||  //== && || ++
-                            ((sb.charAt(0)=='<' || sb.charAt(0)=='>') && ((char)c)=='=')
-                    ) ){
+            if(isOperator(c) && (sb.charAt(0)==((char)c))) {
                 sb.append((char) c);
             }
-
             else{
+                queue.add(c);
+            }
+        } else if(c=='<' || c== '>' ){
+            c=input.read();
+
+            if( isOperator (c) && (sb.charAt(0)=='<' || sb.charAt(0)=='>') && ((char)c)=='=') {
+                sb.append((char)c);
+            }else{
                 queue.add(c);
             }
         }
         for(Token tk:rules.get("isOperator")){
-            if(tk.match(sb.toString()))
-                return new Symbol(tk,sb.toString());
+            if(tk.isMatch(sb.toString())) return new Symbol(tk,sb.toString(),curr_line);
+
         }
 
 
-        return null;
-    }
 
-    private Symbol blackSlashHandler(int c) throws IOException{
-        //ok i Found a BlackSlash so if the next character is a n i need to go to the nextline
-        c=input.read();
-        if((char)c == 'n') {// is a n
-            curr_line++;
-            return new Symbol(Token.NewLine,"\n");
-        }
-        //ora potrebbe essere una t e in quel caso va consumata altrimenti va messo nella prossima queue
-        if((char) c=='t') return new Symbol(Token.Indent,"\t");
-        //negli altri casi va messo in queue
-        queue.add(c);
+
         return null;
     }
 
     private Symbol endOfTheLineHandler(int c) throws IOException{
-        //OK I found a \r (CarriageReturn) so i expected to find a \n newLine
+        //Ok if i'm on windows I found a \r (CarriageReturn) so i expected to find a \n newLine
+        //In the other case i found a \n newLine so go on;
+        if((char) c=='\n') {curr_line++; return new Symbol(Token.NewLine,"\\n",curr_line-1);}
+        //So I found a \r (CarriageReturn) so i expected to find a \n newLine
         c=input.read();
         if((char)c =='\n'){
             curr_line++;
-            return new Symbol(Token.NewLine,"\\n");
+            return new Symbol(Token.NewLine,"\\n",curr_line-1);
         }
         queue.add(c);
         return null;
@@ -269,7 +272,7 @@ public class Lexer {
         //Arrivati qua dentro sappiamo che c è un numero
         //ci aspettiamo che i prossimi caratteri siano numeri
         //ci dobbiamo fermare quando non abbiamo più numeri o .;
-        boolean point=false;
+        int count_point=0;
         StringBuilder sb=new StringBuilder();
         sb.append((char) c);
         //Dobbiamo leggere i caratteri successivi
@@ -278,22 +281,23 @@ public class Lexer {
             if(c>='0' && c<='9'){
                 sb.append((char)c);
             }
-            else if (c=='.' && !point) {
-                point=true;
+            else if (c=='.' && count_point==0) {
+                count_point+=1;
                 sb.append((char)c);
             }
             else{
+                if(sb.charAt(sb.length()-1)=='.'){
+                    sb.deleteCharAt(sb.length()-1);
+                    queue.add(((int)'.'));
+                }
                 queue.add(c);
                 break;
             }
         }
-        for(Token tk:rules.get("isDigit")){
-            if(tk.match(sb.toString())) {
-                return new Symbol(tk, sb.toString());
-            }
-        }
-
-        return null;
+        if(count_point==1) return new Symbol(Token.FloatNumber,sb.toString(),curr_line);
+        if(count_point==0) return new Symbol(Token.IntNumber,sb.toString(),curr_line);
+        //if it's not a Float Number or a IntNumber so ther is something wrong
+        throw new IOException(" Unrecognized tokens "+new Symbol(Token.UnknownToken,sb.toString(),curr_line)+" at line " +curr_line);
     }
 
 
@@ -314,14 +318,40 @@ public class Lexer {
                 break;
             }
         }
-        for(Token tk:rules.get("isLetter")){
-            if(tk.match(sb.toString()))
-                return new Symbol(tk,sb.toString());
-        }
+        //Token.BasedType,Token.Keywords,Token.BooleanValue,Token.Identifier
 
+
+        for(Token tk:rules.get("isLetter")){
+            if (tk.name().equals("Identifier")) {//Identifier is the last rule so we here if the preovius rules doesnt match
+                return new Symbol(tk, sb.toString(), curr_line);
+            } else {//BasedType,KeyWords,BooleanValue,Identifier
+                if (tk.isMatch(sb.toString())) return new Symbol(tk, sb.toString(), curr_line);
+            }
+        }
         return null; //No match
 
     }
+
+    private Symbol stringHandler(int c) throws IOException {
+        //A open string is detected
+        //So the next character will be in a string to until a " has been reached
+        StringBuilder sb=new StringBuilder();
+        sb.append((char)c);
+        c = input.read();
+        while(!isQuotationMark(c) && c!=-1){
+            sb.append((char)c);
+            c=input.read();
+        }
+        if(isQuotationMark(c)){
+            sb.append((char)c);
+            Symbol s=new Symbol(Token.String,sb.toString(),curr_line);
+            return s;
+        }
+
+        throw new IOException(" Unrecognized tokens "+new Symbol(Token.UnknownToken,sb.toString(),curr_line)+" at line " +curr_line);
+
+    }
+
 
 
 
