@@ -11,7 +11,7 @@ public class TestLexer {
     
     @Test
     public void test() throws IOException {
-        String input = "var x int = 2;\r\n";
+        String input = "var x int = 2;";
         System.out.println(input);
         StringReader reader = new StringReader(input);
         Lexer lexer = new Lexer(reader);
