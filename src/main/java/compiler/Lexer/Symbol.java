@@ -16,9 +16,6 @@ public class Symbol {
         this.e=e;
         this.n_line=n_line;
     }
-
-
-
     public boolean isEOF(){
         return this.type.equals(Token.EOF);
     }
