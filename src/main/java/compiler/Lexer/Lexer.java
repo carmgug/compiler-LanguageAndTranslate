@@ -92,7 +92,8 @@ public class Lexer {
                     LOGGER.log(Level.DEBUG,"Comment at line "+ (curr_line-1));
                     continue; //don't return Comment to the Parser
                 }
-            } else if (isEndOfTheline(c)){ //An end of line has been founded
+                return s;//is a ArithmeticOperator
+            }else if (isEndOfTheline(c)){ //An end of line has been founded
                 Symbol s =endOfTheLineHandler(c);
                 if(s!=null && (s.isTypeof("NewLine"))) {
                     continue;
@@ -247,10 +248,6 @@ public class Lexer {
             if(tk.isMatch(sb.toString())) return new Symbol(tk,sb.toString(),curr_line);
 
         }
-
-
-
-
         return null;
     }
 

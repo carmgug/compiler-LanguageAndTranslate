@@ -4,12 +4,11 @@ import compiler.Lexer.Symbol;
 
 public class Operator {
 
+    protected int precendence;
+    protected Symbol operator;
 
-    int precendence;
-    Symbol operator;
-
-    public Operator(Symbol operator) {
-        this.operator=Symbol.copy(operator);
+    public Operator(Symbol operator){
+        this.operator=operator;
     }
 
     public String toString() {
