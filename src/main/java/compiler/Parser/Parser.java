@@ -15,6 +15,8 @@ import java.io.StringReader;
 import java.util.Objects;
 
 public class Parser {
+
+    private static final Logger LOGGER = LogManager.getLogger(Parser.class.getName());
     private final Lexer lexer;
     private Symbol lookahead;
     public Parser(Lexer lexer) {
@@ -23,13 +25,13 @@ public class Parser {
 
     public Program getAST() throws IOException{
         Program program = new Program();
-
+        //Take the first token. Lookahead is for predective parsing
         lookahead = lexer.getNextSymbol();
         //First we have to parse the constants
         while(lookahead.getValue().equals("final")){
              Constant curr_constant=parseConstant();
+             LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
              program.addConstant(curr_constant);
-             System.out.println(curr_constant);
              lookahead=lexer.getNextSymbol();
         }
         //Then we have to parse the structures
@@ -38,31 +40,27 @@ public class Parser {
     }
 
     private Symbol consume(Token token) throws IOException {
+        Symbol curr_symbol=lookahead;
 
-        if(lookahead.isEOF()){
-            throw new RuntimeException("Unexpected EOF");
-        }
         if (!lookahead.getType().isEqual(token.name())){
             throw new RuntimeException("Unexpected token: "+lookahead.getValue()+" expected: "+token.name());
         }
         lookahead = lexer.getNextSymbol();
-        return lookahead;
+        return curr_symbol;
     }
 
 
-
+    /*
+        Parse a constant; a constant is a final variable
+     */
     private Constant parseConstant() throws IOException {
         consume(Token.Keywords); //Expected final
-        Symbol type = lookahead;
-        consume(Token.BasedType); //Expected type
-        Symbol identifier = lookahead;
-        consume(Token.Identifier); //Expected identifier
+        Symbol type = consume(Token.BasedType);
+        Symbol identifier = consume(Token.Identifier);
         consume(Token.AssignmentOperator); //Expected identifier
         //Parse the right value of Constant, an Expression
         ExpressionStatement expr=parseExpression();
-        //if(!lookahead.getValue().equals(";")){
-          //  throw new RuntimeException("Non ho trovato il punto e virgola");
-        //}
+        consume(Token.SpecialCharacter); //Expected ;
         return new Constant(type,identifier,expr);
 
     }
@@ -83,7 +81,11 @@ public class Parser {
 
 
     /*
+        Parse an AdditiveExpression :
+            MultiplicativeExpression | AdditiveExpression AdditiveOperator MultiplicativeExpression
+
         +,-, Negative Value (-)
+
      */
     private ExpressionStatement parseAdditiveExpression() throws IOException{
         //Expression
@@ -101,8 +103,13 @@ public class Parser {
 
 
     /*
-        *,/,%
+        Parse an MultiplicativeExpression
+        could be a Factor |
+        MultiplicativeExpression MultiplyOperator Factor ->
+            Factor MultiplyOperator Factor MultiplyOperator Factor
+        +,-, Negative Value (-)
      */
+
     private ExpressionStatement parseMultiplyExpression() throws IOException {
         ExpressionStatement left = parseFactor();
         while (lookahead.getValue().equals("/")|| lookahead.getValue().equals("*") || lookahead.getValue().equals("%")) {
@@ -110,7 +117,6 @@ public class Parser {
             consume(Token.ArithmeticOperator); //Expected Arithmetic Operator
             ExpressionStatement right = parseFactor();
             left = new BinaryExpression(left, operator, right);
-            lookahead=lexer.getNextSymbol();
         }
         return left;
     }
@@ -119,15 +125,30 @@ public class Parser {
 
 
     private ExpressionStatement parseFactor() throws IOException {
-        if (lookahead.getType().isEqual("IntNumber") || lookahead.getType().isEqual("FloatNumber") ||
-                lookahead.getType().isEqual("BooleanValue") || lookahead.getType().isEqual("String") ||
-                lookahead.getType().isEqual("Identifier")){
-            return new Value(lookahead);
-        } else if (lookahead.getValue().equals("(")) {
+
+        switch (lookahead.getType().name()) {
+            case "IntNumber":
+                return new Value(consume(Token.IntNumber));
+            case "FloatNumber":
+                return new Value(consume(Token.FloatNumber));
+            case "BooleanValue":
+                return new Value(consume(Token.BooleanValue));
+            case "String":
+                return new Value(consume(Token.String));
+            case "Identifier":
+                return new Value(consume(Token.Identifier));
+            default:
+                // Handle other cases or throw an exception
+                break;
+        }
+        if (lookahead.getValue().equals("(")) {
+            consume(Token.SpecialCharacter); //Expected ( as if statement
             ExpressionStatement subExpr=parseExpression();
             if(!lookahead.getValue().equals(")")) throw new RuntimeException("Non ho trovato la parentesi chiusa");//TODO throw an exception
+            consume(Token.SpecialCharacter); //Expected )
             return subExpr;
         } else if(lookahead.getValue().equals("-")){//Negative Expression
+            consume(Token.ArithmeticOperator); //Expected -
             ExpressionStatement expr=parseExpression();
             if(expr instanceof NegativeNode){throw new RuntimeException("Due meno meno di seguito non sono consentiti");}//TODO throw an exception
             return new NegativeNode(expr);
