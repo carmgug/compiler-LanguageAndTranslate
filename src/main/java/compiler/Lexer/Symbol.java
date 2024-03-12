@@ -16,6 +16,11 @@ public class Symbol {
         this.e=e;
         this.n_line=n_line;
     }
+
+    public static Symbol copy(Symbol value) {
+        return new Symbol(value.type, value.e, value.n_line);
+    }
+
     public boolean isEOF(){
         return this.type.equals(Token.EOF);
     }
@@ -28,8 +33,13 @@ public class Symbol {
         return type.isEqual(type_name);
     }
 
+
     public Token getType(){
         return type;
+    }
+
+    public String getValue(){
+        return e;
     }
     @Override
     public String toString() {

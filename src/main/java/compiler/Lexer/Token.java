@@ -17,11 +17,12 @@ public enum Token {
     IncrementOperator(new String[]{"++"}, "IncrementOperator"),
 
     //Tipo, forse aggiungere classi
-    BasedType(new String[]{"int", "float", "bool", "string"}, "BasedType"),
+    BasedType(new String[]{"void","int", "float", "bool", "string"}, "BasedType"),
+    //Void added for function return type after the first assigment
     Keywords(new String[]{"final", "struct", "def", "for", "while", "if", "else"}, "Keywords"),
 
     //Numbers Boolean and Strign
-    IntNumber(null, "Int Number"),
+    IntNumber(null, "IntNumber"),
     FloatNumber(null, "FloatNumber"),
     BooleanValue(new String[]{"true", "false"}, "BooleanValue"),
     Identifier(null, "Identifier"),

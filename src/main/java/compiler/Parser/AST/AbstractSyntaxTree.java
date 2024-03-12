@@ -1,56 +1,33 @@
 package compiler.Parser.AST;
 
-public class AbstractSyntaxTree{
-    private ASTNode root;
+import compiler.Parser.AST.ASTNodes.Constant;
+import compiler.Parser.AST.ASTNodes.Procedure;
+import compiler.Parser.AST.ASTNodes.Struct;
 
-    private ASTNode last;
-    private int size;
-
-
-    public AbstractSyntaxTree(){
-        this.root=null;
-        this.last=null;
-        this.size=0;
-    }
-    public AbstractSyntaxTree(ASTNode root) {
-        this.root = root;
-        this.last = root;
-        this.size=1;
-    }
+public interface AbstractSyntaxTree {
 
 
-    public ASTNode getRoot() {
-        return root;
-    }
+    /*
+        @input Constant C
+        @return boolean (True if c has added to constant as Collection.add)
+     */
+    boolean addConstant(Constant c);
 
-    public void setRoot(ASTNode root) {
-        this.root = root;
-    }
+    /*
+        @input Struct S
+        @return boolean (True if s has added successfully)
+     */
+    boolean addStruct(Struct s);
+    /*
+        @input Integer x
+        @return boolean (True if x has added to global_variables as Collection.add)
+     */
+    boolean addGlobalVariables(Integer x);
 
-    public void addNode(ASTNode node){
-        //In this case the AST is empty
-        if(root==null){
-            root=node;
-            last=node;
-            size++;
-            return;
-        }
-        //In this case the AST has at least one node
-        last.setNext(node);
-        last=node;
-        size++;
-    }
+    /*
+        @input Procedure p
+        @return boolean (True if p has added to procedures as Collection.add)
+     */
+    boolean addProcedure(Procedure p);
 
-    public int remove(){
-        if(this.size==1){
-            this.last=null;
-            this.root=null;
-            this.size=0;
-        }else{
-
-        }
-
-        return 1;
-
-    }
 }
