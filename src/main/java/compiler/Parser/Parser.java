@@ -35,7 +35,8 @@ public class Parser {
 
 
     public static void main(String[] args) throws IOException {
-        String test="struct Point {\n" +
+        String test="final int x=3;\nfinal int[] x=\"ciao\"\n;" +
+                "struct Point {\n" +
                 "\tint x;\n" +
                 "\tint y;\n" +
                 "}\n" +
@@ -71,6 +72,8 @@ public class Parser {
             LOGGER.log(Level.DEBUG,"Struct parsed: "+curr_stuct);
             program.addStruct(curr_stuct);
         }
+
+
         return program;
     }
 
@@ -232,15 +235,16 @@ public class Parser {
         Symbol identifier=consume(Token.Identifier);
         consume(Token.SpecialCharacter); //{ expected
         ArrayList<Field> fields=parseFields();
+        consume(Token.SpecialCharacter); //} expected
         return new Struct(identifier,fields);
     }
 
     private ArrayList<Field> parseFields() throws IOException {
         ArrayList<Field> ret=new ArrayList<>();
         while(!lookahead.getValue().equals("}")){
-            Symbol type=consume(Token.BasedType);
+            Type type=parseType();
             Symbol identifier=consume(Token.Identifier);
-            consume(Token.SpecialCharacter); //; expected
+            consume(Token.SpecialCharacter); // ; expected
             ret.add(new Field(type,identifier));
         }
         return ret;

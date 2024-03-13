@@ -1,13 +1,14 @@
 package compiler.Parser.AST.ASTNodes;
 
 import compiler.Lexer.Symbol;
+import compiler.Parser.AST.ASTNodes.Expressions.Type;
 
 public class Field {
 
-    private Symbol type;
+    private Type type;
     private Symbol identifier;
 
-    public Field(Symbol type, Symbol identifier){
+    public Field(Type type, Symbol identifier){
         this.type=type;
         this.identifier=identifier;
     }
@@ -17,7 +18,7 @@ public class Field {
         this.identifier=null;
     }
 
-    public Symbol getType(){
+    public Type getType(){
         return this.type;
     }
 
@@ -26,6 +27,6 @@ public class Field {
     }
 
     public String toString(){
-        return "Type: "+this.type.getValue()+" Identifier: "+this.identifier.getValue();
+        return "Type: "+this.type.toString()+" Identifier: "+this.identifier.getValue();
     }
 }
