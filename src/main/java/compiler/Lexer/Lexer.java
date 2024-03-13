@@ -310,6 +310,7 @@ public class Lexer {
             else if(isDigit(c)){
                 sb.append((char)c);
             }
+
             else{
                 queue.add(c);
                 break;

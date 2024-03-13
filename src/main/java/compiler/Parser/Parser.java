@@ -6,6 +6,11 @@ import compiler.Parser.AST.ASTNodes.ExpressionStatement;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.ArithmeticNegationNode;
 import compiler.Parser.AST.ASTNodes.Expressions.BinaryExpression;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.BooleanNegationNode;
+import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayStructType;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayType;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.BaseType;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.StructType;
 import compiler.Parser.AST.ASTNodes.Expressions.Value;
 import compiler.Parser.AST.Program;
 import org.apache.logging.log4j.Level;
@@ -34,7 +39,6 @@ public class Parser {
         Lexer l= new Lexer(stringReader,true);
         Parser p= new Parser(l);
         Program program=p.getAST();
-
     }
 
     /*
@@ -73,20 +77,60 @@ public class Parser {
         return curr_symbol;
     }
 
+    private boolean isType(Token token){
+        return lookahead.getType().isEqual(token.name());
+    }
+
+    private Type parseType() throws IOException {
+
+        switch (lookahead.getType().name()){
+            case "BasedType":
+                return parseBasedType();
+            case "Identifier":
+                return parseIdentifierType();
+            default:
+                throw new RuntimeException("Expected a type but found: "+lookahead.getValue());
+        }
+    }
+
+    private Type parseIdentifierType() throws IOException {
+        Symbol type=consume(Token.Identifier);
+        if(isType(Token.SpecialCharacter)){
+            if(!lookahead.getValue().equals("[")) throw new RuntimeException("Expected [ but found: "+lookahead.getValue()); //TODO throw an exception
+            consume(Token.SpecialCharacter); //Expected [
+            if(!lookahead.getValue().equals("]")) throw new RuntimeException("Expected [ but found: "+lookahead.getValue()); //TODO throw an exception
+            consume(Token.SpecialCharacter); //Expected ]
+            return new ArrayStructType(type);
+        }
+        return new StructType(type);
+    }
+    private Type parseBasedType() throws IOException {
+        Symbol type=consume(Token.BasedType);
+        if(isType(Token.SpecialCharacter)){
+            if(!lookahead.getValue().equals("[")) throw new RuntimeException("Expected [ but found: "+lookahead.getValue()); //TODO throw an exception
+            consume(Token.SpecialCharacter); //Expected [
+            if(!lookahead.getValue().equals("]")) throw new RuntimeException("Expected [ but found: "+lookahead.getValue()); //TODO throw an exception
+            consume(Token.SpecialCharacter); //Expected ]
+            return new ArrayType(type);
+        }
+        return new BaseType(type);
+    }
+
+
 
     /*
         Parse a constant; a constant is a final variable
      */
     private Constant parseConstant() throws IOException {
         consume(Token.Keywords); //Expected final
-        Symbol type = consume(Token.BasedType);
+        Type type = parseType();
+        if(!(type instanceof BaseType)) throw new RuntimeException("The type of a constant must be a base type");
         Symbol identifier = consume(Token.Identifier);
         consume(Token.AssignmentOperator); //Expected identifier
         //Parse the right value of Constant, an Expression
         ExpressionStatement expr=parseExpression();
         consume(Token.SpecialCharacter); //Expected ;
         return new Constant(type,identifier,expr);
-
     }
 
 
