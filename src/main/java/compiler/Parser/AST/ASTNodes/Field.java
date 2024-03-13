@@ -16,4 +16,16 @@ public class Field {
         this.type=null;
         this.identifier=null;
     }
+
+    public Symbol getType(){
+        return this.type;
+    }
+
+    public Symbol getIdentifier(){
+        return this.identifier;
+    }
+
+    public String toString(){
+        return "Type: "+this.type.getValue()+" Identifier: "+this.identifier.getValue();
+    }
 }

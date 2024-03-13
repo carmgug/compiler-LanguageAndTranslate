@@ -30,7 +30,16 @@ public class Parser {
 
 
     public static void main(String[] args) throws IOException {
-        String test="final int a= !(a && b || c >= 3);\nfinal float b= 3.0;\nfinal bool c= true;\nfinal string d= \"ciao\";";
+        String test="struct Point {\n" +
+                "\tint x;\n" +
+                "\tint y;\n" +
+                "}\n" +
+                "\n" +
+                "struct Person {\n" +
+                "\tstring name;\n" +
+                "\tPoint location;\n" +
+                "\tint[] history;\n" +
+                "}";
         System.out.println(test);
         StringReader stringReader= new StringReader(test);
         Lexer l= new Lexer(stringReader,true);
@@ -55,9 +64,9 @@ public class Parser {
         while(lookahead.getValue().equals("struct")){
             consume(Token.Keywords);
             Struct curr_stuct=parseStruct();
-
+            LOGGER.log(Level.DEBUG,"Struct parsed: "+curr_stuct);
+            program.addStruct(curr_stuct);
         }
-
         return program;
     }
 
@@ -192,6 +201,7 @@ public class Parser {
         }
         return ret;
     }
+
 
 
 

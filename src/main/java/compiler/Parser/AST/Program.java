@@ -22,6 +22,8 @@ public class Program implements AbstractSyntaxTree{
     }
 
 
+
+
     public boolean addConstant(Constant c){
         return this.costants.add(c);
     }

@@ -19,6 +19,21 @@ public class Struct {
         this.fields=null;
     }
 
+    public Symbol getIdentifier(){
+        return this.identifier;
+    }
+
+    public String toString(){
+        String ret="\n Struct "+identifier.getValue()+"{\n";
+        for(int i=0;i<fields.size();i++){
+            Field field= fields.get(i);
+            ret+="\tField{"+field.toString()+" }\n";
+        }
+        ret+=" }";
+
+        return ret;
+    }
+
 
 
 
