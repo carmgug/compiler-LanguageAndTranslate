@@ -166,7 +166,7 @@ public class Lexer {
     }
 
     private boolean isOperator(int c) {
-        char[] op = {'=', '+', '-', '*', '/', '%', '<', '>','!','&'};
+        char[] op = {'=', '+', '-', '*', '/', '%', '<', '>','!','&','|'};
 
         char curr_elem = (char) c;
         for (char e : op) {
