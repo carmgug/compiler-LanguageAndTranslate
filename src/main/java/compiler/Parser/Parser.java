@@ -12,6 +12,8 @@ import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.BaseType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.StructType;
 import compiler.Parser.AST.ASTNodes.Expressions.Value;
+import compiler.Parser.AST.ASTNodes.Field;
+import compiler.Parser.AST.ASTNodes.Struct;
 import compiler.Parser.AST.Program;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -19,8 +21,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.StringReader;
-
-
+import java.util.ArrayList;
+import java.util.Objects;
 
 public class Parser {
 
@@ -54,9 +56,10 @@ public class Parser {
             LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
             program.addConstant(curr_constant);
         }
-
         while(lookahead.getValue().equals("struct")){
-            //Struct curr_struct=parseStruct();
+            consume(Token.Keywords);
+            Struct curr_stuct=parseStruct();
+
         }
 
         return program;
@@ -214,6 +217,24 @@ public class Parser {
 
         }
         return left;
+    }
+
+    private Struct parseStruct() throws IOException {
+        Symbol identifier=consume(Token.Identifier);
+        consume(Token.SpecialCharacter); //{ expected
+        ArrayList<Field> fields=parseFields();
+        return new Struct(identifier,fields);
+    }
+
+    private ArrayList<Field> parseFields() throws IOException {
+        ArrayList<Field> ret=new ArrayList<>();
+        while(!lookahead.getValue().equals("}")){
+            Symbol type=consume(Token.BasedType);
+            Symbol identifier=consume(Token.Identifier);
+            consume(Token.SpecialCharacter); //; expected
+            ret.add(new Field(type,identifier));
+        }
+        return ret;
     }
 
 

@@ -11,4 +11,9 @@ public class Field {
         this.type=type;
         this.identifier=identifier;
     }
+
+    public Field(){
+        this.type=null;
+        this.identifier=null;
+    }
 }
