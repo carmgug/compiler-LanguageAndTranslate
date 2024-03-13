@@ -3,16 +3,19 @@ import compiler.Lexer.*;
 
 import compiler.Parser.AST.ASTNodes.Constant;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.ArithmeticNegationNode;
 import compiler.Parser.AST.ASTNodes.Expressions.BinaryExpression;
-import compiler.Parser.AST.ASTNodes.Expressions.NegativeNode;
+import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.BooleanNegationNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Value;
 import compiler.Parser.AST.Program;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.beans.Expression;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Objects;
+
+
 
 public class Parser {
 
@@ -23,6 +26,20 @@ public class Parser {
         this.lexer=lexer;
     }
 
+
+    public static void main(String[] args) throws IOException {
+        String test="final int a= !(a && b || c >= 3);\nfinal float b= 3.0;\nfinal bool c= true;\nfinal string d= \"ciao\";";
+        System.out.println(test);
+        StringReader stringReader= new StringReader(test);
+        Lexer l= new Lexer(stringReader,true);
+        Parser p= new Parser(l);
+        Program program=p.getAST();
+
+    }
+
+    /*
+        @return the Abstract Syntax Tree
+     */
     public Program getAST() throws IOException{
         Program program = new Program();
         //Take the first token. Lookahead is for predective parsing
@@ -33,11 +50,19 @@ public class Parser {
             LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
             program.addConstant(curr_constant);
         }
-        //Then we have to parse the structures
+
+        while(lookahead.getValue().equals("struct")){
+            //Struct curr_struct=parseStruct();
+        }
 
         return program;
     }
 
+
+    /*
+        @param token: the type of Symbol to consume
+        @return the current symbol
+     */
     private Symbol consume(Token token) throws IOException {
         Symbol curr_symbol=lookahead;
 
@@ -66,13 +91,9 @@ public class Parser {
 
 
     /*
-        Expression :
-            Term
-            Expression Operator Term
-            Identifier
-            FunctionCall
+        Parse an expression
+        Expression -> AdditiveExpression
      */
-
     private ExpressionStatement parseExpression() throws IOException{
         //Expression
         return parseAndOrExpression();
@@ -99,7 +120,7 @@ public class Parser {
      */
     private ExpressionStatement parseComparisonExpression() throws IOException{
         ExpressionStatement left = parseAdditiveExpression();
-        while (lookahead.getValue().equals("==") || lookahead.getValue().equals("<") || lookahead.getValue().equals(">") || lookahead.getValue().equals("<=") || lookahead.getValue().equals(">=") || lookahead.getValue().equals("!=")) {
+        while (lookahead.getType().equals(Token.ComparisonOperator)) {
             Symbol operator = Symbol.copy(lookahead);
             consume(Token.ComparisonOperator); //Expected Comparison Operator
             ExpressionStatement right = parseAdditiveExpression();
@@ -146,6 +167,7 @@ public class Parser {
             consume(Token.ArithmeticOperator); //Expected Arithmetic Operator
             ExpressionStatement right = parseFactor();
             left = new BinaryExpression(left, operator, right);
+
         }
         return left;
     }
@@ -154,7 +176,7 @@ public class Parser {
 
     /*
         Parse a Factor
-        Factor -> IntNumber| FloatNumber|BooleanVale|String|Identifier| (Expression) | (Negate) -Expression
+        Factor -> IntNumber| FloatNumber|BooleanVale|String|Identifier| (Expression) | (Negate) - Expression | ! Expression
      */
     private ExpressionStatement parseFactor() throws IOException {
 
@@ -177,14 +199,18 @@ public class Parser {
         } else if(lookahead.getValue().equals("-")){//Negative Expression
             consume(Token.ArithmeticOperator); //Expected -
             ExpressionStatement expr=parseExpression();
-            if(expr instanceof NegativeNode){throw new RuntimeException("Due meno meno di seguito non sono consentiti");}//TODO throw an exception
-            return new NegativeNode(expr);
-        } else {
+            if(expr instanceof ArithmeticNegationNode){throw new RuntimeException("Due meno meno di seguito non sono consentiti");}//TODO throw an exception
+            return new ArithmeticNegationNode(expr);
+        } else if(lookahead.getValue().equals("!")){
+            consume(Token.LogicalOperator); //Expected !
+            //We dont have the same situation of - beacause !!! are allowed so is the negate of the nagate of the nagate of the expression
+            ExpressionStatement expr=parseExpression();
+            return new BooleanNegationNode(expr);
+        }
+            else {
             throw new RuntimeException("Non ho trovato quello che mi serviva");
         }
     }
-
-
 
 
 
