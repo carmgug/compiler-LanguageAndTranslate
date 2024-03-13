@@ -3,15 +3,17 @@ import compiler.Lexer.*;
 
 import compiler.Parser.AST.ASTNodes.Constant;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.ArithmeticNegationNode;
 import compiler.Parser.AST.ASTNodes.Expressions.BinaryExpression;
-import compiler.Parser.AST.ASTNodes.Expressions.NegativeNode;
+import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.BooleanNegationNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Value;
 import compiler.Parser.AST.ASTNodes.Field;
 import compiler.Parser.AST.ASTNodes.Struct;
 import compiler.Parser.AST.Program;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.beans.Expression;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -26,16 +28,29 @@ public class Parser {
         this.lexer=lexer;
     }
 
+
+    public static void main(String[] args) throws IOException {
+        String test="final int a= !(a && b || c >= 3);\nfinal float b= 3.0;\nfinal bool c= true;\nfinal string d= \"ciao\";";
+        System.out.println(test);
+        StringReader stringReader= new StringReader(test);
+        Lexer l= new Lexer(stringReader,true);
+        Parser p= new Parser(l);
+        Program program=p.getAST();
+
+    }
+
+    /*
+        @return the Abstract Syntax Tree
+     */
     public Program getAST() throws IOException{
         Program program = new Program();
         //Take the first token. Lookahead is for predective parsing
         lookahead = lexer.getNextSymbol();
         //First we have to parse the constants
         while(lookahead.getValue().equals("final")){
-             Constant curr_constant=parseConstant();
-             LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
-             program.addConstant(curr_constant);
-             lookahead=lexer.getNextSymbol();
+            Constant curr_constant=parseConstant();
+            LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
+            program.addConstant(curr_constant);
         }
         while(lookahead.getValue().equals("struct")){
             consume(Token.Keywords);
@@ -46,6 +61,11 @@ public class Parser {
         return program;
     }
 
+
+    /*
+        @param token: the type of Symbol to consume
+        @return the current symbol
+     */
     private Symbol consume(Token token) throws IOException {
         Symbol curr_symbol=lookahead;
 
@@ -74,16 +94,42 @@ public class Parser {
 
 
     /*
-        Expression :
-            Term
-            Expression Operator Term
-            Identifier
-            FunctionCall
+        Parse an expression
+        Expression -> AdditiveExpression
      */
-
     private ExpressionStatement parseExpression() throws IOException{
         //Expression
-        return parseAdditiveExpression();
+        return parseAndOrExpression();
+    }
+
+    /*
+        Parse a AndOrExpression:
+            AndOrExpression ->  ComparaisonExpression | AndOrExpression AndOrOperator ComparaisonExpression
+     */
+    private ExpressionStatement parseAndOrExpression() throws IOException{
+        ExpressionStatement left = parseComparisonExpression();
+        while (lookahead.getValue().equals("&&") || lookahead.getValue().equals("||")) {
+            Symbol operator = Symbol.copy(lookahead);
+            consume(Token.LogicalOperator); //Expected Logical Operator
+            ExpressionStatement right = parseComparisonExpression();
+            left = new BinaryExpression(left, operator, right);
+        }
+        return left;
+    }
+
+    /*
+        Parse a ComparisonExpression:
+            ComparisonExpression ->  AdditiveExpressione | ComparasionExpression ComparisonOperator AdditiveExpression
+     */
+    private ExpressionStatement parseComparisonExpression() throws IOException{
+        ExpressionStatement left = parseAdditiveExpression();
+        while (lookahead.getType().equals(Token.ComparisonOperator)) {
+            Symbol operator = Symbol.copy(lookahead);
+            consume(Token.ComparisonOperator); //Expected Comparison Operator
+            ExpressionStatement right = parseAdditiveExpression();
+            left = new BinaryExpression(left, operator, right);
+        }
+        return left;
     }
 
 
@@ -124,6 +170,7 @@ public class Parser {
             consume(Token.ArithmeticOperator); //Expected Arithmetic Operator
             ExpressionStatement right = parseFactor();
             left = new BinaryExpression(left, operator, right);
+
         }
         return left;
     }
@@ -148,25 +195,23 @@ public class Parser {
 
 
 
-
+    /*
+        Parse a Factor
+        Factor -> IntNumber| FloatNumber|BooleanVale|String|Identifier| (Expression) | (Negate) - Expression | ! Expression
+     */
     private ExpressionStatement parseFactor() throws IOException {
 
-        switch (lookahead.getType().name()) {
-            case "IntNumber":
-                return new Value(consume(Token.IntNumber));
-            case "FloatNumber":
-                return new Value(consume(Token.FloatNumber));
-            case "BooleanValue":
-                return new Value(consume(Token.BooleanValue));
-            case "String":
-                return new Value(consume(Token.String));
-            case "Identifier":
-                return new Value(consume(Token.Identifier));
-            default:
-                // Handle other cases or throw an exception
-                break;
-        }
-        if (lookahead.getValue().equals("(")) {
+        if(lookahead.isTypeof("IntNumber")){
+            return new Value(consume(Token.IntNumber));
+        } else if (lookahead.isTypeof("FloatNumber")) {
+            return new Value(consume(Token.FloatNumber));
+        } else if (lookahead.isTypeof("BooleanValue")) {
+            return new Value(consume(Token.BooleanValue));
+        }else if (lookahead.isTypeof("String")) {
+            return new Value(consume(Token.String));
+        }else if (lookahead.isTypeof("Identifier")){
+            return new Value(consume(Token.Identifier));
+        } else if (lookahead.getValue().equals("(")) {
             consume(Token.SpecialCharacter); //Expected ( as if statement
             ExpressionStatement subExpr=parseExpression();
             if(!lookahead.getValue().equals(")")) throw new RuntimeException("Non ho trovato la parentesi chiusa");//TODO throw an exception
@@ -175,18 +220,18 @@ public class Parser {
         } else if(lookahead.getValue().equals("-")){//Negative Expression
             consume(Token.ArithmeticOperator); //Expected -
             ExpressionStatement expr=parseExpression();
-            if(expr instanceof NegativeNode){throw new RuntimeException("Due meno meno di seguito non sono consentiti");}//TODO throw an exception
-            return new NegativeNode(expr);
+            if(expr instanceof ArithmeticNegationNode){throw new RuntimeException("Due meno meno di seguito non sono consentiti");}//TODO throw an exception
+            return new ArithmeticNegationNode(expr);
+        } else if(lookahead.getValue().equals("!")){
+            consume(Token.LogicalOperator); //Expected !
+            //We dont have the same situation of - beacause !!! are allowed so is the negate of the nagate of the nagate of the expression
+            ExpressionStatement expr=parseExpression();
+            return new BooleanNegationNode(expr);
         }
-
-        else {
+            else {
             throw new RuntimeException("Non ho trovato quello che mi serviva");
         }
-
-
     }
-
-
 
 
 

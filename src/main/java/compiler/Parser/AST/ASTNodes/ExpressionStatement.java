@@ -1,13 +1,16 @@
 package compiler.Parser.AST.ASTNodes;
 
-public class ExpressionStatement {
+import compiler.Parser.AST.ASTNode;
 
-    private String type;//boolean String Type
+public class ExpressionStatement extends ASTNode {
+
+    private String descriptor;//boolean String Type
 
     @Override
     public String toString() {
         return "ExpressionStatement{" +
-                "type='" + type + '\'' +
+                "descriptor='" + descriptor + '\'' +
                 '}';
     }
+
 }

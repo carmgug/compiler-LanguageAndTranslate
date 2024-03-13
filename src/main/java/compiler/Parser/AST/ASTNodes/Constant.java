@@ -17,6 +17,6 @@ public class Constant {
     }
 
     public String toString() {
-        return "{Type: " + type + ", Identifier: " + identifier + ", Right Side: " + right_side + "}";
+        return "{Type: " + type + ", Identifier: " + identifier + ", Right Side: " +"\n"+right_side + "}";
     }
 }
