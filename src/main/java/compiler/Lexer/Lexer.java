@@ -70,8 +70,7 @@ public class Lexer {
                 if(debugMode) LOGGER.log(Level.DEBUG,"The end of the file has been reached -->"+ s.toString()+ " - at line "+ curr_line);
                 return s;
             }
-            else if(isWhitespace(c)){
-
+            else if(isWhitespaceOrIndent(c)){
                 continue;
             }
             else if(isLetter(c)){//A letter has been detected so it's possibile to match a //BaseType,KeyWords ecc.
@@ -131,8 +130,8 @@ public class Lexer {
     }
 
 
-    private boolean isWhitespace(int c){
-        return ((char) c)==(' ');
+    private boolean isWhitespaceOrIndent(int c){
+        return (((char) c)==(' ') || ((char) c)=='\t');
     }
     private boolean isLetter(int c){
         char curr_elem=(char) c;
