@@ -6,12 +6,15 @@ import compiler.Parser.AST.ASTNodes.ExpressionStatement;
 import compiler.Parser.AST.ASTNodes.Expressions.BinaryExpression;
 import compiler.Parser.AST.ASTNodes.Expressions.NegativeNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Value;
+import compiler.Parser.AST.ASTNodes.Field;
+import compiler.Parser.AST.ASTNodes.Struct;
 import compiler.Parser.AST.Program;
 
 import java.beans.Expression;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Parser {
@@ -34,7 +37,11 @@ public class Parser {
              program.addConstant(curr_constant);
              lookahead=lexer.getNextSymbol();
         }
-        //Then we have to parse the structures
+        while(lookahead.getValue().equals("struct")){
+            consume(Token.Keywords);
+            Struct curr_stuct=parseStruct();
+
+        }
 
         return program;
     }
@@ -119,6 +126,24 @@ public class Parser {
             left = new BinaryExpression(left, operator, right);
         }
         return left;
+    }
+
+    private Struct parseStruct() throws IOException {
+        Symbol identifier=consume(Token.Identifier);
+        consume(Token.SpecialCharacter); //{ expected
+        ArrayList<Field> fields=parseFields();
+        return new Struct(identifier,fields);
+    }
+
+    private ArrayList<Field> parseFields() throws IOException {
+        ArrayList<Field> ret=new ArrayList<>();
+        while(!lookahead.getValue().equals("}")){
+            Symbol type=consume(Token.BasedType);
+            Symbol identifier=consume(Token.Identifier);
+            consume(Token.SpecialCharacter); //; expected
+            ret.add(new Field(type,identifier));
+        }
+        return ret;
     }
 
 
