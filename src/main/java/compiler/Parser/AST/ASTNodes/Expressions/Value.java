@@ -14,6 +14,10 @@ public class Value extends ExpressionStatement {
         return value.toString();
     }
 
+    public Symbol getSymbol() {
+        return value;
+    }
+
 
 
 }

@@ -4,7 +4,6 @@ import compiler.Lexer.Symbol;
 
 public class Operator {
 
-    protected int precendence;
     protected Symbol operator;
 
     public Operator(Symbol operator){

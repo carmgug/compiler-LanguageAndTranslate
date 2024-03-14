@@ -39,13 +39,13 @@
 
 // Operator precedence:
 //     function and constructor calls
-//     parenthesis
+//     parenthesis Check
 //     index operator
 //     structure field access operator .
-//     *,/,%
-//     +,-, unary -
-//     ==, !=, <, >, <=, >=
-//     &&, ||
+//     *,/,% Check
+//     +,-, unary - Check
+//     ==, !=, <, >, <=, >= Check
+//     &&, || Check
 // Operators with same precedence are left-associative.
       
 // Constants must be declared at the top of the source file.
