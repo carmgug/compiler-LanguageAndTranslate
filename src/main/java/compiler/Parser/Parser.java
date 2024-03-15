@@ -1,8 +1,7 @@
 package compiler.Parser;
 import compiler.Lexer.*;
 
-import compiler.Parser.AST.ASTNodes.Constant;
-import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.Parser.AST.ASTNodes.*;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.ArithmeticNegationNode;
 import compiler.Parser.AST.ASTNodes.Expressions.BinaryExpression;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.BooleanNegationNode;
@@ -12,12 +11,11 @@ import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.BaseType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.StructType;
 import compiler.Parser.AST.ASTNodes.Expressions.Value;
-import compiler.Parser.AST.ASTNodes.Field;
-import compiler.Parser.AST.ASTNodes.Struct;
 import compiler.Parser.AST.Program;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import sun.jvm.hotspot.debugger.cdbg.Sym;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -33,19 +31,10 @@ public class Parser {
         this.lexer=lexer;
     }
 
-
     public static void main(String[] args) throws IOException {
-        String test="final int x=3;\nfinal int[] x=\"ciao\"\n;" +
-                "struct Point {\n" +
-                "\tint x;\n" +
-                "\tint y;\n" +
-                "}\n" +
-                "\n" +
-                "struct Person {\n" +
-                "\tstring name;\n" +
-                "\tPoint location;\n" +
-                "\tint[] history;\n" +
-                "}";
+        String test="int a=2;" +
+                "String s= \"Ciao\";" +
+                "Person p= 4;";
         System.out.println(test);
         StringReader stringReader= new StringReader(test);
         Lexer l= new Lexer(stringReader,true);
@@ -71,6 +60,16 @@ public class Parser {
             Struct curr_stuct=parseStruct();
             LOGGER.log(Level.DEBUG,"Struct parsed: "+curr_stuct);
             program.addStruct(curr_stuct);
+        }
+        while(lookahead.getType().equals(Token.BasedType) || (lookahead.getType().equals(Token.Identifier) && Character.isUpperCase(lookahead.getValue().charAt(0)))){
+            GlobalVariable curr_global_variable= parseGlobalVariable();
+            LOGGER.log(Level.DEBUG,"Global Constant parsed: "+curr_global_variable);
+            program.addGlobalVariables(curr_global_variable);
+            program.addGlobalVariables(curr_global_variable);
+        }
+        while(lookahead.getValue().equals("def")){
+            consume(Token.Keywords); //def consumed
+            Procedure curr_procedure=parseProcedure();
         }
 
 
@@ -107,6 +106,8 @@ public class Parser {
                 throw new RuntimeException("Expected a type but found: "+lookahead.getValue());
         }
     }
+
+
 
     private Type parseIdentifierType() throws IOException {
         Symbol type=consume(Token.Identifier);
@@ -248,6 +249,107 @@ public class Parser {
             ret.add(new Field(type,identifier));
         }
         return ret;
+    }
+
+    private GlobalVariable parseGlobalVariable() throws IOException {
+        Type type=parseType();
+        Symbol identifier=consume(Token.Identifier);
+        consume(Token.AssignmentOperator); // = expected
+        ExpressionStatement expr=parseExpression();
+        consume(Token.SpecialCharacter); // ; expected
+        return new GlobalVariable(type,identifier,expr);
+    }
+
+    private Procedure parseProcedure() throws  IOException{
+        Type returnType=parseType();
+        Symbol name=consume(Token.Identifier);
+        consume(Token.SpecialCharacter); // ( expexted
+        ArrayList<Parameter> parameters=parseParameters();
+        consume(Token.SpecialCharacter); // { expexted
+        Block block= parseBlock();
+        //TODO Consume "return"
+        return new Procedure();
+    }
+
+    private ArrayList<Parameter> parseParameters() throws IOException {
+        ArrayList<Parameter> ret=new ArrayList<>();
+        while(!lookahead.getValue().equals(")")){
+            Type type=parseType();
+            Symbol identifier=consume(Token.Identifier);
+            consume(Token.SpecialCharacter); // , expected
+            ret.add(new Parameter(type,identifier));
+        }
+        return ret;
+    }
+
+    /*TODO In un block si possono avere (Ogni statement ha al suo interno un block):
+        -Global Variable
+        -Fields
+        -Function Call
+        -For Statemente
+        -While Statement
+        -If Statement
+        -Variable Assignment (i = 2*2)
+     */
+
+    private Block parseBlock() throws IOException {
+
+        /*TODO  - Gestire la differenza tra global variable, fields e variable Assignment.
+                -tutti possono iniziare con un Token.Identifier
+
+         */
+
+        /*TODO -Cosa succede se lo statment di return è contenuto all'interno di un ciclo?
+               -Si deve includere il costutto else if?
+
+         */
+
+
+        while(lookahead.getValue().equals("return")){ //waiting for the return
+            if(lookahead.getType().equals(Token.BasedType) ||
+                    (lookahead.getType().equals(Token.Identifier) &&
+                            Character.isUpperCase(lookahead.getValue().charAt(0)))){
+                //We can have a fields or a global Variable
+                Type type=parseType();
+                Symbol identifier=consume(Token.Identifier);
+                if(lookahead.getValue().equals("=")){
+                    //Global Variable
+                    consume(Token.AssignmentOperator);
+                    ExpressionStatement exp=parseExpression();
+                    consume(Token.SpecialCharacter); //; expected
+                    GlobalVariable curr_global_variable= new GlobalVariable(type,identifier,exp);
+                }else{
+                    consume(Token.SpecialCharacter);
+                    Field curr_field=new Field(type,identifier);
+                }
+            }
+            else if(lookahead.getType().equals(Token.Identifier)){
+                //we are in the variable Assignment case
+                Symbol identifier=consume(Token.Identifier);
+                ExpressionStatement exp=parseExpression();
+                consume(Token.SpecialCharacter); //; expected
+                //TODO Create a new Class VariableAssignment
+
+            }
+            else if(lookahead.getValue().equals("for")){
+                consume(Token.Keywords);
+                consume(Token.SpecialCharacter); // (expected
+
+            }
+            else if(lookahead.getValue().equals("while")){
+
+            }
+            else if(lookahead.getValue().equals("if")){
+
+            }
+            else if(lookahead.getType().equals(Token.Identifier)){
+
+            }
+
+        }
+
+        return new Block();
+
     }
 
 

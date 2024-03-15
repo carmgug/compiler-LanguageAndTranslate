@@ -1,6 +1,7 @@
 package compiler.Parser.AST;
 
 import compiler.Parser.AST.ASTNodes.Constant;
+import compiler.Parser.AST.ASTNodes.GlobalVariable;
 import compiler.Parser.AST.ASTNodes.Procedure;
 import compiler.Parser.AST.ASTNodes.Struct;
 
@@ -10,14 +11,13 @@ public class Program implements AbstractSyntaxTree{
     ArrayList<Constant> costants;
     ArrayList<Struct> structs;
 
-    ArrayList<Integer> global_variables;
+    ArrayList<GlobalVariable> global_variables;
     ArrayList<Procedure> procedures;
 
     public Program(){
         this.costants=new ArrayList<Constant>();
         this.structs=new ArrayList<Struct>();
-
-        this.global_variables=new ArrayList<Integer>();
+        this.global_variables=new ArrayList<GlobalVariable>();
         this.procedures=new ArrayList<Procedure>();
     }
 
@@ -32,8 +32,8 @@ public class Program implements AbstractSyntaxTree{
         return this.structs.add(s);
     }
 
-    public boolean addGlobalVariables(Integer x){
-        return this.global_variables.add(x);
+    public boolean addGlobalVariables(GlobalVariable g){
+        return this.global_variables.add(g);
     }
 
     public boolean addProcedure(Procedure p){
