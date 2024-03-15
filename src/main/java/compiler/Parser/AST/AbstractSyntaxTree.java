@@ -1,6 +1,7 @@
 package compiler.Parser.AST;
 
 import compiler.Parser.AST.ASTNodes.Constant;
+import compiler.Parser.AST.ASTNodes.GlobalVariable;
 import compiler.Parser.AST.ASTNodes.Procedure;
 import compiler.Parser.AST.ASTNodes.Struct;
 
@@ -22,7 +23,7 @@ public interface AbstractSyntaxTree {
         @input Integer x
         @return boolean (True if x has added to global_variables as Collection.add)
      */
-    boolean addGlobalVariables(Integer x);
+    boolean addGlobalVariables(GlobalVariable x);
 
     /*
         @input Procedure p
