@@ -34,7 +34,7 @@ public class Parser {
 
 
     public static void main(String[] args) throws IOException {
-        String test="final bool isEmpty = isTrue(isTrue()[getARandomNumber().ciao]);\nfinal int a_abc_123_ =  3;\n" +
+        String test="final bool isEmpty = isTrue(isTrue()[4.getARandomNumber().ciao[4]]);\nfinal int a_abc_123_ =  3;\n" +
                 "final int a_abc_123_ = 3;\n" +
                 "final float j = 3.256*5.0;\n" +
                 "final int k = i*3;\n" +
@@ -251,9 +251,9 @@ public class Parser {
 
     /*
         Parse an MultiplicativeExpression
-        could be a Factor |
-        MultiplicativeExpression MultiplyOperator Factor ->
-            Factor MultiplyOperator Factor MultiplyOperator Factor
+        could be a ArrayAccess |
+        MultiplicativeExpression MultiplyOperator ArrayAccess ->
+            ArrayAccess MultiplyOperator ArrayAccess MultiplyOperator ArrayAccess
         +,-, Negative Value (-)
      */
 
@@ -271,11 +271,11 @@ public class Parser {
 
     /*
         Parse an ArrayAccess
-        ArrayAccess -> Factor [ Expression ]
+        ArrayAccess -> StructAccess [ Expression ]
      */
 
     public ExpressionStatement parseArrayAccess() throws IOException {
-        ExpressionStatement ArrayName=parseFactor();
+        ExpressionStatement ArrayName=parseStructAccess();
         //maybe can be an ArrayAccess Otherwise is a simple Factor
         if(lookahead.getValue().equals("[")){
             consume(Token.SpecialCharacter); //Expected [
@@ -293,28 +293,27 @@ public class Parser {
         return ArrayName;
     }
 
-    private FunctionCall parseFunctionCall(Symbol functionName) throws IOException {
-        ExpressionStatement ArrayName=parseFactor();
-
-        consume(Token.SpecialCharacter); //Expected (
-        ArrayList<ExpressionStatement> parameters=parseParameters();
-        if(!lookahead.getValue().equals(")")) throw new RuntimeException("Non ho trovato la parentesi chiusa");//TODO throw an exception
-        consume(Token.SpecialCharacter); //Expected )
-        return new FunctionCall(functionName,parameters);
+    /*
+        Parse a StructAccess
+        StructAccess -> Factor | StructAccess . Factor
+     */
+    private ExpressionStatement parseStructAccess() throws IOException {
+        ExpressionStatement leftPart=parseFactor();
+        LinkedList<ExpressionStatement> struct_access=new LinkedList<>();
+        struct_access.add(leftPart);
+        while (lookahead.getValue().equals(".")) {
+            consume(Token.SpecialCharacter); //Expected
+            leftPart=parseFactor();
+            struct_access.add(leftPart);
+        }
+        if(struct_access.size()==1) return struct_access.get(0);
+        else return new StructAccess(struct_access);
     }
-
-
-
-
-
 
     /*
         Parse a Factor
         Factor -> IntNumber| FloatNumber|BooleanVale|String|Identifier| (Expression) | (Negate) - Expression | ! Expression
-
-        Da riguardare
-        Factor -> Identifier(Parameters) as FunctionCall | StructAccess.Identifier as StructAccess
-        StructAccess.Identifier -> Identifier.Identifier.Identifier as StructAccess
+        Factor -> Identifier(Parameters) as FunctionCall
      */
     private ExpressionStatement parseFactor() throws IOException {
 
@@ -329,10 +328,8 @@ public class Parser {
         }else if (lookahead.isTypeof("Identifier")){
             //if is a identifier can be a struct access, an fuctioncall or a simple variable
             Symbol curr_identifier=consume(Token.Identifier); //Expected
-            if(lookahead.getValue().equals(".")){
-                return parseStructAccess(curr_identifier);//pass the symbol we have already consumed
-            }//if is not a struct access is a function call
-            else if(lookahead.getValue().equals("(")){
+            //if is not a struct access is a function call
+            if(lookahead.getValue().equals("(")){
                 return parseFunctionCall(curr_identifier); //pass the function name we have already consumed
             }//Ok it's only an identifier so a variable
             else return new Value(curr_identifier);
@@ -358,15 +355,14 @@ public class Parser {
         }
     }
 
-    private StructAccess parseStructAccess(Symbol curr_identifier) throws IOException {
-        LinkedList<Value> struct_access=new LinkedList<>();
-        struct_access.add(new Value(curr_identifier));
-        while (lookahead.getValue().equals(".")) {
-            consume(Token.SpecialCharacter); //Expected
-            curr_identifier = consume(Token.Identifier);
-            struct_access.add(new Value(curr_identifier));
-        }
-        return new StructAccess(struct_access);
+
+
+    private FunctionCall parseFunctionCall(Symbol function_name) throws IOException {
+        consume(Token.SpecialCharacter); //Expected (
+        ArrayList<ExpressionStatement> parameters=parseParameters();
+        if(!lookahead.getValue().equals(")")) throw new RuntimeException("Non ho trovato la parentesi chiusa");//TODO throw an exception
+        consume(Token.SpecialCharacter); //Expected )
+        return new FunctionCall(function_name,parameters);
     }
 
 
