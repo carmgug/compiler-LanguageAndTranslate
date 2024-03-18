@@ -1,23 +1,26 @@
 package compiler.Parser.AST.ASTNodes;
 
-public class WhileStatement {
+import compiler.Parser.AST.ASTNode;
 
-    /*
+public class WhileStatement extends ASTNode {
 
-    ComparisonExpression exitCondition;
 
-    Block block;
 
-    public WhileStatement(ComparisonExpression exitCondition, Block block){
+    private ExpressionStatement exitCondition;
+
+    private Block block;
+
+    public WhileStatement(ExpressionStatement exitCondition, Block block){
         this.exitCondition=exitCondition;
         this.block=block;
     }
 
-    public WhileStatement(){
-        this.exitCondition=null;
-        this.block=null;
+
+    @Override
+    public String toString() {
+        return "WhileStatement{" +
+                "exitCondition=" + exitCondition +
+                ", block={" + block +
+                "}}";
     }
-
-    */
-
 }

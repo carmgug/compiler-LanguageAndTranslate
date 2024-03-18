@@ -14,7 +14,6 @@ public class FunctionCall extends ExpressionStatement {
 
 
     public FunctionCall(Symbol functionName,ArrayList<ExpressionStatement> arguments) {
-        super();
         if(!functionName.getType().equals(Token.Identifier)) throw new IllegalArgumentException("The function name must be an identifier");
         this.functionName = functionName;
         this.arguments=new ArrayList<>();

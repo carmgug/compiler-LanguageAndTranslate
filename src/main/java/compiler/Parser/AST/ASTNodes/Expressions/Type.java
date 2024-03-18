@@ -14,6 +14,10 @@ public abstract class Type {
         this.type=Symbol.copy(type);
     }
 
+    public Symbol getSymbol(){
+        return this.type;
+    }
+
 
 
 }

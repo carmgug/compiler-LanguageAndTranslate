@@ -1,22 +1,23 @@
 package compiler.Parser.AST.ASTNodes;
 
 import compiler.Lexer.Symbol;
+import compiler.Parser.AST.ASTNode;
 
 import java.util.ArrayList;
 
-public class Struct {
+public class Struct extends ASTNode {
 
     Symbol identifier;
-    ArrayList<Field> fields;
+    ArrayList<VariableDeclaration> variableDeclarations;
 
-    public Struct(Symbol identifier, ArrayList<Field> fields){
+    public Struct(Symbol identifier, ArrayList<VariableDeclaration> variableDeclarations){
         this.identifier=identifier;
-        this.fields=fields;
+        this.variableDeclarations = variableDeclarations;
     }
 
     public Struct(){
         this.identifier=null;
-        this.fields=null;
+        this.variableDeclarations =null;
     }
 
     public Symbol getIdentifier(){
@@ -25,9 +26,9 @@ public class Struct {
 
     public String toString(){
         String ret="\n Struct "+identifier.getValue()+"{\n";
-        for(int i=0;i<fields.size();i++){
-            Field field= fields.get(i);
-            ret+="\tField{"+field.toString()+" }\n";
+        for(int i = 0; i< variableDeclarations.size(); i++){
+            VariableDeclaration variableDeclaration = variableDeclarations.get(i);
+            ret+="\tVariableDeclaration{"+ variableDeclaration.toString()+" }\n";
         }
         ret+=" }";
 

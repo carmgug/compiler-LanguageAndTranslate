@@ -1,19 +1,20 @@
 package compiler.Parser.AST.ASTNodes;
 
 import compiler.Lexer.Symbol;
+import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 
-public class Parameter {
+public class VariableDeclaration extends ASTNode {
 
-    private Type type;
-    private Symbol identifier;
+    protected Type type;
+    protected Symbol identifier;
 
-    public Parameter(Type type, Symbol identifier){
+    public VariableDeclaration(Type type, Symbol identifier){
         this.type=type;
         this.identifier=identifier;
     }
 
-    public Parameter(){
+    public VariableDeclaration(){
         this.type=null;
         this.identifier=null;
     }
@@ -26,7 +27,6 @@ public class Parameter {
         return this.identifier;
     }
 
-    public String toString(){
-        return "Type: "+this.type.toString()+" Identifier: "+this.identifier.getValue();
+    public String toString(){return "Type: "+this.type.toString()+" Identifier: "+this.identifier.getValue();
     }
 }

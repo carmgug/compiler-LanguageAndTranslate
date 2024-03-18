@@ -41,7 +41,7 @@
 //     function and constructor calls
 //     parenthesis Check
 //     index operator
-//     structure field access operator .
+//     structure variableDeclaration access operator .
 //     *,/,% Check
 //     +,-, unary - Check
 //     ==, !=, <, >, <=, >= Check
@@ -118,7 +118,7 @@ Person d = Person("me", Point(3,7), int[i*2]);  // new structure
 //    a variable
 //    an element of an array
 //         a[3] = 1234;   // a is an array of int
-//    a field access to a structure
+//    a variableDeclaration access to a structure
 //         a.x = 123;
 //         a[3].x = 12;
 //    To simplify the compiler, the left side cannot be an expression, this is not allowed:

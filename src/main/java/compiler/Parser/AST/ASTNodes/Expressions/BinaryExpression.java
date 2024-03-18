@@ -12,7 +12,7 @@ public class BinaryExpression extends ExpressionStatement {
 
     public BinaryExpression(ExpressionStatement left, Symbol operator, ExpressionStatement right) {
         this.left=left;
-        this.operator = new Operator(operator);
+        this.operator = new Operator(operator); //TODO
         this.right = right;
     }
 

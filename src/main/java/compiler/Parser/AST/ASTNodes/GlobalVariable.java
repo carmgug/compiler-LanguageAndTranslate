@@ -1,9 +1,10 @@
 package compiler.Parser.AST.ASTNodes;
 
 import compiler.Lexer.Symbol;
+import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 
-public class GlobalVariable {
+public class GlobalVariable extends ASTNode {
 
     private Type type;
 
