@@ -15,6 +15,8 @@ public class Block extends ASTNode{
     }
 
     public String toString(){
+        if(statements.isEmpty())
+            return "Block{}";
         return Arrays.toString(statements.toArray());
     }
 

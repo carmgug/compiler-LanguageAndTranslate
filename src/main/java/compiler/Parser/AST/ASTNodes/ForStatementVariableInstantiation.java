@@ -7,4 +7,13 @@ public class ForStatementVariableInstantiation extends ForStatement{
         super(endCondition, update, block);
         this.index = index;
     }
+
+    public String toString() {
+        return "ForStatement{" +
+                "index=" + index +
+                ", endCondition=" + endCondition +
+                ", update=" + update +
+                ", block={" + block +
+                "}}";
+    }
 }

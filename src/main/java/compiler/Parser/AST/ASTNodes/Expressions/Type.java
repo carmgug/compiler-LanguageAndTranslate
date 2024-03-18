@@ -8,7 +8,7 @@ public abstract class Type {
     protected Symbol type; //Could be an identifier or a base type;
 
     public Type(Symbol type){
-        if(!type.getType().equals(Token.Identifier) && !type.getType().equals(Token.BasedType)){
+        if(!type.getType().equals(Token.Identifier) && !type.getType().equals(Token.BasedType) && !type.getType().equals(Token.Void)){
             throw new IllegalArgumentException("The base type must be an identifier or a base type");
         }
         this.type=Symbol.copy(type);

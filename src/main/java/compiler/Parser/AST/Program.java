@@ -4,8 +4,10 @@ import compiler.Parser.AST.ASTNodes.Constant;
 import compiler.Parser.AST.ASTNodes.GlobalVariable;
 import compiler.Parser.AST.ASTNodes.Procedure;
 import compiler.Parser.AST.ASTNodes.Struct;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Program implements AbstractSyntaxTree{
     ArrayList<Constant> costants;
@@ -40,6 +42,24 @@ public class Program implements AbstractSyntaxTree{
         return this.procedures.add(p);
     }
 
+
+    public ArrayList<Constant> getCostants() {
+        return new ArrayList<>(costants);
+    }
+
+    public ArrayList<Procedure> getProcedures() {
+        return new ArrayList<>(procedures);
+    }
+
+    public ArrayList<GlobalVariable> getGlobal_variables() {
+        //Return a shallow copy of the ArrayList
+        return new ArrayList<GlobalVariable>(global_variables);
+    }
+
+    public ArrayList<Struct> getStructs() {
+        return new ArrayList<>(structs);
+    }
+
     public String toString(){
         StringBuilder sb=new StringBuilder();
         for (Constant c : costants) {
@@ -47,6 +67,8 @@ public class Program implements AbstractSyntaxTree{
         }
         return sb.toString();
     }
+
+
 
 
 

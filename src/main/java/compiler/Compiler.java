@@ -5,24 +5,26 @@ package compiler;
 
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Symbol;
+import compiler.Parser.AST.Program;
+import compiler.Parser.Parser;
 
 import java.io.*;
 
 
 public class Compiler {
-    public static void main(String[] args) throws FileNotFoundException {
-
-
-
+    public static void main(String[] args) throws IOException {
 
         boolean debugModeLexer = false;
+        boolean debugModeParser = false;
         String filePath = null;
 
         // Parse command-line arguments
         for (int i = 0; i < args.length; i++) {
             if ("-lexer".equals(args[i])) {
                 debugModeLexer = true;
-            } else {
+            } else if("-parser".equals(args[i]) || args[i] == "-parser"){
+                debugModeParser = true;
+            }else {
                 // Assuming the file path comes after the -lexer flag
                 filePath = args[i];
             }
@@ -36,18 +38,9 @@ public class Compiler {
         FileReader fileReader = new FileReader(filePath);
 
 
-        Lexer lexer = new Lexer(fileReader,debugModeLexer);
-        try {
-            Symbol curr_symbol = lexer.getNextSymbol();
-            while (!curr_symbol.isEOF()) {
+        Parser parser = new Parser(fileReader,debugModeLexer,debugModeParser);
+        Program p= parser.getAST();
 
-                //System.out.println(curr_symbol);
-                curr_symbol = lexer.getNextSymbol();
-            }
-            //System.out.println(curr_symbol);
-        }catch (IOException e){
-            System.out.println(e.getMessage());
-        }
 
 
 

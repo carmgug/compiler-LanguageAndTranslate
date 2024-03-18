@@ -27,7 +27,7 @@ public class Procedure {
     }
 
     public String toString(){
-        return "Procedure: "+this.name.getValue()+"\nReturn Type: "+this.returnType.toString()+"\nParameters: "+this.parameters_of_the_procedure.toString()+"\nBody: "+this.body.toString();
+        return "{Procedure: "+this.name.getValue()+"\nReturn Type: "+this.returnType.toString()+"\nParameters: "+this.parameters_of_the_procedure.toString()+"\nBody: "+this.body.toString();
     }
 
 

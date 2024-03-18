@@ -54,7 +54,7 @@
 final int a_abc_123_ =  3;
 final int a_abc_123_ = 3;
 final float j = 3.256*5.0;
-final k int = i*3;
+final int k = i*3;
 final string message = "Hello\n";
 final bool isEmpty = true;
 
@@ -140,7 +140,7 @@ def int square(int v) {
 }
 
 def Point copyPoints(Point[] p) {
-    return Point(p[0].x+p[1].x, p[0].y+p[1].y);
+    return Point(p[0].x.z[1]+p[1].x, p[0].y+p[1].y);
 }
                             
 def void main() {
@@ -156,6 +156,5 @@ def void main() {
             }
         }
     }
-    
     i = (i+2)*2;
 } 

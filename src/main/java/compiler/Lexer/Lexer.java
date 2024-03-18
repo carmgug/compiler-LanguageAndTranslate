@@ -45,12 +45,14 @@ public class Lexer {
 
 
     private void setRules(){
-        this.rules.put("isLetter",new Token[]{Token.BasedType,Token.Keywords,Token.BooleanValue,Token.Identifier});
+
+        this.rules.put("isLetter",new Token[]{Token.BasedType,Token.Final,Token.Struct,Token.For,Token.Return,Token.Void,
+                Token.Def,Token.While,Token.If,Token.Else,Token.BooleanValue,Token.Identifier});
         this.rules.put("isDigit",new Token[]{Token.FloatNumber, Token.IntNumber});
-        this.rules.put("isOperator",new Token[]{Token.AssignmentOperator,Token.ArithmeticOperator,Token.ComparisonOperator,
-                Token.LogicalOperator,
-                Token.IncrementOperator});
-        this.rules.put("SpecialCharacter", new Token[]{Token.SpecialCharacter});
+        this.rules.put("isOperator",new Token[]{Token.AssignmentOperator,Token.AdditiveOperator,Token.MultiplicativeOperator,Token.ComparisonOperator,
+                Token.LogicalOperator,Token.IncrementOperator});
+        this.rules.put("SpecialCharacter", new Token[]{Token.OpeningParenthesis,Token.ClosingParenthesis,Token.OpeningCurlyBrace,
+                Token.ClosingCurlyBrace,Token.OpeningSquareBracket,Token.ClosingSquareBracket,Token.Dot,Token.Comma,Token.DoubleQuote,Token.Semicolon});
     }
     
     public Symbol getNextSymbol() throws IOException {
@@ -108,10 +110,13 @@ public class Lexer {
                 if(debugMode) LOGGER.log(Level.DEBUG,s.toString()+ " - at line "+ curr_line);
                 return s;
             } else if(isSpecialCharacter(c)){
-                Symbol s=new Symbol(Token.SpecialCharacter, String.valueOf((char) c),curr_line);
-                if(debugMode) LOGGER.log(Level.DEBUG,s.toString()+ " - at line "+ curr_line);
-                return s;
-
+                for(Token tk:rules.get("SpecialCharacter")) {
+                    if (tk.isMatch(String.valueOf((char) c))) {
+                        Symbol s = new Symbol(tk, String.valueOf((char) c), curr_line);
+                        if (debugMode) LOGGER.log(Level.DEBUG, s.toString() + " - at line " + curr_line);
+                        return s;
+                    }
+                }
             }
             Symbol curr_symbol=new Symbol(Token.UnknownToken, String.valueOf((char) c),curr_line);
             throw new IOException(" Unrecognized tokens "+curr_symbol+" at line " +curr_line);
@@ -214,13 +219,14 @@ public class Lexer {
                 }
             }else{ // si ha uno arithmeticOperator /
                 queue.add(c);
-                return new Symbol(Token.ArithmeticOperator,"/",curr_line);
+                return new Symbol(Token.MultiplicativeOperator,"/",curr_line);
             }
         }
 
     }
     private Symbol operatorHandler(int c) throws IOException {
         StringBuilder sb=new StringBuilder();
+        //!=
         sb.append((char) c);
 
         if(c=='=' || c=='&' || c=='|' || c=='+'){
@@ -234,10 +240,10 @@ public class Lexer {
             else{
                 queue.add(c);
             }
-        } else if(c=='<' || c== '>' ){
+        } else if(c=='<' || c== '>' || c=='!'){
             c=input.read();
 
-            if( isOperator (c) && (sb.charAt(0)=='<' || sb.charAt(0)=='>') && ((char)c)=='=') {
+            if( isOperator (c) && ((char)c)=='=') {
                 sb.append((char)c);
             }else{
                 queue.add(c);
@@ -321,7 +327,7 @@ public class Lexer {
         for(Token tk:rules.get("isLetter")){
             if (tk.name().equals("Identifier")) {//Identifier is the last rule so we here if the preovius rules doesnt match
                 return new Symbol(tk, sb.toString(), curr_line);
-            } else {//BasedType,KeyWords,BooleanValue,Identifier
+            } else {//BasedType,KeyWords,BooleanValue,Return
                 if (tk.isMatch(sb.toString())) return new Symbol(tk, sb.toString(), curr_line);
             }
         }

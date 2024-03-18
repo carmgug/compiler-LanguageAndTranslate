@@ -16,34 +16,6 @@ public abstract class ForStatement extends ASTNode {
     }
 
 
-    /*
-    ComparisonExpression exitCondition;
-    VariableAssignment indexUpdate
-     */
-
-
-    /*
-
-    public ForStatement(GlobalVariable iterativeIndex,
-                        ComparisonExpression exitCondition,
-                        VariableAssigment indexUpdate,
-                        Block block){
-        this.iterativeIndex=iterativeIndex;
-        this.exitCondition=exitCondition;
-        this.indexUpdate=indexUpdate;
-        this.block=block;
-    }
-
-    public ForStatement(){
-        this.iterativeIndex=null;
-        this.exitCondition=null;
-        this.indexUpdate=null;
-        this.block=null;
-
-    }
-     */
-
-
 
 
 
