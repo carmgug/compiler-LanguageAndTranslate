@@ -3,6 +3,7 @@
  */
 package compiler;
 
+import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.Program;
@@ -12,7 +13,7 @@ import java.io.*;
 
 
 public class Compiler {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParserException {
 
         boolean debugModeLexer = false;
         boolean debugModeParser = false;

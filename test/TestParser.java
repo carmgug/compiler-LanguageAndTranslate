@@ -1,3 +1,4 @@
+import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Lexer.Symbol;
 import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNodes.Struct;
@@ -29,7 +30,7 @@ public class TestParser {
         try {
             Program program = parser.getAST();
             assertEquals(1, program.getStructs().size());
-        } catch (IOException e) {
+        } catch (IOException | ParserException e) {
             fail("Exception thrown during test: " + e.toString());
         }
     }
@@ -45,7 +46,7 @@ public class TestParser {
         try {
             Program program = parser.getAST();
             assertEquals(1, program.getProcedures().size());
-        } catch (IOException e) {
+        } catch (IOException | ParserException e) {
             fail("Exception thrown during test: " + e.toString());
         }
     }
@@ -60,6 +61,8 @@ public class TestParser {
             assertEquals(1, program.getGlobal_variables().size());
         } catch (IOException e) {
             fail("Exception thrown during test: " + e.toString());
+        } catch (ParserException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -1,4 +1,5 @@
 package compiler.Parser;
+import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Lexer.*;
 
 import compiler.Parser.AST.ASTNode;
@@ -29,16 +30,17 @@ public class Parser {
     private static final Logger LOGGER = LogManager.getLogger(Parser.class.getName());
     private final Lexer lexer;
     private Symbol lookahead;
+    private boolean debugParser=false;
     public Parser(Lexer lexer) {
         this.lexer=lexer;
     }
 
     public Parser(Reader r, boolean debugLexer,boolean debugParser) {
         this.lexer = new Lexer(r,debugLexer);
-
+        this.debugParser=debugParser;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParserException {
         String test="final bool isEmpty = isTrue(isTrue()[4.getARandomNumber().ciao[4]]);\nfinal int a_abc_123_ =  3;\n" +
                 "final int a_abc_123_ = 3;\n" +
                 "final int[] a_abc_123_ = {1,2,3,4,5,6,7,8,9,10};\n" +
@@ -71,22 +73,15 @@ public class Parser {
                 "}\n";
 
         String test2="def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}";
-
-        System.out.println(test2);
         StringReader stringReader= new StringReader(test2);
-        Lexer l= new Lexer(stringReader,true);
-        Parser p= new Parser(l);
+        Parser p= new Parser(stringReader,true,true);
         Program program=p.getAST();
-    }
-
-    private boolean isSymbolOfType(Token token){
-        return lookahead.getType().equals(token);
     }
 
     /*
         @return the Abstract Syntax Tree
      */
-    public Program getAST() throws IOException{
+    public Program getAST() throws IOException, ParserException {
         Program program = new Program();
         //Take the first token. Lookahead is for predective parsing
         lookahead = lexer.getNextSymbol();
@@ -102,7 +97,8 @@ public class Parser {
             LOGGER.log(Level.DEBUG,"Struct parsed: "+curr_stuct);
             program.addStruct(curr_stuct);
         }
-        while(isSymbolOfType(Token.BasedType)||isSymbolOfType(Token.Identifier) ){
+
+        while(isSymbolOfType(Token.BasedType)|| isSymbolOfType(Token.Identifier) ){
             GlobalVariable curr_global_variable= parseGlobalVariable();
             LOGGER.log(Level.DEBUG,"Global Variable parsed: "+curr_global_variable);
             program.addGlobalVariables(curr_global_variable);
@@ -115,29 +111,30 @@ public class Parser {
         }
         return program;
     }
-
-
+    /*
+        @param token: the type of Symbol to check
+        @return true if the current symbol is of the type token
+     */
+    private boolean isSymbolOfType(Token token){
+        return lookahead.getType().equals(token);
+    }
     /*
         @param token: the type of Symbol to consume
         @return the current symbol
      */
-    private Symbol consume(Token token) throws IOException {
+    private Symbol consume(Token token) throws ParserException, IOException{
         Symbol curr_symbol=lookahead;
-
         if (!lookahead.getType().equals(token)){
-            throw new RuntimeException("Unexpected token: "+lookahead.getValue()+" expected: "+token);
+            throw new ParserException("Unexpected token: "+lookahead.getValue()+" expected: "+token);
         }
         lookahead = lexer.getNextSymbol();
         return curr_symbol;
     }
 
-
-
-
     /*
-        Type -> BasedType | IdentifierType
+        Type -> BasedType | IdentifierType | Void
      */
-    private Type parseType() throws IOException {
+    private Type parseType() throws IOException, ParserException {
 
         switch (lookahead.getType()){
             case BasedType:
@@ -148,7 +145,7 @@ public class Parser {
                 Symbol s=consume(Token.Void);
                 return new VoidType(s);
             default:
-                throw new RuntimeException("Expected a type but found: "+lookahead.getValue());
+                throw new ParserException("Expected a type but found: "+lookahead.getValue());
         }
     }
 
@@ -157,27 +154,21 @@ public class Parser {
         IdentifierType -> StructType
         IdentifierType[] -> ArrayStructType
      */
-    private Type parseIdentifierType() throws IOException {
+    private Type parseIdentifierType() throws IOException,ParserException {
         Symbol type=consume(Token.Identifier);
         if(isSymbolOfType(Token.OpeningSquareBracket)){
             consume(Token.OpeningSquareBracket); //Expected [
-            if(!lookahead.getValue().equals("]")) throw new RuntimeException("Expected [ but found: "+lookahead.getValue()); //TODO throw an exception
             consume(Token.ClosingSquareBracket); //Expected ]
             return new ArrayStructType(type);
         }
-
-
         return new StructType(type);
     }
-
-
 
     /*
         BasedType -> BaseType
         BasedType[] -> ArrayType
-
      */
-    private Type parseBasedType() throws IOException {
+    private Type parseBasedType() throws IOException, ParserException {
         Symbol type=consume(Token.BasedType);
         if(isSymbolOfType(Token.OpeningSquareBracket)){
             consume(Token.OpeningSquareBracket); //Expected [
@@ -186,16 +177,14 @@ public class Parser {
         }
         return new BaseType(type);
     }
-
-
-
     /*
         Parse a constant; a constant is a final variable
+        Constant -> final Type Identifier = Expression;
      */
-    private Constant parseConstant() throws IOException {
+    private Constant parseConstant() throws IOException, ParserException {
         consume(Token.Final); //Expected final
         Type type = parseType();
-        if(!(type instanceof BaseType)) throw new RuntimeException("The type of a constant must be a base type");
+        if(!(type instanceof BaseType)) throw new ParserException("The type of a constant must be a base type");
         Symbol identifier = consume(Token.Identifier);
         consume(Token.AssignmentOperator); //Expected identifier
         //Parse the right value of Constant, an Expression
@@ -206,9 +195,10 @@ public class Parser {
 
     /*
         Parse a struct; a struct is a collection of fields
+        Struct -> struct Identifier { VariableDeclarationInStruct }
      */
 
-    private Struct parseStruct() throws IOException {
+    private Struct parseStruct() throws IOException, ParserException {
         Symbol identifier=consume(Token.Identifier);
         consume(Token.OpeningCurlyBrace); //{ expected
         ArrayList<VariableDeclaration> variableDeclarations =parseVariableDeclarationInStruct();
@@ -216,12 +206,12 @@ public class Parser {
         return new Struct(identifier, variableDeclarations);
     }
 
-
     /*
         Parse a list of fields; a field is a variableDeclaration;
-     */
+        VariableDeclarationInStruct -> Type Identifier ; | VariableDeclarationInStruct | ε
+    */
 
-    private ArrayList<VariableDeclaration> parseVariableDeclarationInStruct() throws IOException {
+    private ArrayList<VariableDeclaration> parseVariableDeclarationInStruct() throws IOException, ParserException {
         ArrayList<VariableDeclaration> ret=new ArrayList<>();
         while(!isSymbolOfType(Token.ClosingCurlyBrace)){
             Type type=parseType();
@@ -236,17 +226,15 @@ public class Parser {
         Parse an expression
         Expression -> parseAndOrExpression
      */
-
-    private ExpressionStatement parseExpression() throws IOException{
-        //Expression
+    private ExpressionStatement parseExpression() throws IOException, ParserException{
         return parseAndOrExpression();
     }
+
     /*
         Parse a AndOrExpression:
             AndOrExpression ->  ComparaisonExpression | AndOrExpression AndOrOperator ComparaisonExpression
      */
-
-    private ExpressionStatement parseAndOrExpression() throws IOException{
+    private ExpressionStatement parseAndOrExpression() throws IOException, ParserException {
         ExpressionStatement left = parseComparisonExpression();
         while (lookahead.getValue().equals("&&") || lookahead.getValue().equals("||")) {
             Symbol operator = Symbol.copy(lookahead);
@@ -261,7 +249,7 @@ public class Parser {
             ComparisonExpression ->  AdditiveExpressione | ComparasionExpression ComparisonOperator AdditiveExpression
      */
 
-    private ExpressionStatement parseComparisonExpression() throws IOException{
+    private ExpressionStatement parseComparisonExpression() throws IOException, ParserException {
         ExpressionStatement left = parseAdditiveExpression();
         while (lookahead.getType().equals(Token.ComparisonOperator)) {
             Symbol operator = Symbol.copy(lookahead);
@@ -276,10 +264,8 @@ public class Parser {
         Parse an AdditiveExpression :
             MultiplicativeExpression | AdditiveExpression AdditiveOperator MultiplicativeExpression
         +,-, Negative Value (-)
-
      */
-
-    private ExpressionStatement parseAdditiveExpression() throws IOException{
+    private ExpressionStatement parseAdditiveExpression() throws IOException, ParserException {
         //Expression
 
         ExpressionStatement left = parseMultiplyExpression();
@@ -293,7 +279,6 @@ public class Parser {
         return left;
     }
 
-
     /*
         Parse an MultiplicativeExpression
         could be a ArrayAccess |
@@ -301,8 +286,7 @@ public class Parser {
             ArrayAccess MultiplyOperator ArrayAccess MultiplyOperator ArrayAccess
         +,-, Negative Value (-)
      */
-
-    private ExpressionStatement parseMultiplyExpression() throws IOException {
+    private ExpressionStatement parseMultiplyExpression() throws IOException, ParserException {
         ExpressionStatement left = parseArrayAccessOrStructAccess();
         while (isSymbolOfType(Token.MultiplicativeOperator)) {
             Symbol operator = Symbol.copy(lookahead);
@@ -321,7 +305,7 @@ public class Parser {
         StructAccess -> Factor StructAccess' | StructAccess [ Expression ] . StructAccess StructAccess'
         StructAccess' -> . Factor StructAccess' | ε
     */
-    public ExpressionStatement parseArrayAccessOrStructAccess() throws IOException {
+    public ExpressionStatement parseArrayAccessOrStructAccess() throws IOException, ParserException {
         ExpressionStatement leftPart=parseFactor();
         //maybe can be an ArrayAccess, a StructAccess or Otherwise is a simple Factor
 
@@ -345,11 +329,7 @@ public class Parser {
         Parse an ArrayAccess
         ArrayAccess -> StructAccess [ Expression ]
      */
-
-
-
-
-    private GlobalVariable parseGlobalVariable() throws IOException {
+    private GlobalVariable parseGlobalVariable() throws IOException, ParserException {
         Type type=parseType();
         Symbol identifier=consume(Token.Identifier);
         consume(Token.AssignmentOperator); // = expected
@@ -358,8 +338,11 @@ public class Parser {
         return new GlobalVariable(type,identifier,expr);
     }
 
-    private Procedure parseProcedure() throws  IOException{
-        Type returnType=parseType(); //TODO - Gestire void
+    /*
+        Procedure -> Type Identifier ( VariableDeclarationInProcedure ) { Block }
+     */
+    private Procedure parseProcedure() throws IOException, ParserException {
+        Type returnType=parseType();
         Symbol procedure_name=consume(Token.Identifier);
         consume(Token.OpeningParenthesis); // ( expexted
         ArrayList<VariableDeclaration> parameters_of_the_procedure= parseVariableDeclarationInProcedure();
@@ -370,8 +353,11 @@ public class Parser {
         return new Procedure(returnType,procedure_name,parameters_of_the_procedure,block);
     }
 
-
-    private ArrayList<VariableDeclaration> parseVariableDeclarationInProcedure() throws IOException {
+    /*
+        Parse the parameters passed to a procedure
+        VariableDeclarationInProcedure -> Type Identifier | Type Identifier, VariableDeclarationInProcedure | ε
+     */
+    private ArrayList<VariableDeclaration> parseVariableDeclarationInProcedure() throws IOException, ParserException {
         ArrayList<VariableDeclaration> ret=new ArrayList<>();
         if(!isSymbolOfType(Token.ClosingParenthesis)){
             Type type=parseType();
@@ -392,7 +378,7 @@ public class Parser {
         VariableDeclaration -> Type Identifier ; | VariableInstantiation ;
      */
 
-    private VariableDeclaration parseVariableDeclaration() throws IOException {
+    private VariableDeclaration parseVariableDeclaration() throws IOException, ParserException {
         Type type = parseType();
         Symbol identifier = consume(Token.Identifier);
         if (lookahead.getValue().equals("=")) {
@@ -410,7 +396,7 @@ public class Parser {
         Parse a Variable Instantiation
         VariableInstantiation -> Type Identifier = Expression;
      */
-    private VariableInstantiation parseVariableInstantiation(Type type,Symbol identifier) throws IOException {
+    private VariableInstantiation parseVariableInstantiation(Type type,Symbol identifier) throws IOException, ParserException {
         consume(Token.AssignmentOperator);
         ExpressionStatement exp = parseExpression();
         return new VariableInstantiation(type,identifier, exp);
@@ -421,7 +407,7 @@ public class Parser {
         VariableAssigment -> Identifier = Expression; | Identifier IncrementOperator;
      */
 
-    private VariableAssigment parseVariableAssigment(Symbol identifier) throws IOException {
+    private VariableAssigment parseVariableAssigment(Symbol identifier) throws IOException, ParserException {
         if(isSymbolOfType(Token.IncrementOperator)){
             consume(Token.IncrementOperator);
             return new VariableAssigment(identifier,new BinaryExpression(
@@ -439,7 +425,7 @@ public class Parser {
         ForStatement -> for (Type Identifier = Expression; Expression; VariableAssigment) {Block}
      */
 
-    private ForStatement parseForStatement() throws IOException {
+    private ForStatement parseForStatement() throws IOException, ParserException {
         consume(Token.For); //for
         consume(Token.OpeningParenthesis); //( expected
         ASTNode start;
@@ -474,7 +460,7 @@ public class Parser {
         Parse an While statemant
         WhileStatement -> while (Expression) Block
      */
-    private WhileStatement parseWhileStatement() throws IOException {
+    private WhileStatement parseWhileStatement() throws IOException, ParserException {
         consume(Token.While); //while
         consume(Token.OpeningParenthesis); //( expexted
         ExpressionStatement condition=parseExpression();
@@ -489,25 +475,29 @@ public class Parser {
         Parse an if statement
         IfStatement -> if (Expression) Block | if (Expression) Block else Block
      */
-    private IfStatement parseIfStatement() throws IOException {
-        consume(Token.Keywords); //if
-        consume(Token.SpecialCharacter); //( expected
+    private IfStatement parseIfStatement() throws IOException, ParserException {
+        consume(Token.If); //if
+        consume(Token.OpeningParenthesis); //( expected
         ExpressionStatement if_condition=parseExpression();
-        consume(Token.SpecialCharacter); //) expected
-        consume(Token.SpecialCharacter); // { expected
+        consume(Token.ClosingParenthesis); //) expected
+        consume(Token.OpeningCurlyBrace); // { expected
         Block if_block = parseBlock();
-        consume(Token.SpecialCharacter); // } expected
+        consume(Token.ClosingCurlyBrace); // } expected
         if(lookahead.getValue().equals("else")){
-            consume(Token.Keywords); //else expected
-            consume(Token.SpecialCharacter); // { expected
+            consume(Token.Else); //else expected
+            consume(Token.OpeningCurlyBrace); // { expected
             Block else_block = parseBlock();
-            consume(Token.SpecialCharacter); // } expected
+            consume(Token.ClosingCurlyBrace); // } expected
             return new IfElseStatement(if_condition,if_block,else_block);
         }
         return new IfStatement(if_condition,if_block);
     }
 
-    private ReturnStatement parseReturnStatement() throws IOException {
+    /*
+        Parse a Return statement
+        ReturnStatement -> return Expression; | return;
+     */
+    private ReturnStatement parseReturnStatement() throws IOException, ParserException {
         consume(Token.Return); //return
         if (isSymbolOfType(Token.Semicolon)) { //return;
             consume(Token.Semicolon); //; expected
@@ -519,9 +509,13 @@ public class Parser {
     }
 
 
-
-
-    private Block parseBlock() throws IOException {
+    /*
+        Parse a Block
+        Block -> {Statements; }
+        Statements -> Statement | Statement Statements
+        Statement -> VariableDeclaration; | VariableAssigment; | FunctionCall; | ForStatement | WhileStatement | IfStatement | ReturnStatement
+     */
+    private Block parseBlock() throws IOException, ParserException {
 
         ArrayList<ASTNode> statements_of_theblock=new ArrayList<>();
 
@@ -552,7 +546,7 @@ public class Parser {
                         consume(Token.Semicolon); //; expected
                         statements_of_theblock.add(curr_variableInstantiation);
                     }else{//Variable Declaration
-                        consume(Token.SpecialCharacter); //; expected
+                        consume(Token.Semicolon); //; expected
                         statements_of_theblock.add(new VariableDeclaration(parsedType,identifier));
                     }
                 }
@@ -580,7 +574,7 @@ public class Parser {
         DeclarationOfArray -> {Expressions} i.e {1,2,3,4}
 
      */
-    private ExpressionStatement parseFactor() throws IOException {
+    private ExpressionStatement parseFactor() throws IOException, ParserException {
 
         if(lookahead.isTypeof("IntNumber")){
             return new Value(consume(Token.IntNumber));
@@ -601,40 +595,45 @@ public class Parser {
         }else if(lookahead.isTypeof("BasedType")){
             //Array Initialization
             return parseArrayInitialization();
-        }else if (lookahead.getValue().equals("(")) {
-            consume(Token.SpecialCharacter); //Expected ( as if statement
+        }else if (isSymbolOfType(Token.OpeningParenthesis)) {
+            consume(Token.OpeningParenthesis); //Expected ( as if statement
             ExpressionStatement subExpr=parseExpression();
-            if(!lookahead.getValue().equals(")")) throw new RuntimeException("Non ho trovato la parentesi chiusa");//TODO throw an exception
-            consume(Token.SpecialCharacter); //Expected )
+            consume(Token.ClosingParenthesis); //Expected )
             return subExpr;
         } else if(lookahead.getValue().equals("-")){//Negative Expression
-            consume(Token.ArithmeticOperator); //Expected -
+            consume(Token.AdditiveOperator); //Expected -
             ExpressionStatement expr=parseExpression();
-            if(expr instanceof ArithmeticNegationNode){throw new RuntimeException("Due meno meno di seguito non sono consentiti");}//TODO throw an exception
+            if(expr instanceof ArithmeticNegationNode) throw new ParserException("Invalid expression: Nested negation operators (-) are not allowed.");
             return new ArithmeticNegationNode(expr);
         } else if(lookahead.getValue().equals("!")){
             consume(Token.LogicalOperator); //Expected !
             //We dont have the same situation of - beacause !!! are allowed so is the negate of the nagate of the nagate of the expression
             ExpressionStatement expr=parseExpression();
             return new BooleanNegationNode(expr);
-        } else if(lookahead.getValue().equals("{")){
+        } else if(isSymbolOfType(Token.OpeningCurlyBrace)){
             consume(Token.OpeningCurlyBrace); //Expected {
             ArrayList<ExpressionStatement> arrayElements = parseArrayElements();
             consume(Token.ClosingCurlyBrace); //Expected }
             return new ArrayValueDeclaration(arrayElements);
         } else {
-            throw new RuntimeException("Unexpected Symbol "+lookahead); //TODO throw an exception
+            throw new ParserException("Unexpected Symbol "+lookahead);
         }
     }
 
-    private ArrayList<ExpressionStatement> parseArrayElements() throws IOException {
+    /*
+        Parse an ArrayValueDeclaration
+        ArrayValueDeclaration -> { ArrayElements }
+        ArrayElements -> Expression | Expression, ArrayElements | ε
+     */
+
+    private ArrayList<ExpressionStatement> parseArrayElements() throws IOException, ParserException {
         ArrayList<ExpressionStatement> ret=new ArrayList<>();
         ExpressionStatement expr;
         try{
             expr=parseExpression();
             ret.add(expr);
-        }catch (Exception e){
-            if(lookahead.getValue().equals("}")) return ret; //ok we have no elements
+        }catch (ParserException e){
+            if(isSymbolOfType(Token.ClosingCurlyBrace)) return ret; //ok we have no elements
             throw e; //ok i need to throw the exception
         }
         while(isSymbolOfType(Token.Comma)){
@@ -645,7 +644,12 @@ public class Parser {
         return ret;
     }
 
-    private FunctionCall parseFunctionCall(Symbol function_name) throws IOException {
+    /*
+        Parse a FunctionCall
+        FunctionCall -> Identifier(Parameters)
+     */
+
+    private FunctionCall parseFunctionCall(Symbol function_name) throws IOException, ParserException {
         consume(Token.OpeningParenthesis); //Expected (
         ArrayList<ExpressionStatement> parameters=parseParameters();
         LOGGER.log(Level.DEBUG,"Function Call: "+function_name+" with parameters: "+parameters);
@@ -658,13 +662,13 @@ public class Parser {
         Parse the parameters passed to a function call
         Parameters -> (Expression) | (Expression, Parameters) | ε
      */
-    private ArrayList<ExpressionStatement> parseParameters() throws IOException {
+    private ArrayList<ExpressionStatement> parseParameters() throws IOException, ParserException {
         ArrayList<ExpressionStatement> ret=new ArrayList<>();
         ExpressionStatement expr;
         try{
             expr=parseExpression();
             ret.add(expr);
-        }catch (Exception e){ //Exception i found a function call without parameters maybe
+        }catch (ParserException e){ //Exception i found a function call without parameters maybe
             if(isSymbolOfType(Token.ClosingParenthesis)) return ret; //ok no parameters
             throw e; //ok i need to throw the exception
         }
@@ -680,28 +684,13 @@ public class Parser {
         Parse a ArrayInitialization
         ArrayInitialization -> BaseType[Expression]
      */
-    public ArrayInitialization parseArrayInitialization() throws IOException {
+    public ArrayInitialization parseArrayInitialization() throws ParserException, IOException {
         Type type=new BaseType(consume(Token.BasedType));
-        if(!lookahead.getValue().equals("[")) throw new RuntimeException("Expected [ but found: "+lookahead.getValue()); //TODO throw an exception
-        consume(Token.SpecialCharacter); //Expected [
+        consume(Token.OpeningSquareBracket); //Expected [
         ExpressionStatement size=parseExpression();
-        if(!lookahead.getValue().equals("]")) throw new RuntimeException("Expected [ but found: "+lookahead.getValue()); //TODO throw an exception
-        consume(Token.SpecialCharacter); //Expected ]
+        consume(Token.ClosingSquareBracket); //Expected ]
         return new ArrayInitialization(type,size);
     }
-
-
-
-    /*
-        Parse a StructAccess
-        StructAccess -> Factor | StructAccess . Factor | ArrayAccess . Factor
-     */
-
-    /*
-        Parse an ArrayAccess
-        ArrayAccess -> StructAccess [ Expression ]
-     */
-
 
 
 
