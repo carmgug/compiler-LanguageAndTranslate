@@ -10,4 +10,9 @@ public class VoidType extends Type {
         super(s);
         if(!s.getType().equals(Token.Void)) throw new IllegalArgumentException("The type of Void must be void");
     }
+
+    public String toString(){
+        return type.getValue();
+    }
+
 }

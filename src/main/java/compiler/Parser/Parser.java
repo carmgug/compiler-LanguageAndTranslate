@@ -73,7 +73,7 @@ public class Parser {
                 "}\n";
 
         String test2="def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}";
-        StringReader stringReader= new StringReader(test2);
+        StringReader stringReader= new StringReader(test);
         Parser p= new Parser(stringReader,true,true);
         Program program=p.getAST();
     }
@@ -88,25 +88,25 @@ public class Parser {
         //First we have to parse the constants
         while(isSymbolOfType(Token.Final)){
             Constant curr_constant=parseConstant();
-            LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
+            if(debugParser) LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
             program.addConstant(curr_constant);
         }
         while(isSymbolOfType(Token.Struct)){
             consume(Token.Struct); //struct consumed
             Struct curr_stuct=parseStruct();
-            LOGGER.log(Level.DEBUG,"Struct parsed: "+curr_stuct);
+            if(debugParser) LOGGER.log(Level.DEBUG,"Struct parsed: "+curr_stuct);
             program.addStruct(curr_stuct);
         }
 
         while(isSymbolOfType(Token.BasedType)|| isSymbolOfType(Token.Identifier) ){
             GlobalVariable curr_global_variable= parseGlobalVariable();
-            LOGGER.log(Level.DEBUG,"Global Variable parsed: "+curr_global_variable);
+            if(debugParser) LOGGER.log(Level.DEBUG,"Global Variable parsed: "+curr_global_variable);
             program.addGlobalVariables(curr_global_variable);
         }
         while(isSymbolOfType(Token.Def)){
             consume(Token.Def); //def consumed
             Procedure curr_procedure=parseProcedure();
-            LOGGER.log(Level.DEBUG,"Procedure parsed : "+curr_procedure);
+            if(debugParser) LOGGER.log(Level.DEBUG,"Procedure parsed : "+curr_procedure);
             program.addProcedure(curr_procedure);
         }
         return program;
