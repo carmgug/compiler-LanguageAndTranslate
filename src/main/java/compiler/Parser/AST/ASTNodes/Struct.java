@@ -25,14 +25,10 @@ public class Struct extends ASTNode {
     }
 
     public String toString(){
-        String ret="\n Struct "+identifier.getValue()+"{\n";
-        for(int i = 0; i< variableDeclarations.size(); i++){
-            VariableDeclaration variableDeclaration = variableDeclarations.get(i);
-            ret+="\tVariableDeclaration{"+ variableDeclaration.toString()+" }\n";
-        }
-        ret+=" }";
-
-        return ret;
+        return "Struct: {"+
+                "Identifier: " + identifier.getValue() + ","+
+                "declaredVariables: "+variableDeclarations +
+                "}";
     }
 
 

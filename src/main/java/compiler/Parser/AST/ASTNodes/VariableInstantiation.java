@@ -14,6 +14,10 @@ public class VariableInstantiation  extends VariableDeclaration {
     }
 
     public String toString(){
-        return super.toString()+" = : "+right_side.toString();
+        return "VariableInstantiation: {"+
+                "Type: " + type + ","+
+                "Identifier: " + identifier.getValue() + ","+
+                "Right side: " + right_side +
+                "}";
     }
 }

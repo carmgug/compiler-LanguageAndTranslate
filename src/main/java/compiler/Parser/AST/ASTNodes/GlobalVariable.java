@@ -19,7 +19,12 @@ public class GlobalVariable extends ASTNode {
     }
 
     public String toString() {
-        return "{Type: " + type + ", Identifier: " + identifier + ", Value: " +"\n"+value + "}";
+        return "GlobalVariable: {"+
+                "Type: " + type + ","+
+                "Identifier: " + identifier.getValue() + ","+
+                "Value: "+value +
+                "}";
     }
+
 
 }

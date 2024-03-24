@@ -8,11 +8,16 @@ public class StructAccess extends ExpressionStatement {
     private ExpressionStatement rightPart;
 
     public StructAccess(ExpressionStatement leftPart, ExpressionStatement rightPart) {
+
         this.leftPart = leftPart;
         this.rightPart = rightPart;
     }
     public String toString() {
-        return "StructAccess{leftPart=" + leftPart + ", rightPart=" + rightPart + "}";
+        return
+                "StructAccess{" +
+                        "leftPart: " + leftPart + ","+
+                        "rightPart: " + rightPart +
+                "}";
     }
 }
 

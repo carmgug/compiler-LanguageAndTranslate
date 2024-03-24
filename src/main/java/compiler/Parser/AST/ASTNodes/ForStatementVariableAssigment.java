@@ -13,8 +13,8 @@ public class ForStatementVariableAssigment extends ForStatement {
 
     public String toString() {
         return "ForStatement{" +
-                "index=" + index +
-                ", endCondition=" + endCondition +
+                "index : " + (index==null ? "None" : index) +
+                ", endCondition=" + (endCondition==null ? "True" : endCondition) +
                 ", update=" + update +
                 ", block={" + block +
                 "}}";

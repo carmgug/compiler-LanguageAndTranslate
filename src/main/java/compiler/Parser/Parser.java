@@ -59,23 +59,15 @@ public class Parser {
                 "\tPoint location;\n" +
                 "\tint[] history;}\n" +
                 "\tperson age=Person(\"carmelo\",\"gugliotta\",24).age;\n" +
-                "int x=3;\n" +
-                "def void prova(int a, int b){\n" +
-                "boolean flag=false;\n" +
-                "while(flag==false && true){\n" +
-                "int ciao=4;\n" +
-                "i=i+1;\n" +
-                "i++;\n" +
-                "ciao(prova(cazzo));\n" +
-                "int[] vett;\n" +
-                "for(int i=0,i<3,i++){return;\n}" +
-                "}}\n"+
-                "Person i=Person(\"carmelo\",\"gugliotta\",24);\n" ;
+                "int x=3;\n"+
+                "def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}"+
+                "def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}";
 
         String test2="def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}";
         StringReader stringReader= new StringReader(test);
         Parser p= new Parser(stringReader,true,true);
         Program program=p.getAST();
+        System.out.println(program);
     }
 
     /*
@@ -89,13 +81,13 @@ public class Parser {
         while(isSymbolOfType(Token.Final)){
             Constant curr_constant=parseConstant();
             if(debugParser) LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
-            program.addConstant(curr_constant);
+            program.add(curr_constant);
         }
         while(isSymbolOfType(Token.Struct)){
             consume(Token.Struct); //struct consumed
             Struct curr_stuct=parseStruct();
             if(debugParser) LOGGER.log(Level.DEBUG,"Struct parsed: "+curr_stuct);
-            program.addStruct(curr_stuct);
+            program.add(curr_stuct);
         }
 
         while(isSymbolOfType(Token.BasedType) || isSymbolOfType(Token.Identifier) || isSymbolOfType(Token.Def)){
@@ -103,12 +95,12 @@ public class Parser {
             if(isSymbolOfType(Token.BasedType) || isSymbolOfType(Token.Identifier)){ //Parse Global Variable
                 GlobalVariable curr_global_variable= parseGlobalVariable();
                 if(debugParser) LOGGER.log(Level.DEBUG,"Global Variable parsed: "+curr_global_variable);
-                program.addGlobalVariables(curr_global_variable);
+                program.add(curr_global_variable);
             } else if(isSymbolOfType(Token.Def)){ //Parse Procedure
                 consume(Token.Def); //def consumed
                 Procedure curr_procedure=parseProcedure();
                 if(debugParser) LOGGER.log(Level.DEBUG,"Procedure parsed : "+curr_procedure);
-                program.addProcedure(curr_procedure);
+                program.add(curr_procedure);
             }
         }
         if(!isSymbolOfType(Token.EOF)) throw new ParserException("Unexpected token: "+lookahead.getType()+" expected: "+Token.EOF);
@@ -601,7 +593,7 @@ public class Parser {
             if(isSymbolOfType(Token.OpeningParenthesis)){
                 return parseFunctionCall(curr_identifier); //pass the function name we have already consumed
             }//Ok it's only an identifier so a variable
-            else return new Value(curr_identifier);
+            else return new VariableReference(curr_identifier);
         }else if(lookahead.isTypeof("BasedType")){
             //Array Initialization
             return parseArrayInitialization();

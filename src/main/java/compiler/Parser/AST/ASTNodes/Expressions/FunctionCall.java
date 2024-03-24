@@ -21,7 +21,7 @@ public class FunctionCall extends ExpressionStatement {
             this.arguments.add(e);
         }
     }
-
+    /*
     public String toString(){
         StringBuilder sb = new StringBuilder();
         sb.append(functionName.getValue());
@@ -33,5 +33,13 @@ public class FunctionCall extends ExpressionStatement {
         if(arguments.size()>0) sb.deleteCharAt(sb.length()-1);
         sb.append(")");
         return "FunctionCall {"+sb+"}";
+    }
+     */
+
+    public String toString(){
+        return "FunctionCall : {" +
+                    "functionName :" + functionName.getValue() + ","+
+                    "arguments : " + (arguments.size()==0 ? "None" : arguments) +
+                "}";
     }
 }

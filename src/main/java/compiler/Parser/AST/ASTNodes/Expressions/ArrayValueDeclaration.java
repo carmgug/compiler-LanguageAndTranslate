@@ -7,14 +7,12 @@ import java.util.Arrays;
 
 public class ArrayValueDeclaration extends ExpressionStatement {
 
-    // Add your class properties and methods here
     ArrayList<ExpressionStatement> values;
 
     public ArrayValueDeclaration(ArrayList<ExpressionStatement> values) {
         this.values = values;
     }
 
-    // Override toString() method if necessary
     public String toString() {
         return "{" + values.toString() + "}";
     }

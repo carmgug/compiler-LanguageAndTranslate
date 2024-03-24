@@ -6,7 +6,7 @@ import compiler.Parser.AST.ASTNodes.Expressions.Type;
 
 import java.util.ArrayList;
 
-public class Procedure {
+public class Procedure extends ASTNode {
     Type returnType;
     Symbol name;
     ArrayList<VariableDeclaration> parameters_of_the_procedure;
@@ -29,7 +29,12 @@ public class Procedure {
     }
 
     public String toString(){
-        return "{Procedure: "+this.name.getValue()+"\nReturn Type: "+this.returnType.toString()+"\nParameters: "+this.parameters_of_the_procedure.toString()+"\nBody: "+this.body.toString();
+        return "Procedure: {"+
+                "Return Type: " + returnType + ","+
+                "Name: " + name.getValue() + ","+
+                "Parameters: "+(parameters_of_the_procedure.size()==0 ? "None" : parameters_of_the_procedure) + ","+
+                "Body: "+body +
+                "}";
     }
 
 

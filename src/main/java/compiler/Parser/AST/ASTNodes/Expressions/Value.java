@@ -11,7 +11,10 @@ public class Value extends ExpressionStatement {
     }
 
     public String toString() {
-        return value.toString();
+        return "Value: {"+
+                "Type: " + value.getType() + ","+
+                "Value: " + value.getValue() +
+                "}";
     }
 
     public Symbol getSymbol() {

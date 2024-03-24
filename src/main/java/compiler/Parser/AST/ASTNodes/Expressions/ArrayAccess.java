@@ -4,16 +4,19 @@ import compiler.Parser.AST.ASTNodes.ExpressionStatement;
 
 public class ArrayAccess extends ExpressionStatement{
 
-    private ExpressionStatement name_array;
+    private ExpressionStatement array;
     private ExpressionStatement index;
 
-    public ArrayAccess(ExpressionStatement name_array, ExpressionStatement index){
-        this.name_array=name_array;
+    public ArrayAccess(ExpressionStatement array, ExpressionStatement index){
+        this.array=array;
         this.index=index;
     }
 
     public String toString() {
-        return "ArrayAccess{"+ name_array +" ["+ index +"]}";
+        return "ArrayAccess{"+
+                    "Array: "+array +"," +
+                    "Index: "+index +
+                "}";
     }
 
 }

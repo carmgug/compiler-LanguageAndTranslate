@@ -10,8 +10,9 @@ public class ArithmeticNegationNode extends NegationNode {
     }
 
     public String toString() {
-        return "ArithmeticNegationNode{" +
-                "- " + expression +
+        return "ArithmeticNegationNode {" +
+                "Negation: -," +
+                "expression :" + expression +
                 '}';
     }
 

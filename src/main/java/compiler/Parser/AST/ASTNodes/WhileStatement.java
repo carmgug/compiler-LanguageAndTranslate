@@ -18,9 +18,9 @@ public class WhileStatement extends ASTNode {
 
     @Override
     public String toString() {
-        return "WhileStatement{" +
+        return "WhileStatement : {" +
                 "exitCondition=" + exitCondition +
-                ", block={" + block +
+                ", block:{" + block +
                 "}}";
     }
 }

@@ -2,9 +2,11 @@ package compiler.Parser.AST.ASTNodes;
 
 
 import compiler.Lexer.Symbol;
+import compiler.Parser.AST.ASTNode;
+import compiler.Parser.AST.ASTNodes.Expressions.BinaryExpression;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 
-public class Constant {
+public class Constant extends ASTNode {
 
     private Type type;
     private Symbol identifier;
@@ -16,7 +18,17 @@ public class Constant {
         this.right_side = right_side;
     }
 
-    public String toString() {
-        return "{Type: " + type + ", Identifier: " + identifier + ", Right Side: " +"\n"+right_side + "}";
+
+
+
+
+    public String toString(){
+        return "Constant: {"+
+                "Type: " + type + ","+
+                "Identifier :" + identifier.getValue() + ","+
+                "Value: "+right_side +
+                "}";
     }
+
+
 }

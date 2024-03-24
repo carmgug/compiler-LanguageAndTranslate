@@ -12,10 +12,10 @@ public class IfElseStatement extends IfStatement {
     }
 
     public String toString(){
-        return "IfElseStatement{" +
-                "ifCondition=" + ifCondition +
-                ", ifBlock=" + ifBlock +
-                ", elseBlock=" + else_block +
+        return "IfElseStatement : {" +
+                "ifCondition:" + ifCondition +
+                ", ifBlock : {" + ifBlock + "}"+
+                ", elseBlock : {" + else_block + "}"+
                 '}';
     }
 

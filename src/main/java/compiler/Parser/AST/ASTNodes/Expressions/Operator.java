@@ -11,6 +11,9 @@ public class Operator {
     }
 
     public String toString() {
-        return operator.toString();
+        return "Operator: {"+
+                "Type: " + operator.getType() + ","+
+                "Value: " + operator.getValue() +
+                "}";
     }
 }

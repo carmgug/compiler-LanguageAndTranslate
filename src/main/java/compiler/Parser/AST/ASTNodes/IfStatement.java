@@ -20,10 +20,10 @@ public class IfStatement extends ASTNode {
     }
 
     public String toString(){
-        return "IfStatement{" +
-                "ifCondition=" + ifCondition +
-                ", ifBlock=" + ifBlock +
-                '}';
+        return "IfStatement : {" +
+                "ifCondition : " + ifCondition + "," +
+                "ifBlock : {" + ifBlock + "}}";
+
     }
 
     public IfStatement(Expression ifCondition, Block ifBlock){

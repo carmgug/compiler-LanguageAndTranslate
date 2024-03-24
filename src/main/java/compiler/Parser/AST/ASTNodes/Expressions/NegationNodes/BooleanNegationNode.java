@@ -10,8 +10,9 @@ public class BooleanNegationNode extends NegationNode {
     }
 
     public String toString() {
-        return "BooleanNegationNode{" +
-                "not " + expression +
+        return "BooleanNegationNode {" +
+                "Negation: !," +
+                "expression :" + expression +
                 '}';
     }
 

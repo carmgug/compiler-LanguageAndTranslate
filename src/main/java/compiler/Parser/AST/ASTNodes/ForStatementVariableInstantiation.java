@@ -10,10 +10,10 @@ public class ForStatementVariableInstantiation extends ForStatement{
 
     public String toString() {
         return "ForStatement{" +
-                "index=" + index +
-                ", endCondition=" + endCondition +
-                ", update=" + update +
-                ", block={" + block +
+                "index : " + index +
+                ",endCondition : " + endCondition +
+                ",update : " + update +
+                ",block : {" + block +
                 "}}";
     }
 }

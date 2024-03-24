@@ -27,6 +27,10 @@ public class VariableDeclaration extends ASTNode {
         return this.identifier;
     }
 
-    public String toString(){return "Type: "+this.type.toString()+" Identifier: "+this.identifier.getValue();
+    public String toString(){
+        return "VariableDeclaration: {"+
+                "Type: " + type + ","+
+                "Identifier: " + identifier.getValue() +
+                "}";
     }
 }

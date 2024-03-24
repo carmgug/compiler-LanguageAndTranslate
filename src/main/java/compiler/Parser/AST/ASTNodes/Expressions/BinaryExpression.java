@@ -12,13 +12,13 @@ public class BinaryExpression extends ExpressionStatement {
 
     public BinaryExpression(ExpressionStatement left, Symbol operator, ExpressionStatement right) {
         this.left=left;
-        this.operator = new Operator(operator); //TODO
+        this.operator = new Operator(operator);
         this.right = right;
     }
 
-    public String toString() {
-        return toString(0);
-    }
+    //public String toString() {
+        //return toString(0);
+    //}
 
     private String toString(int indent) {
         String indentation = generateIndentation(indent);
@@ -28,11 +28,13 @@ public class BinaryExpression extends ExpressionStatement {
                 indentation + "\tright=" + (right instanceof BinaryExpression ? ((BinaryExpression) right).toString(indent + 1) : right) + "\n" +
                 indentation + "}";
     }
-    private String generateIndentation(int indent) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < indent; i++) {
-            sb.append("\t");
-        }
-        return sb.toString();
+
+    public String toString() {
+        return "BinaryExpression : { " +
+                "operator : " + operator+
+                ", right : " + right +
+                ", left : " + left +
+                '}';
     }
+
 }

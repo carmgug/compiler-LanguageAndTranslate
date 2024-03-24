@@ -12,6 +12,9 @@ public class ArrayInitialization extends ExpressionStatement {
     }
 
     public String toString() {
-        return "ArrayInitialization{Type: " + type.toString() + " Size: " + size.toString()+"}";
+        return "ArrayInitialization {" +
+                    "type: " + type.toString() +","+
+                    "size: " + size.toString()+
+                "}";
     }
 }

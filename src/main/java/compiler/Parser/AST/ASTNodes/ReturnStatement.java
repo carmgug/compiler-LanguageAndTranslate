@@ -15,8 +15,8 @@ public class ReturnStatement extends ASTNode {
 
     public String toString(){
         if(expression==null){
-            return "Return";
+            return "Return : void";
         }
-        return "Return: "+expression;
+        return "Return : { return_value_of: "+expression+"}";
     }
 }

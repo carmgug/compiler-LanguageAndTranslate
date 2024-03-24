@@ -14,6 +14,6 @@ public class ArrayType extends BaseType {
 
     @Override
     public String toString() {
-        return super.toString()+"[]";
+        return "Array of "+super.toString();
     }
 }

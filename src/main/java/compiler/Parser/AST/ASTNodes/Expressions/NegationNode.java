@@ -9,6 +9,12 @@ public abstract class NegationNode extends ExpressionStatement {
         this.expression = expression;
     }
 
+    public String toString() {
+        return "NegationNode{" +
+                    "expression :" + expression +
+                '}';
+    }
+
 
 
 
