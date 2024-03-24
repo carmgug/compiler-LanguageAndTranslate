@@ -1,7 +1,6 @@
 package compiler.Parser.AST.ASTNodes;
 
-import compiler.Lexer.SpeciefiedSymbol.BaseType;
-import compiler.Lexer.SpeciefiedSymbol.Identifier;
+
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 

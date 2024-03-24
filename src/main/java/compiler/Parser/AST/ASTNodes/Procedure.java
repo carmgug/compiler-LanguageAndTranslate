@@ -12,6 +12,7 @@ public class Procedure {
     ArrayList<VariableDeclaration> parameters_of_the_procedure;
     Block body;
 
+
     public Procedure(){
         this.returnType=null;
         this.name=null;
@@ -20,6 +21,7 @@ public class Procedure {
     }
 
     public Procedure(Type returnType, Symbol name,ArrayList<VariableDeclaration> parameters_of_the_procedure ,Block body){
+        if(!name.getType().equals(Token.Identifier)) throw new IllegalArgumentException("Procedure name must be an identifier");
         this.returnType=returnType;
         this.name=name;
         this.parameters_of_the_procedure=parameters_of_the_procedure;

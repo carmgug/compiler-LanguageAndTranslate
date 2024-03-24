@@ -1,8 +1,8 @@
 package compiler.Parser.AST.ASTNodes.Expressions.NegationNodes;
 
+import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNode;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class ArithmeticNegationNode extends NegationNode {
     public ArithmeticNegationNode(ExpressionStatement expression) {
@@ -15,8 +15,8 @@ public class ArithmeticNegationNode extends NegationNode {
                 '}';
     }
 
-    public Double getValue(){
-        throw new NotImplementedException();
+    public Double getValue() throws ParserException {
+        throw new ParserException("Not Implemente yet");
         //return -1 * expression.getValue();
     }
 }

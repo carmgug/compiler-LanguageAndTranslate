@@ -69,8 +69,8 @@ public class Parser {
                 "ciao(prova(cazzo));\n" +
                 "int[] vett;\n" +
                 "for(int i=0,i<3,i++){return;\n}" +
-                "}\n" +
-                "}\n";
+                "}}\n"+
+                "Person i=Person(\"carmelo\",\"gugliotta\",24);\n" ;
 
         String test2="def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}";
         StringReader stringReader= new StringReader(test);
@@ -98,17 +98,20 @@ public class Parser {
             program.addStruct(curr_stuct);
         }
 
-        while(isSymbolOfType(Token.BasedType)|| isSymbolOfType(Token.Identifier) ){
-            GlobalVariable curr_global_variable= parseGlobalVariable();
-            if(debugParser) LOGGER.log(Level.DEBUG,"Global Variable parsed: "+curr_global_variable);
-            program.addGlobalVariables(curr_global_variable);
+        while(isSymbolOfType(Token.BasedType) || isSymbolOfType(Token.Identifier) || isSymbolOfType(Token.Def)){
+
+            if(isSymbolOfType(Token.BasedType) || isSymbolOfType(Token.Identifier)){ //Parse Global Variable
+                GlobalVariable curr_global_variable= parseGlobalVariable();
+                if(debugParser) LOGGER.log(Level.DEBUG,"Global Variable parsed: "+curr_global_variable);
+                program.addGlobalVariables(curr_global_variable);
+            } else if(isSymbolOfType(Token.Def)){ //Parse Procedure
+                consume(Token.Def); //def consumed
+                Procedure curr_procedure=parseProcedure();
+                if(debugParser) LOGGER.log(Level.DEBUG,"Procedure parsed : "+curr_procedure);
+                program.addProcedure(curr_procedure);
+            }
         }
-        while(isSymbolOfType(Token.Def)){
-            consume(Token.Def); //def consumed
-            Procedure curr_procedure=parseProcedure();
-            if(debugParser) LOGGER.log(Level.DEBUG,"Procedure parsed : "+curr_procedure);
-            program.addProcedure(curr_procedure);
-        }
+        if(!isSymbolOfType(Token.EOF)) throw new ParserException("Unexpected token: "+lookahead.getType()+" expected: "+Token.EOF);
         return program;
     }
     /*
@@ -130,6 +133,7 @@ public class Parser {
         lookahead = lexer.getNextSymbol();
         return curr_symbol;
     }
+
 
     /*
         Type -> BasedType | IdentifierType | Void
@@ -422,7 +426,13 @@ public class Parser {
 
     /*
         Parse a For statement
-        ForStatement -> for (Type Identifier = Expression; Expression; VariableAssigment) {Block}
+        ForStatement -> for (Type Identifier = Expression | epsilon, Expression | epsilon, VariableAssigment | epsilon) {Block}
+        for(,,)
+
+        for(int i=0,,i++)
+
+        int i =0
+        for(,i<n,i++)
      */
 
     private ForStatement parseForStatement() throws IOException, ParserException {
@@ -519,7 +529,7 @@ public class Parser {
 
         ArrayList<ASTNode> statements_of_theblock=new ArrayList<>();
 
-        while(!isSymbolOfType(Token.ClosingCurlyBrace)) { //waiting for the }
+        while(!isSymbolOfType(Token.ClosingCurlyBrace) && !isSymbolOfType(Token.EOF)) { //waiting for the }
             if (isSymbolOfType(Token.BasedType)) {
                 //We can have Variable Instantiation or Variable Declaration
                 //Variable Instantiation e Variable Declarion BaseType

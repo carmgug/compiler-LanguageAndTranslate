@@ -1,8 +1,8 @@
 package compiler.Parser.AST.ASTNodes.Expressions.NegationNodes;
 
+import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNode;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class BooleanNegationNode extends NegationNode {
     public BooleanNegationNode(ExpressionStatement expression) {
@@ -16,8 +16,8 @@ public class BooleanNegationNode extends NegationNode {
     }
 
 
-    public boolean getValue(){
-        throw new NotImplementedException();
+    public boolean getValue() throws ParserException {
+        throw new ParserException("Not Implemented");
         //return -1 * expression.getValue();
     }
 
