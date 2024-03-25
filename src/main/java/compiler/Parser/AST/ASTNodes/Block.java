@@ -5,7 +5,7 @@ import compiler.Parser.AST.ASTNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Block extends ASTNode{
+public class Block extends ASTNode {
 
     private ArrayList<ASTNode> statements;
 

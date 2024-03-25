@@ -3,34 +3,31 @@ package compiler.Parser.AST.ASTNodes;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.Parser.AST.ASTNodes.Expressions.VariableReference;
 
 public class VariableDeclaration extends ASTNode {
 
     protected Type type;
-    protected Symbol identifier;
+    protected VariableReference variable;
 
-    public VariableDeclaration(Type type, Symbol identifier){
+    public VariableDeclaration(Type type, VariableReference identifier){
         this.type=type;
-        this.identifier=identifier;
+        this.variable=identifier;
     }
 
-    public VariableDeclaration(){
-        this.type=null;
-        this.identifier=null;
-    }
 
     public Type getType(){
         return this.type;
     }
 
-    public Symbol getIdentifier(){
-        return this.identifier;
+    public VariableReference getIdentifier(){
+        return this.variable;
     }
 
     public String toString(){
         return "VariableDeclaration: {"+
                 "Type: " + type + ","+
-                "Identifier: " + identifier.getValue() +
+                "Identifier: " + variable.getIdentifier() +
                 "}";
     }
 }

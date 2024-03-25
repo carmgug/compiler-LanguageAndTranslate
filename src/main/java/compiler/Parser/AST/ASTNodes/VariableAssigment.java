@@ -6,16 +6,19 @@ import compiler.Parser.AST.ASTNodes.Expressions.Type;
 
 public class VariableAssigment extends ASTNode {
 
-    protected Symbol identifier;
+    protected ExpressionStatement variable;
     protected ExpressionStatement right_side;
 
-    public VariableAssigment(Symbol identifier, ExpressionStatement right_side) {
-        this.identifier = identifier;
+    public VariableAssigment(ExpressionStatement variable, ExpressionStatement right_side) {
+        this.variable = variable;
         this.right_side = right_side;
     }
 
     public String toString() {
-        return "Identifier: " + this.identifier + " =  " + right_side;
+        return "VariableAssigment: {" +
+                "Identifier: " + variable + "," +
+                "Right side: " + right_side +
+                "}";
     }
 
 }

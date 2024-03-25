@@ -8,7 +8,6 @@ public class VariableReference extends ExpressionStatement {
     private String identifier;
 
     public VariableReference(Symbol identifier) {
-
         this.identifier = identifier.getValue();
     }
 

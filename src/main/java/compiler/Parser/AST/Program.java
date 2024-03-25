@@ -1,10 +1,10 @@
 package compiler.Parser.AST;
 
+import Utility.Utility;
 import compiler.Parser.AST.ASTNodes.Constant;
 import compiler.Parser.AST.ASTNodes.GlobalVariable;
 import compiler.Parser.AST.ASTNodes.Procedure;
 import compiler.Parser.AST.ASTNodes.Struct;
-import compiler.Parser.JsonFormatter.JsonFormatter;
 import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
@@ -55,52 +55,11 @@ public class Program implements AbstractSyntaxTree, Iterable<ASTNode>{
             else sb.append("\n");
         }
         sb.append("}");
-        System.out.println(sb.toString());
-
-        return indentedString(sb.toString());
+        return Utility.indentedString(sb.toString());
     }
 
 
-    public String indentedString(String jsonString){
-        // Indentazione desiderata
-        String indent = "      "; // 4 spazi per l'indentazione
 
-        // Indentazione iniziale
-        StringBuilder indentedString = new StringBuilder();
-        int indentationLevel = 0;
-
-        // Analizza la stringa carattere per carattere
-        for (char c : jsonString.toCharArray()) {
-            if (c == '{') {
-                indentedString.append(c).append("\n"); // Aggiunge la graffa aperta e va a capo
-                indentationLevel++; // Incrementa il livello di indentazione
-                for(int i=0; i<indentationLevel; i++) indentedString.append(indent); // Aggiunge l'indentazione
-            } else if (c == '}') {
-                indentedString.append("\n"); // Va a capo prima della graffa chiusa
-                indentationLevel--; // Decrementa il livello di indentazione
-                for(int i=0; i<indentationLevel; i++) indentedString.append(indent); // Aggiunge l'indentazione
-                indentedString.append(c); // Aggiunge la graffa chiusa
-            }else if(c == '['){
-                indentedString.append(c).append("\n"); // Aggiunge la graffa aperta e va a capo
-                indentationLevel++; // Incrementa il livello di indentazione
-                for(int i=0; i<indentationLevel; i++) indentedString.append(indent); // Aggiunge l'indentazione
-            }else if(c==']'){
-                indentedString.append("\n"); // Va a capo prima della graffa chiusa
-                indentationLevel--; // Decrementa il livello di indentazione
-                for(int i=0; i<indentationLevel; i++) indentedString.append(indent); // Aggiunge l'indentazione
-                indentedString.append(c); // Aggiunge la graffa chiusa
-            }
-            else if (c == ',') {
-                indentedString.append(c).append("\n"); // Aggiunge la virgola e va a capo
-                for(int i=0; i<indentationLevel; i++) indentedString.append(indent); // Aggiunge l'indentazione
-            } else {
-                indentedString.append(c); // Aggiunge il carattere corrente
-            }
-        }
-
-        // Stampa la stringa indentata
-        return indentedString.toString();
-    }
 
 
     @Override

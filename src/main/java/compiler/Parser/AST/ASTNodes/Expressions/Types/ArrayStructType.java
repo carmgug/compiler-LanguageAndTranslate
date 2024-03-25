@@ -9,6 +9,6 @@ public class ArrayStructType extends StructType{
     }
 
     public String toString() {
-        return super.toString()+"[]";
+        return "Array of "+super.toString();
     }
 }

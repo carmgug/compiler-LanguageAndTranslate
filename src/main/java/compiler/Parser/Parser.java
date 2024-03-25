@@ -1,4 +1,5 @@
 package compiler.Parser;
+import Utility.Utility;
 import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Lexer.*;
 
@@ -60,14 +61,15 @@ public class Parser {
                 "\tint[] history;}\n" +
                 "\tperson age=Person(\"carmelo\",\"gugliotta\",24).age;\n" +
                 "int x=3;\n"+
-                "def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}"+
-                "def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}";
+                "def void ciao(){for(i[3].c[4]=4,i<3,i[3].c[3]++){return a*b;} return a*b;}\n"+
+                "int x=3;\n"+
+                "def int[] getArrayFromString(String s){int[] ris=int[len(s)];for(i=0,i<len(s),i++){ris[i]=s[i];}return ris;x[3].ciao=3;}\n" +
+                "int[] x=getArrayFromString(\"ciao\");\n";
 
         String test2="def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}";
         StringReader stringReader= new StringReader(test);
         Parser p= new Parser(stringReader,true,true);
         Program program=p.getAST();
-        System.out.println(program);
     }
 
     /*
@@ -80,13 +82,15 @@ public class Parser {
         //First we have to parse the constants
         while(isSymbolOfType(Token.Final)){
             Constant curr_constant=parseConstant();
-            if(debugParser) LOGGER.log(Level.DEBUG,"Constant parsed: "+curr_constant);
+            if(debugParser) LOGGER.log(Level.DEBUG,"Constant parsed:\n"
+                    +Utility.indentedString(curr_constant.toString()));
             program.add(curr_constant);
         }
         while(isSymbolOfType(Token.Struct)){
             consume(Token.Struct); //struct consumed
             Struct curr_stuct=parseStruct();
-            if(debugParser) LOGGER.log(Level.DEBUG,"Struct parsed: "+curr_stuct);
+            if(debugParser) LOGGER.log(Level.DEBUG,"Struct parsed:\n"
+                    +Utility.indentedString(curr_stuct.toString()));
             program.add(curr_stuct);
         }
 
@@ -94,16 +98,19 @@ public class Parser {
 
             if(isSymbolOfType(Token.BasedType) || isSymbolOfType(Token.Identifier)){ //Parse Global Variable
                 GlobalVariable curr_global_variable= parseGlobalVariable();
-                if(debugParser) LOGGER.log(Level.DEBUG,"Global Variable parsed: "+curr_global_variable);
+                if(debugParser) LOGGER.log(Level.DEBUG,"Global Variable parsed:\n"+
+                        Utility.indentedString(curr_global_variable.toString()));
                 program.add(curr_global_variable);
             } else if(isSymbolOfType(Token.Def)){ //Parse Procedure
                 consume(Token.Def); //def consumed
                 Procedure curr_procedure=parseProcedure();
-                if(debugParser) LOGGER.log(Level.DEBUG,"Procedure parsed : "+curr_procedure);
+                if(debugParser) LOGGER.log(Level.DEBUG,"Procedure parsed :\n"+
+                        Utility.indentedString(curr_procedure.toString()));
                 program.add(curr_procedure);
             }
         }
         if(!isSymbolOfType(Token.EOF)) throw new ParserException("Unexpected token: "+lookahead.getType()+" expected: "+Token.EOF);
+        if(debugParser) LOGGER.log(Level.DEBUG,"Program Parsed:\n"+program);
         return program;
     }
     /*
@@ -124,9 +131,8 @@ public class Parser {
         }
         lookahead = lexer.getNextSymbol();
         return curr_symbol;
+
     }
-
-
     /*
         Type -> BasedType | IdentifierType | Void
      */
@@ -213,7 +219,7 @@ public class Parser {
             Type type=parseType();
             Symbol identifier=consume(Token.Identifier);
             consume(Token.Semicolon); // ; expected
-            ret.add(new VariableDeclaration(type,identifier));
+            ret.add(new VariableDeclaration(type,new VariableReference(identifier)));
         }
         return ret;
     }
@@ -320,7 +326,6 @@ public class Parser {
         return leftPart;
     }
 
-
     /*
         Parse an ArrayAccess
         ArrayAccess -> StructAccess [ Expression ]
@@ -358,12 +363,12 @@ public class Parser {
         if(!isSymbolOfType(Token.ClosingParenthesis)){
             Type type=parseType();
             Symbol identifier=consume(Token.Identifier);
-            ret.add(new VariableDeclaration(type,identifier));
+            ret.add(new VariableDeclaration(type,new VariableReference(identifier)));
             while(isSymbolOfType(Token.Comma)) {
                 consume(Token.Comma); // , expected
                 type=parseType();
                 identifier=consume(Token.Identifier);
-                ret.add(new VariableDeclaration(type,identifier));
+                ret.add(new VariableDeclaration(type,new VariableReference(identifier)));
             }
         }
         return ret;
@@ -385,7 +390,7 @@ public class Parser {
         }
         //Variable Declaration
         consume(Token.Semicolon); //; expected
-        return new VariableDeclaration(type, identifier);
+        return new VariableDeclaration(type, new VariableReference(identifier));
     }
 
     /*
@@ -395,67 +400,99 @@ public class Parser {
     private VariableInstantiation parseVariableInstantiation(Type type,Symbol identifier) throws IOException, ParserException {
         consume(Token.AssignmentOperator);
         ExpressionStatement exp = parseExpression();
-        return new VariableInstantiation(type,identifier, exp);
+        return new VariableInstantiation(type,new VariableReference(identifier), exp);
     }
 
     /*
         Parse a Variable Assigment
-        VariableAssigment -> Identifier = Expression; | Identifier IncrementOperator;
+        VariableAssigment -> IdentifierReference = Expression; | IdentifierReference IncrementOperator;
+        IdentifierReference -> VariableReference | VariableReference . IdentifierReference | VariableReference [ Expression ]
+        Note that a Variable . IdentifierReference is a StructAccess
+        Note that a Variable [ Expression ] is a ArrayAccess
+        And so we can have x.y.z = Expression or x[3].y.z=Expression
+
      */
 
     private VariableAssigment parseVariableAssigment(Symbol identifier) throws IOException, ParserException {
+        ExpressionStatement leftPart = new VariableReference(identifier);
+        leftPart = parseLeftPartOfVariableAssigment(leftPart);
+
         if(isSymbolOfType(Token.IncrementOperator)){
+            int n_line=lookahead.getLine();
             consume(Token.IncrementOperator);
-            return new VariableAssigment(identifier,new BinaryExpression(
-                    new Value(identifier),
-                    new Symbol(Token.AdditiveOperator,"+", identifier.getLine()),
-                    new Value(new Symbol(Token.IntNumber,"1",identifier.getLine()))));
+            return new VariableAssigment(leftPart,new BinaryExpression(
+                    leftPart,
+                    new Symbol(Token.AdditiveOperator,"+", n_line),
+                    new Value(new Symbol(Token.IntNumber,"1",n_line))));
         }
         consume(Token.AssignmentOperator);
         ExpressionStatement exp = parseExpression();
-        return new  VariableAssigment(identifier, exp);
+        return new  VariableAssigment(leftPart, exp);
+    }
+
+    /*
+        Note that the left part of the assigment can be a struct access, an array access or a simple VariableReference
+        that is a simple identifier of a variable declared in the scope
+
+
+        @param leftPart: the left part of the assigment
+        @return the left part of the assigment
+        @throws ParserException if the left part of the assigment is not well formed
+        @throws IOException if there is an error in the lexer
+
+     */
+    private ExpressionStatement parseLeftPartOfVariableAssigment(ExpressionStatement leftPart) throws ParserException, IOException {
+        while (isSymbolOfType(Token.Dot) || isSymbolOfType(Token.OpeningSquareBracket)) {
+            if (lookahead.getValue().equals(".")) {
+                consume(Token.Dot); //Expected .
+                ExpressionStatement rightPart = parseLeftPartOfVariableAssigment(new VariableReference(consume(Token.Identifier)));
+                leftPart = new StructAccess(leftPart, rightPart);
+            } else if (isSymbolOfType(Token.OpeningSquareBracket)) {
+                consume(Token.OpeningSquareBracket); //Expected [
+                ExpressionStatement index = parseExpression();
+                consume(Token.ClosingSquareBracket); //Expected ]
+                leftPart = new ArrayAccess(leftPart, index);
+            }
+
+        }
+        return leftPart;
     }
 
     /*
         Parse a For statement
-        ForStatement -> for (Type Identifier = Expression | epsilon, Expression | epsilon, VariableAssigment | epsilon) {Block}
-        for(,,)
-
-        for(int i=0,,i++)
-
-        int i =0
-        for(,i<n,i++)
-     */
+        ForStatement -> for (VariableAssigment | epsilon, Expression | epsilon, VariableAssigment | epsilon) {Block}
+    */
 
     private ForStatement parseForStatement() throws IOException, ParserException {
         consume(Token.For); //for
         consume(Token.OpeningParenthesis); //( expected
-        ASTNode start;
-        Type type = parseType();
-        if(isSymbolOfType(Token.AssignmentOperator) || isSymbolOfType(Token.IncrementOperator)){
-            //Variable Assigment
-            start=parseVariableAssigment(type.getSymbol());
+        VariableAssigment start = null;
+        if(isSymbolOfType(Token.Comma)){
             consume(Token.Comma); //, expected
         }else{
-            //Variable Instantiation
             Symbol identifier = consume(Token.Identifier);
-            start=parseVariableInstantiation(type, identifier);
+            start=parseVariableAssigment(identifier);
             consume(Token.Comma); //, expected
         }
-        ExpressionStatement condition=parseExpression();
-        consume(Token.Comma); //, expected
-        VariableAssigment update=parseVariableAssigment(consume(Token.Identifier));
+        ExpressionStatement condition;
+        if(isSymbolOfType(Token.Comma)){
+            condition= null;
+            consume(Token.Comma); //, expected
+        }else{
+            condition=parseExpression();
+            consume(Token.Comma); //, expected
+        }
+        VariableAssigment update;
+        if(isSymbolOfType(Token.ClosingParenthesis)){
+            update=null;
+        }else{
+            update=parseVariableAssigment(consume(Token.Identifier));
+        }
         consume(Token.ClosingParenthesis); //) expected
         consume(Token.OpeningCurlyBrace); // { expected
         Block block = parseBlock();
         consume(Token.ClosingCurlyBrace); // } expected
-        if(start instanceof VariableAssigment){
-           return new ForStatementVariableAssigment((VariableAssigment) start,condition,update,block);
-        }
-        return new ForStatementVariableInstantiation((VariableInstantiation) start,condition,update,block);
-
-
-        //; expected
+        return new ForStatement(start, condition, update, block);
     }
 
     /*
@@ -472,7 +509,6 @@ public class Parser {
         consume(Token.ClosingCurlyBrace); // } expexted
         return new WhileStatement(condition,block);
     }
-
     /*
         Parse an if statement
         IfStatement -> if (Expression) Block | if (Expression) Block else Block
@@ -494,7 +530,6 @@ public class Parser {
         }
         return new IfStatement(if_condition,if_block);
     }
-
     /*
         Parse a Return statement
         ReturnStatement -> return Expression; | return;
@@ -509,7 +544,6 @@ public class Parser {
         consume(Token.Semicolon); //; expected
         return new ReturnStatement(expr);
     }
-
 
     /*
         Parse a Block
@@ -529,28 +563,29 @@ public class Parser {
                 statements_of_theblock.add(curr_variable);
             } else if (isSymbolOfType(Token.Identifier)) {
                 // We can have Variable Instantiation or Variable Declaration or We can have Function Call or Variable Assignment
-                Type parsedType = parseType();
-                if (isSymbolOfType(Token.AssignmentOperator) || isSymbolOfType(Token.IncrementOperator)) { //Variable Assignment
-                    VariableAssigment curr_variableAssignment = parseVariableAssigment(parsedType.getSymbol());
-                    consume(Token.Semicolon); //; expected
-                    statements_of_theblock.add(curr_variableAssignment); //ad the statement to the block
-                } else if (isSymbolOfType(Token.OpeningParenthesis)) { //FunctionCall
+                Symbol curr_identifier = consume(Token.Identifier); //Expected
+                if (isSymbolOfType(Token.OpeningParenthesis)) { //FunctionCall
                     //FunctionCall
-                    Symbol curr_identifier = parsedType.getSymbol(); //Torno indietro nella mia scelta
                     FunctionCall curr_functionCall = parseFunctionCall(curr_identifier);
                     consume(Token.Semicolon); //; expected
                     statements_of_theblock.add(curr_functionCall);
-                } else {
-                    //Variable Instantiation or Variable Declaration
+                }
+                else if(isSymbolOfType(Token.Identifier)) {//Variable Instantiation or Variable Declaration
+                    Type type = new StructType(curr_identifier);
                     Symbol identifier = consume(Token.Identifier);
                     if (isSymbolOfType(Token.AssignmentOperator)) { //Variable Instantiation
-                        VariableInstantiation curr_variableInstantiation = parseVariableInstantiation(parsedType, identifier);
+                        VariableInstantiation curr_variableInstantiation = parseVariableInstantiation(type, identifier);
                         consume(Token.Semicolon); //; expected
                         statements_of_theblock.add(curr_variableInstantiation);
-                    }else{//Variable Declaration
+                    } else {//Variable Declaration
                         consume(Token.Semicolon); //; expected
-                        statements_of_theblock.add(new VariableDeclaration(parsedType,identifier));
+                        statements_of_theblock.add(new VariableDeclaration(type, new VariableReference(identifier)));
                     }
+                }
+                else  { //Variable Assignment
+                    VariableAssigment curr_variableAssignment = parseVariableAssigment(curr_identifier);
+                    consume(Token.Semicolon); //; expected
+                    statements_of_theblock.add(curr_variableAssignment); //ad the statement to the block
                 }
             } else if (isSymbolOfType(Token.For)) {//FoR loop
                 statements_of_theblock.add(parseForStatement());
@@ -566,6 +601,8 @@ public class Parser {
 
         return new Block(statements_of_theblock);
     }
+
+
 
     /*
         Parse a Factor
@@ -654,8 +691,6 @@ public class Parser {
     private FunctionCall parseFunctionCall(Symbol function_name) throws IOException, ParserException {
         consume(Token.OpeningParenthesis); //Expected (
         ArrayList<ExpressionStatement> parameters=parseParameters();
-        LOGGER.log(Level.DEBUG,"Function Call: "+function_name+" with parameters: "+parameters);
-        System.out.println(lookahead);
         consume(Token.ClosingParenthesis); //Expected )
         return new FunctionCall(function_name,parameters);
     }
@@ -693,47 +728,4 @@ public class Parser {
         consume(Token.ClosingSquareBracket); //Expected ]
         return new ArrayInitialization(type,size);
     }
-
-
-
-
-    /*
-        //OLD METHODS
-
-    public ExpressionStatement parseArrayAccess() throws IOException {
-        ExpressionStatement ArrayName=parseStructAccess();
-        //maybe can be an ArrayAccess Otherwise is a simple Factor
-        if(lookahead.getValue().equals("[")){
-            consume(Token.SpecialCharacter); //Expected [
-            ExpressionStatement index;
-            try{
-                index=parseExpression();
-            }catch (Exception e){
-                throw new RuntimeException("Non ho trovato l'indice dell'array");//TODO throw an exception
-            }
-            if(!lookahead.getValue().equals("]")) throw new RuntimeException("Expected ] but found: "+lookahead.getValue()); //TODO throw an exception
-            consume(Token.SpecialCharacter); //Expected ]
-            return new ArrayAccess(ArrayName,index);
-        }
-        return ArrayName;
-    }
-
-        //Parse a StructAccess
-        //StructAccess -> Factor | StructAccess . Factor | ArrayAccess . Factor
-
-    private ExpressionStatement parseStructAccess() throws IOException {
-        ExpressionStatement leftPart=parseFactor();
-        LinkedList<ExpressionStatement> struct_access=new LinkedList<>();
-        struct_access.add(leftPart);
-        while (lookahead.getValue().equals(".")) {
-            consume(Token.SpecialCharacter); //Expected
-            leftPart=parseFactor();
-            struct_access.add(leftPart);
-        }
-        if(struct_access.size()==1) return struct_access.get(0);
-        //else return new StructAccess(struct_access);
-        return null;
-
-    }
-    */
 }
