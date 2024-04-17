@@ -7,7 +7,7 @@ import compiler.SemanticAnalysis.SymbolTable;
 public class SemanticAnlysisVisitor implements Visitor{
 
     @Override
-    public void visit(Constant constant, SymbolTable symbolTable) throws SemanticErrorException {
+    public void visit(Constant constant, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
 
     }
 

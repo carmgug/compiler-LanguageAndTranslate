@@ -26,8 +26,8 @@ public class Value extends ExpressionStatement {
 
 
     @Override
-    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
-
+    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable,structTable);
     }
 }
 

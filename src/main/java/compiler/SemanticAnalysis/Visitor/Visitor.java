@@ -12,7 +12,7 @@ import compiler.SemanticAnalysis.SymbolTable;
  */
 
 public interface Visitor {
-    void visit(Constant constant,SymbolTable symbolTable) throws SemanticErrorException;
+    void visit(Constant constant,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
     void visit(Struct struct,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
     void visit(GlobalVariable globalVariable,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
     void visit(ExpressionStatement expressionStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;

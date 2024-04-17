@@ -37,7 +37,7 @@ public class IfStatement extends ASTNode {
     }
 
     @Override
-    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
-        visitor.visit(this,symbolTable);
+    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable,structTable);
     }
 }

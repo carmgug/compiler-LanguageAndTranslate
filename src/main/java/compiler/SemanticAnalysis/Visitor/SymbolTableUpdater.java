@@ -24,7 +24,7 @@ public class SymbolTableUpdater implements Visitor {
 
 
     @Override
-    public void visit(Constant constant, SymbolTable symbolTable) throws SemanticErrorException {
+    public void visit(Constant constant, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
         String id=constant.getIdentifier().getValue(); //Si preleva l'identifier
         Type type=constant.getType(); //Si preleva il tipo
         //Si verifica che non sia gia stata definita una variabile con stesso nome
@@ -35,7 +35,7 @@ public class SymbolTableUpdater implements Visitor {
     }
 
     @Override
-    public void visit(Struct struct, SymbolTable symbolTable) throws SemanticErrorException {
+    public void visit(Struct struct, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
         String structName= struct.getIdentifier().getValue();
         if(symbolTable.get(structName)!=null){ //check if ther is another struct with the same name
             throw new SemanticErrorException("Struct "+structName +" already defined "+ "(line "+struct.getIdentifier().getLine()+")");
@@ -44,7 +44,7 @@ public class SymbolTableUpdater implements Visitor {
     }
 
     @Override
-    public void visit(GlobalVariable globalVariable, SymbolTable symbolTable) throws SemanticErrorException  {
+    public void visit(GlobalVariable globalVariable, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException  {
         String identifier=globalVariable.getIdentifier().getValue(); //Si preleva l'identifier
         Type type=globalVariable.getType(); //Si preleva il tipo
         //Si verifica che non sia gia stata definita una variabile con stesso nome
@@ -55,13 +55,13 @@ public class SymbolTableUpdater implements Visitor {
     }
 
     @Override
-    public void visit(ExpressionStatement expressionStatement, SymbolTable symbolTable) throws SemanticErrorException {
+    public void visit(ExpressionStatement expressionStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
         throw new SemanticErrorException("Should not run, in this part");
     }
 
 
     @Override
-    public void visit(Procedure procedure, SymbolTable symbolTable) throws SemanticErrorException {
+    public void visit(Procedure procedure, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
         Type return_type=procedure.getReturnType(); //Si preleva il tipo
         String procedure_identifier=procedure.getName().getValue();
         ArrayList<VariableDeclaration> procedure_parameters=procedure.getParameters_of_the_procedure();
@@ -87,37 +87,37 @@ public class SymbolTableUpdater implements Visitor {
     }
 
     @Override
-    public void visit(Block block, SymbolTable symbolTable) {
+    public void visit(Block block, SymbolTable symbolTable,SymbolTable structTable) {
 
     }
 
     @Override
-    public void visit(IfStatement ifStatement, SymbolTable symbolTable) {
+    public void visit(IfStatement ifStatement, SymbolTable symbolTable,SymbolTable structTable) {
 
     }
 
     @Override
-    public void visit(ForStatement forStatement, SymbolTable symbolTable) {
+    public void visit(ForStatement forStatement, SymbolTable symbolTable,SymbolTable structTable) {
 
     }
 
     @Override
-    public void visit(WhileStatement whileStatement, SymbolTable symbolTable) {
+    public void visit(WhileStatement whileStatement, SymbolTable symbolTable,SymbolTable structTable) {
 
     }
 
     @Override
-    public void visit(VariableDeclaration variableDeclaration, SymbolTable symbolTable) {
+    public void visit(VariableDeclaration variableDeclaration, SymbolTable symbolTable,SymbolTable structTable) {
 
     }
 
     @Override
-    public void visit(VariableAssigment variableAssigment, SymbolTable symbolTable) {
+    public void visit(VariableAssigment variableAssigment, SymbolTable symbolTable,SymbolTable structTable) {
 
     }
 
     @Override
-    public void visit(ReturnStatement returnStatement,SymbolTable symbolTable){
+    public void visit(ReturnStatement returnStatement,SymbolTable symbolTable,SymbolTable structTable){
 
     }
 }
