@@ -1,9 +1,12 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 import compiler.Parser.AST.ASTNodes.Expressions.VariableReference;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class VariableDeclaration extends ASTNode {
 
@@ -29,5 +32,10 @@ public class VariableDeclaration extends ASTNode {
                 "Type: " + type + ","+
                 "Identifier: " + variable.getIdentifier() +
                 "}";
+    }
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
     }
 }

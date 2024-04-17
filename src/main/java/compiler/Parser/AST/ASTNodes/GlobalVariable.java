@@ -1,8 +1,11 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class GlobalVariable extends ASTNode {
 
@@ -26,5 +29,21 @@ public class GlobalVariable extends ASTNode {
                 "}";
     }
 
+    public Symbol getIdentifier(){
+        return this.identifier;
+    }
 
+    public Type getType(){
+        return this.type;
+    }
+
+    public ExpressionStatement getValue(){
+        return this.value;
+    }
+
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+    }
 }

@@ -1,7 +1,10 @@
 package compiler.Parser.AST.ASTNodes.Expressions;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class BinaryExpression extends ExpressionStatement {
 
@@ -15,10 +18,6 @@ public class BinaryExpression extends ExpressionStatement {
         this.operator = new Operator(operator);
         this.right = right;
     }
-
-    //public String toString() {
-        //return toString(0);
-    //}
 
     private String toString(int indent) {
         String indentation = generateIndentation(indent);
@@ -37,4 +36,14 @@ public class BinaryExpression extends ExpressionStatement {
                 '}';
     }
 
+    public ExpressionStatement getRight(){return this.right;}
+
+    public ExpressionStatement getLeft(){return this.left;}
+
+    public Operator getOperator(){return this.operator;}
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+    }
 }

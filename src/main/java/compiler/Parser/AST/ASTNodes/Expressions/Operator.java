@@ -16,4 +16,6 @@ public class Operator {
                 "Value: " + operator.getValue() +
                 "}";
     }
+
+    public Symbol getSymbol(){return this.operator;}
 }

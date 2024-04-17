@@ -57,14 +57,15 @@ public class Lexer {
     
     public Symbol getNextSymbol() throws IOException {
 
+
         while(true) {
             int c = 0;
-            //Si controlla se nel getSymbol precedente è stato consumato un carattere in piu
-            //che deve essere elaborato
+            //if in the before getSymbol has been consumed an extra character that
+            // need to be processed, take it from the queue.
             if(!queue.isEmpty()){
                 c=queue.poll();
                 if(debugMode) LOGGER.log(Level.DEBUG,"A Character has been consumed from the queue");
-            } else { //Altrimenti si legge dal reader
+            } else { //Otherwise the character will be extracted from the reader
                 c=input.read();
             }
             if (c == -1) { //The EOF has been Reached
@@ -73,7 +74,7 @@ public class Lexer {
                 return s;
             }
             else if(isWhitespaceOrIndent(c)){
-                continue;
+                continue;//whitespace is ignored
             }
             else if(isLetter(c)){//A letter has been detected so it's possibile to match a //BaseType,KeyWords ecc.
                 Symbol s=letterHandler(c);

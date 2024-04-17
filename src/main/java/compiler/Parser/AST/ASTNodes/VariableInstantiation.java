@@ -21,4 +21,8 @@ public class VariableInstantiation  extends VariableDeclaration {
                 "Right side: " + right_side +
                 "}";
     }
+
+    public ExpressionStatement getRight_side() {
+        return right_side;
+    }
 }

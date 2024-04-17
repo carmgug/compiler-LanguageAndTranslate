@@ -1,5 +1,6 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
 
@@ -20,6 +21,12 @@ public class Struct extends ASTNode {
         this.variableDeclarations =null;
     }
 
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+
+    }
+
     public Symbol getIdentifier(){
         return this.identifier;
     }
@@ -29,6 +36,10 @@ public class Struct extends ASTNode {
                 "Identifier: " + identifier.getValue() + ","+
                 "declaredVariables: "+variableDeclarations +
                 "}";
+    }
+
+    public ArrayList<VariableDeclaration> getVariableDeclarations(){
+        return this.variableDeclarations;
     }
 
 

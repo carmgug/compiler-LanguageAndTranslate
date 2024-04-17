@@ -1,6 +1,9 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Parser.AST.ASTNode;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +23,12 @@ public class Block extends ASTNode {
         return "Block : "+ Arrays.toString(statements.toArray());
     }
 
+    public ArrayList<ASTNode> getStatements(){
+        return this.statements;
+    }
 
-
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+    }
 }

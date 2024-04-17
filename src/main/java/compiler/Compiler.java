@@ -41,7 +41,6 @@ public class Compiler {
 
         Parser parser = new Parser(fileReader,debugModeLexer,debugModeParser);
         Program p= parser.getAST();
-        System.out.println(p);
 
         /*
             for(,,){

@@ -1,6 +1,9 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Parser.AST.ASTNode;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 import java.beans.Expression;
 
@@ -8,8 +11,7 @@ public class IfStatement extends ASTNode {
     protected ExpressionStatement ifCondition;
     protected Block ifBlock;
 
-    public IfStatement(Expression ifCondition, Block ifBlock,
-                       Expression elseCondition, Block elseBlock){
+    public IfStatement(ExpressionStatement ifCondition, Block ifBlock){
         this.ifCondition=ifCondition;
         this.ifBlock=ifBlock;
     }
@@ -26,10 +28,16 @@ public class IfStatement extends ASTNode {
 
     }
 
-    public IfStatement(Expression ifCondition, Block ifBlock){
-        this.ifCondition=ifCondition;
-        this.ifBlock=ifBlock;
+    public ExpressionStatement getIfCondition() {
+        return ifCondition;
     }
 
+    public Block getIfBlock() {
+        return ifBlock;
+    }
 
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+    }
 }

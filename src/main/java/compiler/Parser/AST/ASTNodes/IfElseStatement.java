@@ -19,4 +19,7 @@ public class IfElseStatement extends IfStatement {
                 '}';
     }
 
+    public Block getElse_block() {
+        return else_block;
+    }
 }

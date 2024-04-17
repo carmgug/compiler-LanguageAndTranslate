@@ -1,7 +1,10 @@
 package compiler.Parser.AST.ASTNodes;
 
 import com.google.common.collect.ForwardingSet;
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Parser.AST.ASTNode;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class ForStatement extends ASTNode {
 
@@ -26,9 +29,24 @@ public class ForStatement extends ASTNode {
                 "}}";
     }
 
+    public ExpressionStatement getEndCondition() {
+        return endCondition;
+    }
 
+    public VariableAssigment getStart() {
+        return start;
+    }
 
+    public Block getBlock() {
+        return block;
+    }
 
+    public VariableAssigment getUpdate() {
+        return update;
+    }
 
-
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+    }
 }

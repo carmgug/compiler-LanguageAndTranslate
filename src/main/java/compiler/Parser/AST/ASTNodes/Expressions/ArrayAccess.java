@@ -1,6 +1,9 @@
 package compiler.Parser.AST.ASTNodes.Expressions;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class ArrayAccess extends ExpressionStatement{
 
@@ -19,4 +22,13 @@ public class ArrayAccess extends ExpressionStatement{
                 "}";
     }
 
+    public ExpressionStatement getArray(){return  this.array;}
+
+    public ExpressionStatement getIndex(){return  this.index;}
+
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+    }
 }

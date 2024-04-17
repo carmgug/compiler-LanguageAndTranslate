@@ -25,6 +25,7 @@ import java.io.StringReader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class Parser {
 
@@ -66,10 +67,28 @@ public class Parser {
                 "def int[] getArrayFromString(String s){int[] ris=int[len(s)];for(i=0,i<len(s),i++){ris[i]=s[i];}return ris;x[3].ciao=3;}\n" +
                 "int[] x=getArrayFromString(\"ciao\");\n";
 
-        String test2="def void ciao(){for(int i=0,i<3,i++){return a*b;} return a*b;}";
-        StringReader stringReader= new StringReader(test);
-        Parser p= new Parser(stringReader,true,true);
+        String test2="def void ciao(){" +
+                "for(,,i++){p.a.b.c = 3; i=5; bool i = 3<=5 ;}" +
+                "}";
+
+        String test5="bool flag= i<=3;";
+
+        String test3=""+
+                "struct Person {\n" +
+                "\tbool p;\n" +
+                "\tint s;}\n"+
+                "int b = a(3);"+
+                "Person p1 = Person(true,2);"+
+                "def void metod(){ int i; return ciao;}";
+        StringReader stringReader= new StringReader(test5);
+        Parser p= new Parser(stringReader,false,true);
         Program program=p.getAST();
+        Iterator<ASTNode> it= program.iterator();
+        while(it.hasNext()){
+            ASTNode node=it.next();
+            System.out.println(node);
+        }
+
     }
 
     /*

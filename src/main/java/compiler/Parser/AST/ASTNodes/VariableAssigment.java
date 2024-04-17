@@ -1,8 +1,11 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class VariableAssigment extends ASTNode {
 
@@ -21,4 +24,14 @@ public class VariableAssigment extends ASTNode {
                 "}";
     }
 
+    public ExpressionStatement getVariable(){return this.variable;}
+
+    public ExpressionStatement getRight_side() {
+        return right_side;
+    }
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+    }
 }

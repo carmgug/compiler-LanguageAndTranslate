@@ -1,6 +1,9 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Parser.AST.ASTNode;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class ReturnStatement extends ASTNode {
 
@@ -9,6 +12,12 @@ public class ReturnStatement extends ASTNode {
     public ReturnStatement(){//return ;
         this.expression=null;
     }
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
+    }
+
     public ReturnStatement(ExpressionStatement expression){//return expression;
         this.expression=expression;
     }
@@ -19,4 +28,6 @@ public class ReturnStatement extends ASTNode {
         }
         return "Return : { return_value_of: "+expression+"}";
     }
+
+    public ExpressionStatement getExpression(){return  this.expression;}
 }

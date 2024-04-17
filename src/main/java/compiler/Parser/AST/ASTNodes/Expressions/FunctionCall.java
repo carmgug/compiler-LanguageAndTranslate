@@ -1,8 +1,11 @@
 package compiler.Parser.AST.ASTNodes.Expressions;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 import java.util.ArrayList;
 
@@ -36,10 +39,24 @@ public class FunctionCall extends ExpressionStatement {
     }
      */
 
+    public Symbol getFunctionName(){
+        return this.functionName;
+    }
+
+    public ArrayList<ExpressionStatement> getArguments() {
+        return arguments;
+    }
+
+
     public String toString(){
         return "FunctionCall : {" +
                     "functionName :" + functionName.getValue() + ","+
                     "arguments : " + (arguments.size()==0 ? "None" : arguments) +
                 "}";
+    }
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
     }
 }

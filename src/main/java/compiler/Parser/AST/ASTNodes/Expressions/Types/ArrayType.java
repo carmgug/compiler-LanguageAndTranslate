@@ -16,4 +16,8 @@ public class ArrayType extends BaseType {
     public String toString() {
         return "Array of "+super.toString();
     }
+
+    public String getType(){
+        return super.toString();
+    }
 }

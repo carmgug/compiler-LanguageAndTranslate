@@ -1,6 +1,9 @@
 package compiler.Parser.AST.ASTNodes.Expressions;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class StructAccess extends ExpressionStatement {
 
@@ -18,6 +21,19 @@ public class StructAccess extends ExpressionStatement {
                         "leftPart: " + leftPart + ","+
                         "rightPart: " + rightPart +
                 "}";
+    }
+
+    public ExpressionStatement getLeftPart() {
+        return leftPart;
+    }
+
+    public ExpressionStatement getRightPart() {
+        return rightPart;
+    }
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
     }
 }
 

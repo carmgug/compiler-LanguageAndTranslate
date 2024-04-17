@@ -1,7 +1,10 @@
 package compiler.Parser.AST.ASTNodes.Expressions;
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 public class Value extends ExpressionStatement {
     Symbol value;
@@ -22,7 +25,10 @@ public class Value extends ExpressionStatement {
     }
 
 
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
 
+    }
 }
 
 

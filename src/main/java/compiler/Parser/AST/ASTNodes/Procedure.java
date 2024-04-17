@@ -1,10 +1,13 @@
 package compiler.Parser.AST.ASTNodes;
 
 
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
 
 import java.util.ArrayList;
 
@@ -20,6 +23,11 @@ public class Procedure extends ASTNode {
         this.name=null;
         this.parameters_of_the_procedure=null;
         this.body=null;
+    }
+
+    @Override
+    public void accept(Visitor visitor, SymbolTable symbolTable) throws SemanticErrorException {
+        visitor.visit(this,symbolTable);
     }
 
     public Procedure(Type returnType, Symbol name,ArrayList<VariableDeclaration> parameters_of_the_procedure ,Block body){
@@ -38,6 +46,15 @@ public class Procedure extends ASTNode {
                 "Body: "+body +
                 "}";
     }
+
+    public Type getReturnType(){return this.returnType;}
+
+    public Symbol getName(){return this.name;}
+
+    public ArrayList<VariableDeclaration> getParameters_of_the_procedure()
+    {return this.parameters_of_the_procedure;}
+
+    public Block getBody(){return this.body;}
 
 
 
