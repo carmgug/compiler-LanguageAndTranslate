@@ -3,36 +3,25 @@ package compiler.SemanticAnalysis;
 import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Exceptions.SemanticException.TypeErrorException;
-import compiler.Lexer.Symbol;
-import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNode;
-import compiler.Parser.AST.ASTNodes.*;
-import compiler.Parser.AST.ASTNodes.Expressions.*;
-import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.ArithmeticNegationNode;
-import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.BooleanNegationNode;
-import compiler.Parser.AST.ASTNodes.Expressions.Types.BaseType;
 import compiler.Parser.AST.Program;
 import compiler.Parser.Parser;
-import compiler.SemanticAnalysis.SemanticTypes.SemanticRecordType;
-import compiler.SemanticAnalysis.Visitor.SemanticAnlysisVisitor;
-import compiler.SemanticAnalysis.Visitor.SymbolTableUpdater;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.*;
 
-import javax.swing.plaf.synth.SynthTextAreaUI;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.*;
+import java.util.Iterator;
 
 public class SemanticAnalysis {
+
     private final Parser parser;
-
     private final SymbolTable globalTable= new SymbolTable();
-
     private final SymbolTable structTable= new SymbolTable();
-
     private final SymbolTableUpdater symbolTableUpdater=new SymbolTableUpdater();
-    private final SemanticAnlysisVisitor semanticAnalysisVisitor=new SemanticAnlysisVisitor();
-
+    private final SemanticAnalysisVisitor semanticAnalysisVisitor=new SemanticAnalysisVisitor();
     public SemanticAnalysis(Parser parser){
         this.parser=parser;
     }
@@ -42,8 +31,7 @@ public class SemanticAnalysis {
     }
 
     public static void main(String[] args) throws IOException, ParserException, TypeErrorException, SemanticErrorException {
-
-        String test="final bool isEmpty = isTrue(isTrue()[4.getARandomNumber().ciao[4]]);\nfinal int a_abc_12=  3;\n" +
+        String test = "final bool isEmpty = isTrue(isTrue()[4.getARandomNumber().ciao[4]]);\nfinal int a_abc_12=  3;\n" +
                 "final int a_abc_123_ = 3;\n" +
                 "final int[] a_abc_123 = {1,2,3,4,5,6,7,8,9,10};\n" +
                 "final float j = 3.256*5.0;\n" +
@@ -60,24 +48,24 @@ public class SemanticAnalysis {
                 "\tPoint location;\n" +
                 "\tint[] history;}\n" +
                 "\tperson age=Person(\"carmelo\",\"gugliotta\",24).age;\n" +
-                "int x=3;\n"+
-                "def void ciao(){for(i[3].c[4]=4,i<3,i[3].c[3]++){return a*b;} return a*b;}\n"+
-                "int x=3;\n"+
+                "int x=3;\n" +
+                "def void ciao(){for(i[3].c[4]=4,i<3,i[3].c[3]++){return a*b;} return a*b;}\n" +
+                "int x=3;\n" +
                 "def int[] getArrayFromString(String s){int[] ris=int[len(s)];for(i=0,i<len(s),i++){ris[i]=s[i];}return ris;x[3].ciao=3;}\n" +
                 "int[] x=getArrayFromString(\"ciao\");\n";
 
-        String test2="def void ciao(int a, int b){}";
+        String test2 = "def void ciao(int a, int b){}";
 
-        String test3="struct Point {\n" +
+        String test3 = "struct Point {\n" +
                 "\tint x;\n" +
                 "\tint y;\n" +
                 "}\n" +
                 "struct Person {\n" +
                 "\tint s;\n" +
                 "\tbool p;" +
-                "Point p1;}\n"+
-                "int i=3;"+
-                "Person p1 = Person(2,true, Point(2,3));"+
+                "Point p1;}\n" +
+                "int i=3;" +
+                "Person p1 = Person(2,true, Point(2,3));" +
                 "def void metod(){ p1.p1.x=2; i=5; bool flag=true; int i; int b=4;}" +
                 "def void metod(String s, int i){}" +
                 "def void metod( int i,String s){}";
@@ -94,10 +82,63 @@ public class SemanticAnalysis {
                 "return ret;" +
                 "}";
 
-        StringReader stringReader= new StringReader(test3);
-        SemanticAnalysis s = new SemanticAnalysis(stringReader, false, false);
+        String test5 = "final int a= 3;\n" +
+                "final int a2 = -(3);\n" +
+                "final bool flag=!(true || false);\n" +
+                "final int a1 = a+2;\n" +
+                "struct Point {\n" +
+                "\tint x;\n" +
+                "\tint y;\n" +
+                "}\n" +
+                "struct Person {\n" +
+                "\tstring name;\n" +
+                "\tPoint location;\n" +
+                "\tbool history;}\n" +
+                "Person p1 = Person(\"carmelo\",Point(2,3),false);\n" +
+                "int location_x= p1.location.x;\n";
+
+        String test6 = "final int a=3;\n" +
+                "final bool c=!(true || false);\n" +
+                "final int b=a+2;\n" +
+                "final float d=3/2;\n" +
+                "final float e=3/1.5;\n" +
+                "int i=3/4;"+
+                "struct Point {\n" +
+                "\tint x;\n" +
+                "\tint y;\n" +
+                "}\n" +
+                "struct Person {\n" +
+                "\tstring name;\n" +
+                "\tPoint location;\n" +
+                "\tint[] history;\n" +
+                "}\n" +
+                "Person p1 = Person(\"carmelo\",Point(2,3),{1,2,3,4,5});\n" +
+                "int[] x=p1.history;\n" +
+                "int y=p1.location.x;\n" +
+                "def int sum(int a,int[] b){" +
+                "int i;\n" +
+                "for(i=0,i<len(b),i++){" +
+                "\ta=a+b[i];\n" +
+                "}\n" +
+                "p1.history={1,2,5};\n"+
+                "return a;\n" +
+                "}\n" +
+                "def int len(int[] vector){\n"+
+                "\treturn 0;\n"+
+                "}\n"+
+                "int z=sum(3,{1,2,3,4,5});\n"+
+                "def void ciao(Persona p){" +
+                "}";
+
+
+
+
+        StringReader stringReader= new StringReader(test6);
+        SemanticAnalysis s = new SemanticAnalysis(stringReader, true, true);
+        Program p= s.parser.getAST();
         //s.analize(s.parser.getAST());
-        s.intilizeSymbolTable(s.parser.getAST());
+        s.intilizeSymbolTable(p);
+        s.performSemanticAnalysis(p);
 
     }
 
@@ -111,15 +152,15 @@ public class SemanticAnalysis {
         System.out.println(structTable);
         System.out.println(globalTable);
 
+
     }
 
     public void performSemanticAnalysis(Program program) throws SemanticErrorException{
         Iterator<ASTNode> it= program.iterator();
         while(it.hasNext()){
             ASTNode next=it.next();
-            next.accept(symbolTableUpdater,globalTable,structTable);
+            next.accept(semanticAnalysisVisitor,globalTable,structTable);
         }
-
     }
 
 
@@ -182,9 +223,11 @@ public class SemanticAnalysis {
                     throw new TypeErrorException(variableReference.getIdentifier()+" not defined as array");
                 }
                 */
+    /*
                 checkExpression(symbolTable,arrayAccess.getIndex(), "");
             }
         }
+
         if(exp instanceof BooleanNegationNode boolNeg){
             if(!type.equals("bool")){
                 throw new TypeErrorException("");
@@ -304,6 +347,7 @@ public class SemanticAnalysis {
            un tipo che appartiene gia ad una struct definita
         3-che non ci siano attributi con nomi uguali
      */
+    /*
     private void addStruct(Struct s) throws TypeErrorException {
         String structName= s.getIdentifier().getValue();
         if(structTable.get(structName)!=null){ //controllo 1

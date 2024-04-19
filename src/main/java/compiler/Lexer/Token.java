@@ -23,6 +23,8 @@ public enum Token {
 
     //Operators
     AssignmentOperator(new String[]{"="}, "AssignmentOperator"),
+
+    //Non deve essere usato
     ArithmeticOperator(new String[]{"+", "-", "*", "/", "%"}, "ArithmeticOperator"),
 
     AdditiveOperator(new String[]{"+", "-"}, "AdditiveOperator"),
@@ -38,6 +40,11 @@ public enum Token {
 
     //Tipo, forse aggiungere classi
     BasedType(new String[]{"int", "float", "bool", "string"}, "BasedType"),
+    IntType(new String[]{"int"}, "int"),
+    FloatType(new String[]{"float"}, "float"),
+    BoolType(new String[]{"bool"}, "bool"),
+    StringType(new String[]{"string"}, "string"),
+
 
 
     //Void added for function return type after the first assigment

@@ -2,11 +2,11 @@ package compiler.Parser.AST.ASTNodes.Expressions;
 
 import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
-import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
+import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ArrayValueDeclaration extends ExpressionStatement {
 
@@ -27,5 +27,9 @@ public class ArrayValueDeclaration extends ExpressionStatement {
     @Override
     public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
         visitor.visit(this,symbolTable,structTable);
+    }
+
+    public Type accept(VisitorType visitorType, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+        return visitorType.visit(this, symbolTable,structTable);
     }
 }

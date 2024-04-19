@@ -3,6 +3,10 @@ package compiler.Parser.AST.ASTNodes;
 import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
+import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
+import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 import java.util.ArrayList;
 
@@ -22,10 +26,12 @@ public class Struct extends ASTNode {
     }
 
     @Override
-    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
         visitor.visit(this,symbolTable,structTable);
 
     }
+
+
 
     public Symbol getIdentifier(){
         return this.identifier;
@@ -40,6 +46,11 @@ public class Struct extends ASTNode {
 
     public ArrayList<VariableDeclaration> getVariableDeclarations(){
         return this.variableDeclarations;
+    }
+
+    @Override
+    public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+        throw new SemanticErrorException("Sould not run");
     }
 
 

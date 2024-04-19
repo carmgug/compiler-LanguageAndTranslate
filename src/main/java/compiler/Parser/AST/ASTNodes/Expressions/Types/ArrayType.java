@@ -9,7 +9,12 @@ public class ArrayType extends BaseType {
 
     public ArrayType(Symbol baseType) {
         super(baseType);
-        if(!baseType.getType().equals(Token.BasedType)) throw new IllegalArgumentException("The type of ArrayType must be a base type");
+        if(!baseType.getType().equals(Token.IntType) &&
+                !baseType.getType().equals(Token.FloatType) &&
+                !baseType.getType().equals(Token.BoolType) &&
+                !baseType.getType().equals(Token.StringType)){
+            throw new IllegalArgumentException("The type of ArrayType must be a base type");
+        }
     }
 
     @Override
@@ -17,7 +22,7 @@ public class ArrayType extends BaseType {
         return "Array of "+super.toString();
     }
 
-    public String getType(){
-        return super.toString();
-    }
+
+
+
 }

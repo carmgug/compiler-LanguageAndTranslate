@@ -62,6 +62,7 @@ public class Parser {
                 "\tint[] history;}\n" +
                 "\tperson age=Person(\"carmelo\",\"gugliotta\",24).age;\n" +
                 "int x=3;\n"+
+                "Person p=age.ciao.3;\n"+
                 "def void ciao(){for(i[3].c[4]=4,i<3,i[3].c[3]++){return a*b;} return a*b;}\n"+
                 "int x=3;\n"+
                 "def int[] getArrayFromString(String s){int[] ris=int[len(s)];for(i=0,i<len(s),i++){ris[i]=s[i];}return ris;x[3].ciao=3;}\n" +
@@ -94,7 +95,7 @@ public class Parser {
     /*
         @return the Abstract Syntax Tree
      */
-    public Program getAST() throws IOException, ParserException {
+    public Program getAST2() throws IOException, ParserException {
         Program program = new Program();
         //Take the first token. Lookahead is for predective parsing
         lookahead = lexer.getNextSymbol();
@@ -105,6 +106,7 @@ public class Parser {
                     +Utility.indentedString(curr_constant.toString()));
             program.add(curr_constant);
         }
+
         while(isSymbolOfType(Token.Struct)){
             consume(Token.Struct); //struct consumed
             Struct curr_stuct=parseStruct();
@@ -132,12 +134,70 @@ public class Parser {
         if(debugParser) LOGGER.log(Level.DEBUG,"Program Parsed:\n"+program);
         return program;
     }
+
+    /*
+        @return the Abstract Syntax Tree
+     */
+    public Program getAST() throws IOException, ParserException {
+        Program program = new Program();
+        //Take the first token. Lookahead is for predective parsing
+        lookahead = lexer.getNextSymbol();
+        while(true) {
+            if (isSymbolOfType(Token.Final)) {
+                Constant curr_constant = parseConstant();
+                if (debugParser) LOGGER.log(Level.DEBUG, "Constant parsed:\n"
+                        + Utility.indentedString(curr_constant.toString()));
+                program.add(curr_constant);
+            }
+
+            if (isSymbolOfType(Token.Struct)) {
+                consume(Token.Struct); //struct consumed
+                Struct curr_stuct = parseStruct();
+                if (debugParser) LOGGER.log(Level.DEBUG, "Struct parsed:\n"
+                        + Utility.indentedString(curr_stuct.toString()));
+                program.add(curr_stuct);
+            }
+
+
+            if (isSymbolOfType(Token.BasedType) || isSymbolOfType(Token.Identifier)) { //Parse Global Variable
+                GlobalVariable curr_global_variable = parseGlobalVariable();
+                if (debugParser) LOGGER.log(Level.DEBUG, "Global Variable parsed:\n" +
+                        Utility.indentedString(curr_global_variable.toString()));
+                program.add(curr_global_variable);
+            }
+
+            if (isSymbolOfType(Token.Def)) { //Parse Procedure
+                consume(Token.Def); //def consumed
+                Procedure curr_procedure = parseProcedure();
+                if (debugParser) LOGGER.log(Level.DEBUG, "Procedure parsed :\n" +
+                        Utility.indentedString(curr_procedure.toString()));
+                program.add(curr_procedure);
+            }
+
+            if (isSymbolOfType(Token.EOF)) break;
+        }
+        //if(!isSymbolOfType(Token.EOF)) throw new ParserException("Unexpected token: "+lookahead.getType()+" expected: "+Token.EOF);
+        if(debugParser) LOGGER.log(Level.DEBUG,"Program Parsed:\n"+program);
+        return program;
+    }
     /*
         @param token: the type of Symbol to check
         @return true if the current symbol is of the type token
      */
     private boolean isSymbolOfType(Token token){
-        return lookahead.getType().equals(token);
+        if(token.equals(Token.BasedType)){
+            if ((lookahead.getType().equals(Token.IntType) ||
+                    lookahead.getType().equals(Token.FloatType) ||
+                    lookahead.getType().equals(Token.BoolType) ||
+                    lookahead.getType().equals(Token.StringType) ) ){
+               return true;
+            }
+            return false;
+        }
+        else {
+            //We dont have a baseType so the lookahead must have the same token of token to be consumed
+            return lookahead.getType().equals(token);
+        }
     }
     /*
         @param token: the type of Symbol to consume
@@ -145,9 +205,25 @@ public class Parser {
      */
     private Symbol consume(Token token) throws ParserException, IOException{
         Symbol curr_symbol=lookahead;
-        if (!lookahead.getType().equals(token)){
-            throw new ParserException("Unexpected token: "+lookahead.getValue()+" expected: "+token);
+
+
+        if(token.equals(Token.BasedType)){
+            //If we need to consume a based type and we dont have a one of this type then error
+            if (!(lookahead.getType().equals(Token.IntType) ||
+                    lookahead.getType().equals(Token.FloatType) ||
+                    lookahead.getType().equals(Token.BoolType) ||
+                    lookahead.getType().equals(Token.StringType) )){
+                throw new ParserException("Unexpected token: "+lookahead.getValue()+" expected on this: ["+Token.IntType+","+
+                        Token.FloatType+","+Token.BoolType+","+Token.StringType+"]");
+            }
         }
+        else {
+            //We dont have a baseType so the lookahead must have the same token of token to be consumed
+            if (!lookahead.getType().equals(token)){
+                throw new ParserException("Unexpected token: "+lookahead.getValue()+" expected: "+token+" at line "+lookahead.getLine());
+            }
+        }
+
         lookahead = lexer.getNextSymbol();
         return curr_symbol;
 
@@ -158,7 +234,10 @@ public class Parser {
     private Type parseType() throws IOException, ParserException {
 
         switch (lookahead.getType()){
-            case BasedType:
+            case IntType:
+            case FloatType:
+            case BoolType:
+            case StringType:
                 return parseBasedType();
             case Identifier:
                 return parseIdentifierType();
@@ -621,8 +700,6 @@ public class Parser {
         return new Block(statements_of_theblock);
     }
 
-
-
     /*
         Parse a Factor
         Factor -> IntNumber| FloatNumber|BooleanVale|String|Identifier| (Expression) | (Negate) - Expression | ! Expression
@@ -650,7 +727,7 @@ public class Parser {
                 return parseFunctionCall(curr_identifier); //pass the function name we have already consumed
             }//Ok it's only an identifier so a variable
             else return new VariableReference(curr_identifier);
-        }else if(lookahead.isTypeof("BasedType")){
+        }else if(isSymbolOfType(Token.BasedType)){
             //Array Initialization
             return parseArrayInitialization();
         }else if (isSymbolOfType(Token.OpeningParenthesis)) {
@@ -687,18 +764,36 @@ public class Parser {
     private ArrayList<ExpressionStatement> parseArrayElements() throws IOException, ParserException {
         ArrayList<ExpressionStatement> ret=new ArrayList<>();
         ExpressionStatement expr;
+        boolean more_than_one=false;
+        while(!isSymbolOfType(Token.ClosingCurlyBrace)){
+            if(more_than_one) consume(Token.Comma); //Expected ,
+            if(isSymbolOfType(Token.BasedType)){
+                throw new ParserException("You cant initilize baseType variable (int,float,bool) in a array declaration line"+lookahead.getLine());
+            }
+            expr=parseExpression();
+            ret.add(expr);
+            more_than_one=true;
+        }
+
+        /*
         try{
+            //an expression is expected but maybe we have an empty array
+            System.out.println(lookahead);
+            if(isSymbolOfType(Token.ClosingCurlyBrace)) System.out.println("CIAOOO"); //ok we have no elements
             expr=parseExpression();
             ret.add(expr);
         }catch (ParserException e){
+            System.out.println("CIAOOO");
             if(isSymbolOfType(Token.ClosingCurlyBrace)) return ret; //ok we have no elements
             throw e; //ok i need to throw the exception
         }
+
         while(isSymbolOfType(Token.Comma)){
             consume(Token.Comma); //Expected ,
             expr=parseExpression();
             ret.add(expr);
         }
+         */
         return ret;
     }
 
@@ -718,9 +813,20 @@ public class Parser {
         Parse the parameters passed to a function call
         Parameters -> (Expression) | (Expression, Parameters) | ε
      */
+
     private ArrayList<ExpressionStatement> parseParameters() throws IOException, ParserException {
         ArrayList<ExpressionStatement> ret=new ArrayList<>();
         ExpressionStatement expr;
+        boolean more_than_one=false;
+        while(!isSymbolOfType(Token.ClosingParenthesis)){
+            if(more_than_one) consume(Token.Comma); //Expected ,
+            expr=parseExpression();
+            ret.add(expr);
+            more_than_one=true;
+        }
+        return ret;
+
+        /*
         try{
             expr=parseExpression();
             ret.add(expr);
@@ -733,7 +839,8 @@ public class Parser {
             expr=parseExpression();
             ret.add(expr);
         }
-        return ret;
+        */
+
     }
 
     /*

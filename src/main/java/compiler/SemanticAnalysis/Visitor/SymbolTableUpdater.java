@@ -1,19 +1,17 @@
 package compiler.SemanticAnalysis.Visitor;
 
 import compiler.Exceptions.SemanticException.SemanticErrorException;
-import compiler.Exceptions.SemanticException.TypeErrorException;
-import compiler.Lexer.Token;
+import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.*;
+import compiler.Parser.AST.ASTNodes.Expressions.FunctionCall;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
-import compiler.SemanticAnalysis.SemanticType;
-import compiler.SemanticAnalysis.SemanticTypes.SemanticProceduresEntry;
-import compiler.SemanticAnalysis.SemanticTypes.SemanticRecordType;
-import compiler.SemanticAnalysis.SemanticTypes.SemanticStructType;
-import compiler.SemanticAnalysis.SymbolTable;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.StructType;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTableValues.SymbolTableProceduresEntry;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTableValues.SemanticStructType;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTableValues.SymbolTableType;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 
 /**
@@ -31,16 +29,16 @@ public class SymbolTableUpdater implements Visitor {
         if(symbolTable.get(id)!=null){ //if it's already defined then you need to throw an Exception
             throw new SemanticErrorException("Constant "+id +" already defined "+ "(line "+constant.getIdentifier().getLine()+")");
         }
-        symbolTable.add(id,new SemanticType(type.getSymbol().getValue()));
+        symbolTable.add(id,new SymbolTableType(type));
     }
 
     @Override
     public void visit(Struct struct, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
         String structName= struct.getIdentifier().getValue();
-        if(symbolTable.get(structName)!=null){ //check if ther is another struct with the same name
+        if(structTable.get(structName)!=null){ //check if ther is another struct with the same name
             throw new SemanticErrorException("Struct "+structName +" already defined "+ "(line "+struct.getIdentifier().getLine()+")");
         }
-        symbolTable.add(structName,new SemanticStructType(structName));
+        structTable.add(structName,new SemanticStructType(new StructType(struct.getIdentifier())));
     }
 
     @Override
@@ -51,13 +49,11 @@ public class SymbolTableUpdater implements Visitor {
         if(symbolTable.get(identifier)!=null){ //if it's already defined then you need to throw an Exception
             throw new SemanticErrorException("Constant "+identifier +" already defined "+ "(line "+globalVariable.getIdentifier().getLine()+")");
         }
-        symbolTable.add(identifier,new SemanticType(type.getSymbol().getValue()));
+        symbolTable.add(identifier,new SymbolTableType(type));
     }
 
-    @Override
-    public void visit(ExpressionStatement expressionStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
-        throw new SemanticErrorException("Should not run, in this part");
-    }
+
+
 
 
     @Override
@@ -66,7 +62,7 @@ public class SymbolTableUpdater implements Visitor {
         String procedure_identifier=procedure.getName().getValue();
         ArrayList<VariableDeclaration> procedure_parameters=procedure.getParameters_of_the_procedure();
         //Io prendo la entry delle procedure con lo stesso nome stesso return type ma diversi parametri
-        SemanticProceduresEntry procedures=(SemanticProceduresEntry) symbolTable.get(procedure_identifier);
+        SymbolTableProceduresEntry procedures=(SymbolTableProceduresEntry) symbolTable.get(procedure_identifier);
         //TODO POTREBBE RITORNARE UNA COSTANTE CHE HA LO STESSO NOME
         if(procedures!=null){
             //Procedure have been already defined
@@ -77,7 +73,7 @@ public class SymbolTableUpdater implements Visitor {
                         "(line: "+procedure.getName().getLine()+")");
             }
             //ok not exist the same procedure we need to add
-            procedures.addFunction(procedure_parameters,new SemanticType(return_type.getSymbol().getValue()));
+            procedures.addFunction(procedure_parameters,new SymbolTableType(return_type));
             return;
         }
         procedures=new SemanticProceduresEntry("procedures");
@@ -86,13 +82,25 @@ public class SymbolTableUpdater implements Visitor {
 
     }
 
+
+
     @Override
     public void visit(Block block, SymbolTable symbolTable,SymbolTable structTable) {
 
     }
 
     @Override
+    public void visit(ASTNode statement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+
+    }
+
+    @Override
     public void visit(IfStatement ifStatement, SymbolTable symbolTable,SymbolTable structTable) {
+
+    }
+
+    @Override
+    public void visit(IfElseStatement ifElseStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
 
     }
 

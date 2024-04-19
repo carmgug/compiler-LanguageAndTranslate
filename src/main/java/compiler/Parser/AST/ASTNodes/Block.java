@@ -2,8 +2,10 @@ package compiler.Parser.AST.ASTNodes;
 
 import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Parser.AST.ASTNode;
-import compiler.SemanticAnalysis.SymbolTable;
+import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
+import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 import java.util.ArrayList;
 import java.util.Arrays;

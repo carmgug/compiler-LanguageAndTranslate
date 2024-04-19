@@ -46,7 +46,7 @@ public class Lexer {
 
     private void setRules(){
 
-        this.rules.put("isLetter",new Token[]{Token.BasedType,Token.Final,Token.Struct,Token.For,Token.Return,Token.Void,
+        this.rules.put("isLetter",new Token[]{Token.IntType,Token.FloatType,Token.BoolType,Token.StringType,Token.Final,Token.Struct,Token.For,Token.Return,Token.Void,
                 Token.Def,Token.While,Token.If,Token.Else,Token.BooleanValue,Token.Identifier});
         this.rules.put("isDigit",new Token[]{Token.FloatNumber, Token.IntNumber});
         this.rules.put("isOperator",new Token[]{Token.AssignmentOperator,Token.AdditiveOperator,Token.MultiplicativeOperator,Token.ComparisonOperator,

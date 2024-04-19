@@ -6,8 +6,9 @@ import compiler.Lexer.Symbol;
 import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
-import compiler.SemanticAnalysis.SymbolTable;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
+import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 import java.util.ArrayList;
 
@@ -29,6 +30,12 @@ public class Procedure extends ASTNode {
     public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
         visitor.visit(this,symbolTable,structTable);
     }
+
+    @Override
+    public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+        throw new SemanticErrorException("Sould not run");
+    }
+
 
     public Procedure(Type returnType, Symbol name,ArrayList<VariableDeclaration> parameters_of_the_procedure ,Block body){
         if(!name.getType().equals(Token.Identifier)) throw new IllegalArgumentException("Procedure name must be an identifier");
@@ -56,7 +63,9 @@ public class Procedure extends ASTNode {
 
     public Block getBody(){return this.body;}
 
-
+    public String getProcedureName(){
+        return this.name.getValue();
+    }
 
 
 

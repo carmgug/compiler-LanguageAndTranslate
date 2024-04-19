@@ -1,8 +1,11 @@
 package compiler.SemanticAnalysis.Visitor;
 
 import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.*;
-import compiler.SemanticAnalysis.SymbolTable;
+import compiler.Parser.AST.ASTNodes.Expressions.FunctionCall;
+import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 
 
 
@@ -15,13 +18,22 @@ public interface Visitor {
     void visit(Constant constant,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
     void visit(Struct struct,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
     void visit(GlobalVariable globalVariable,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
-    void visit(ExpressionStatement expressionStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
+
     void visit(Procedure procedure,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
-    void visit(Block block,SymbolTable symbolTable,SymbolTable structTable);
-    void visit(IfStatement ifStatement, SymbolTable symbolTable,SymbolTable structTable);
-    void visit(ForStatement forStatement,SymbolTable symbolTable,SymbolTable structTable);
-    void visit(WhileStatement whileStatement, SymbolTable symbolTable,SymbolTable structTable);
-    void visit(VariableDeclaration variableDeclaration, SymbolTable symbolTable,SymbolTable structTable);
-    void visit(VariableAssigment variableAssigment, SymbolTable symbolTable,SymbolTable structTable);
-    void visit(ReturnStatement returnStatement,SymbolTable symbolTable,SymbolTable structTable);
+
+    void visit(Block block, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
+
+    void visit(ASTNode statement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
+
+    void visit(IfStatement ifStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
+
+    void visit(IfElseStatement ifElseStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
+
+    void visit(ForStatement forStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
+    void visit(WhileStatement whileStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
+    void visit(VariableDeclaration variableDeclaration, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
+    void visit(VariableAssigment variableAssigment, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
+    void visit(ReturnStatement returnStatement,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
+
+
 }

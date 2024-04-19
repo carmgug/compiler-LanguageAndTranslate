@@ -38,9 +38,9 @@ public class Compiler {
 
         FileReader fileReader = new FileReader(filePath);
 
-
         Parser parser = new Parser(fileReader,debugModeLexer,debugModeParser);
         Program p= parser.getAST();
+        System.out.println(p);
 
         /*
             for(,,){

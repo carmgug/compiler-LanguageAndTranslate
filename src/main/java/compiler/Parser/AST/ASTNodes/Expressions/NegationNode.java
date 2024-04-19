@@ -19,4 +19,5 @@ public abstract class NegationNode extends ExpressionStatement {
 
 
 
+
 }

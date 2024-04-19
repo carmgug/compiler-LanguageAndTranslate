@@ -8,13 +8,18 @@ import java.util.regex.Pattern;
 public class Symbol {
     private final Token type;
     private final String e;
-
     private final int n_line;
 
     public Symbol(Token type,String e,int n_line){
         this.type=type;
         this.e=e;
         this.n_line=n_line;
+    }
+
+    public Symbol(Token type,String e){
+        this.type=type;
+        this.e=e;
+        this.n_line=-1;
     }
 
     public static Symbol copy(Symbol value) {
@@ -41,6 +46,9 @@ public class Symbol {
     public String getValue(){
         return e;
     }
+
+
+
     @Override
     public String toString() {
         return "< "+type+","+e+" >";

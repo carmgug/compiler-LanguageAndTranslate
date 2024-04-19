@@ -4,8 +4,10 @@ package compiler.Parser.AST.ASTNodes;
 import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
-import compiler.Parser.AST.ASTNodes.Expressions.BinaryExpression;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
+import compiler.SemanticAnalysis.Visitor.Visitor;
+import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 public class Constant extends ASTNode {
 
@@ -31,8 +33,12 @@ public class Constant extends ASTNode {
         return this.right_side;
     }
 
-    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
         visitor.visit(this, symbolTable,structTable);
+    }
+
+    public Type accept(VisitorType visitorType, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+        return visitorType.visit(this, symbolTable,structTable);
     }
 
 
