@@ -8,12 +8,14 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 public class ArrayAccess extends ExpressionStatement{
 
-    private ExpressionStatement array;
-    private ExpressionStatement index;
+    private final ExpressionStatement array;
+    private final ExpressionStatement index;
+    private final int line;
 
-    public ArrayAccess(ExpressionStatement array, ExpressionStatement index){
+    public ArrayAccess(ExpressionStatement array, ExpressionStatement index,int line){
         this.array=array;
         this.index=index;
+        this.line=line;
     }
 
     public String toString() {
@@ -21,6 +23,10 @@ public class ArrayAccess extends ExpressionStatement{
                     "Array: "+array +"," +
                     "Index: "+index +
                 "}";
+    }
+
+    public int getLine(){
+        return line;
     }
 
     public ExpressionStatement getArray(){return  this.array;}

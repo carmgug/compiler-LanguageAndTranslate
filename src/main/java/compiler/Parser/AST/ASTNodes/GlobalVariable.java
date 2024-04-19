@@ -16,6 +16,7 @@ public class GlobalVariable extends ASTNode {
 
     private ExpressionStatement value;
 
+
     public GlobalVariable(Type type, Symbol identifier, ExpressionStatement value) {
         this.type = type;
         this.identifier = identifier;
@@ -40,6 +41,13 @@ public class GlobalVariable extends ASTNode {
 
     public ExpressionStatement getValue(){
         return this.value;
+    }
+
+    public String getNameOfTheVariable(){
+        return this.identifier.getValue();
+    }
+    public int getLine(){
+        return this.identifier.getLine();
     }
 
 

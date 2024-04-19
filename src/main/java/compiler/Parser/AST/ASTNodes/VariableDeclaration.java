@@ -13,6 +13,7 @@ public class VariableDeclaration extends ASTNode {
     protected Type type;
     protected VariableReference variable;
 
+
     public VariableDeclaration(Type type, VariableReference identifier){
         this.type=type;
         this.variable=identifier;
@@ -27,8 +28,11 @@ public class VariableDeclaration extends ASTNode {
         return this.variable;
     }
 
-    public String getNameOfVariable(){
+    public String getNameOfTheVariable(){
         return this.variable.getIdentifier();
+    }
+    public int getLine(){
+        return this.variable.getLine();
     }
 
     public String toString(){

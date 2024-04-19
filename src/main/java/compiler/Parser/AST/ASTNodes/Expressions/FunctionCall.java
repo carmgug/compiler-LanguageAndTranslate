@@ -13,8 +13,9 @@ import java.util.ArrayList;
 public class FunctionCall extends ExpressionStatement {
 
 
-    private Symbol functionName;
-    private ArrayList<ExpressionStatement> arguments;
+    private final Symbol functionName;
+    private final ArrayList<ExpressionStatement> arguments;
+    private final int line;
 
 
     public FunctionCall(Symbol functionName,ArrayList<ExpressionStatement> arguments) {
@@ -24,21 +25,9 @@ public class FunctionCall extends ExpressionStatement {
         for(ExpressionStatement e:arguments){
             this.arguments.add(e);
         }
+        this.line=functionName.getLine();
     }
-    /*
-    public String toString(){
-        StringBuilder sb = new StringBuilder();
-        sb.append(functionName.getValue());
-        sb.append("(");
-        for(ExpressionStatement e:arguments){
-            sb.append(e.toString());
-            sb.append(",");
-        }
-        if(arguments.size()>0) sb.deleteCharAt(sb.length()-1);
-        sb.append(")");
-        return "FunctionCall {"+sb+"}";
-    }
-     */
+
 
     public String getFunctionName(){
         return this.functionName.getValue();
@@ -70,5 +59,9 @@ public class FunctionCall extends ExpressionStatement {
     @Override
     public Type accept(VisitorType visitorType, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
         return visitorType.visit(this, symbolTable,structTable);
+    }
+
+    public int getLine() {
+        return line;
     }
 }

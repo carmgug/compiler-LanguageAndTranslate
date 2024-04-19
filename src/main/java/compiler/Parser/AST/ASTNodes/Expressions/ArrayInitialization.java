@@ -8,11 +8,14 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 public class ArrayInitialization extends ExpressionStatement {
 
-    Type type;
-    ExpressionStatement size;
-    public ArrayInitialization(Type type, ExpressionStatement size) {
+    private final Type type;
+    private final ExpressionStatement size;
+    private final int line;
+
+    public ArrayInitialization(Type type, ExpressionStatement size,int line) {
         this.type = type;
         this.size = size;
+        this.line=line;
     }
 
     public String toString() {
@@ -25,6 +28,10 @@ public class ArrayInitialization extends ExpressionStatement {
     public Type getType(){return this.type;}
 
     public ExpressionStatement getSize(){return this.size;}
+
+    public int getLine(){
+        return line;
+    }
 
 
     @Override

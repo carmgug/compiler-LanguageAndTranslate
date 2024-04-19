@@ -26,6 +26,6 @@ public interface VisitorType {
 
     Type visit(FunctionCall functionCall, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
     Type visit(ArrayValueDeclaration arrayValueDeclaration, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
-
+    Type visit(ArrayInitialization arrayInitialization, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
 }
 

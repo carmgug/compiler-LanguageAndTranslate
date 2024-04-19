@@ -1,6 +1,7 @@
 package compiler.SemanticAnalysis.SymbolTable.SymbolTableValues;
 
 import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Parser.AST.ASTNodes.Expressions.Type;
 import compiler.Parser.AST.ASTNodes.VariableDeclaration;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTableEntry;
 
@@ -33,6 +34,12 @@ public class SymbolTableProceduresEntry extends SymbolTableEntry {
         procedures.add(curr_procedure);
     }
 
+    public void addFunction(SymbolTableProcedureType procedure){
+        procedures.add(procedure);
+    }
+
+
+
     public boolean containsAProcedureWithParameters(ArrayList<VariableDeclaration> parameters){
         boolean alreadyExist=false;
         for(SymbolTableProcedureType procedure:procedures){
@@ -63,7 +70,7 @@ public class SymbolTableProceduresEntry extends SymbolTableEntry {
 
     public String toString(){
         StringBuilder sb=new StringBuilder();
-        sb.append(" Procedure{\n");
+        sb.append(" Procedure {\n");
         for(SymbolTableProcedureType procedure:procedures){
             sb.append("\t\t").append(procedure).append("\n");
         }

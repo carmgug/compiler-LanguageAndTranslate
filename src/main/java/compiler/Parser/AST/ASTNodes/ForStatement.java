@@ -9,16 +9,18 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 public class ForStatement extends ASTNode {
 
-    protected VariableAssigment start;
-    protected ExpressionStatement endCondition;
-    protected VariableAssigment update;
-    protected Block block;
+    protected final VariableAssigment start;
+    protected final ExpressionStatement endCondition;
+    protected final VariableAssigment update;
+    protected final Block block;
+    protected final int line;
 
-    public ForStatement(VariableAssigment start,ExpressionStatement endCondition, VariableAssigment update, Block block){
+    public ForStatement(VariableAssigment start,ExpressionStatement endCondition, VariableAssigment update, Block block,int line){
         this.start=start;
         this.endCondition=endCondition;
         this.update=update;
         this.block=block;
+        this.line=line;
     }
 
     public String toString() {
@@ -56,4 +58,7 @@ public class ForStatement extends ASTNode {
         throw new SemanticErrorException("Sould not run");
     }
 
+    public int getLine() {
+        return line;
+    }
 }

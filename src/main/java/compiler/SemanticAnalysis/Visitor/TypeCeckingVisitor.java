@@ -7,6 +7,7 @@ import compiler.Parser.AST.ASTNodes.*;
 import compiler.Parser.AST.ASTNodes.Expressions.*;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.ArithmeticNegationNode;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.BooleanNegationNode;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayStructType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.BaseType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.StructType;
@@ -73,7 +74,10 @@ public class TypeCeckingVisitor implements VisitorType{
     public Type visit(StructAccess structAccess, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
         Type left_part=visit(structAccess.getLeftPart(),symbolTable,structTable);
         if(!(left_part instanceof StructType)){
-            throw new SemanticErrorException("Expected a struct type, found "+left_part.getSymbol().getType());
+            throw new SemanticErrorException("Expected a struct type, found "+left_part+" at line: "+structAccess.getLine()+")");
+        }
+        if(structTable.get(left_part.getNameofTheType())==null){
+            throw new SemanticErrorException("You are using a Struct that has not been defined '"+left_part.getNameofTheType()+"' at line "+structAccess.getLine());
         }
         SymbolTable struct_symbol_table=((SemanticStructType)structTable.get(left_part.getNameofTheType())).getFields();
         Type right_part=visit(structAccess.getRightPart(),struct_symbol_table ,structTable);
@@ -83,8 +87,8 @@ public class TypeCeckingVisitor implements VisitorType{
     @Override
     public Type visit(ArrayAccess arrayAccess, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
         Type left_part=visit(arrayAccess.getArray(),symbolTable,structTable);
-        if(!(left_part instanceof ArrayType)){
-            throw new SemanticErrorException("Expected a ArrayType, found "+left_part.getSymbol().getType());
+        if(!(left_part instanceof ArrayType) && !(left_part instanceof ArrayStructType)){
+            throw new SemanticErrorException("Expected a ArrayType, found "+left_part+"(line: "+arrayAccess.getLine()+")");
         }
         Type index=visit(arrayAccess.getIndex(),symbolTable,structTable);
         //the index must be an int
@@ -202,6 +206,17 @@ public class TypeCeckingVisitor implements VisitorType{
         }
         //The array is empty
         return initialType;
+    }
+
+    @Override
+    public Type visit(ArrayInitialization arrayInitialization, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+        Type type=arrayInitialization.getType();
+        Type size=visit(arrayInitialization.getSize(),symbolTable,structTable);
+        if(!size.getSymbol().getType().equals(Token.IntType)){
+            throw new SemanticErrorException("Expected a int as size of the array, found "+size.getSymbol().getType()+
+                    "(line: "+arrayInitialization.getLine()+")");
+        }
+        return type;
     }
 
     private BaseType typeResultOperator(Operator op, Type leftType, Type rightType){

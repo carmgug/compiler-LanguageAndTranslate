@@ -1,7 +1,5 @@
 package compiler.SemanticAnalysis.SymbolTable;
 
-import compiler.Parser.AST.ASTNodes.Expressions.Type;
-
 import java.util.*;
 
 public class SymbolTable{
@@ -56,8 +54,27 @@ public class SymbolTable{
         sb.append("}");
         return sb.toString();
     }
+
+    public String toString(int indent){
+        StringBuilder sb = new StringBuilder();
+        String indentString = "";
+        for(int i=0;i<indent;i++){
+            indentString+="\t";
+        }
+        sb.append("{\n");
+        for (Map.Entry<String, SymbolTableEntry> entry : entries.entrySet()) {
+            sb.append(indentString).append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+        sb.append(indentString.replaceFirst("\t","")).append("}");
+        return sb.toString();
+    }
+
     public SymbolTable getPreviousTable() {
         return previousTable;
+    }
+
+    public int size(){
+        return entries.size();
     }
 
     public Map<String, SymbolTableEntry> getEntries() {

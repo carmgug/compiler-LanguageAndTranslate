@@ -7,8 +7,8 @@ import java.util.Map;
 
 public class SymbolTableProcedureType {
 
-    private Map<String, SymbolTableEntry> parameters;
-    private SymbolTableType return_type;
+    private final Map<String, SymbolTableEntry> parameters;
+    private final SymbolTableType return_type;
 
     public SymbolTableProcedureType(Map<String, SymbolTableEntry> fields, SymbolTableType return_type) {
         this.parameters=fields;
@@ -17,13 +17,14 @@ public class SymbolTableProcedureType {
 
 
 
-    public SymbolTableProcedureType() {
+    public SymbolTableProcedureType(SymbolTableType return_type) {
         this.parameters=new LinkedHashMap<>();
+        this.return_type=return_type;
     }
 
     public Map<String, SymbolTableEntry> getFields(){return this.parameters;}
 
-    public void addParameters(String variable_name, SymbolTableEntry type){
+    public void addParameter(String variable_name, SymbolTableEntry type){
         this.parameters.put(variable_name,type);
     }
 

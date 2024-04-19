@@ -33,8 +33,8 @@ public class Parser {
     private final Lexer lexer;
     private Symbol lookahead;
     private boolean debugParser=false;
-    public Parser(Lexer lexer) {
-        this.lexer=lexer;
+    public Parser(Reader r) {
+        this.lexer=new Lexer(r);
     }
 
     public Parser(Reader r, boolean debugLexer,boolean debugParser) {
@@ -411,14 +411,16 @@ public class Parser {
 
         while (isSymbolOfType(Token.Dot) || isSymbolOfType(Token.OpeningSquareBracket)) {
             if (lookahead.getValue().equals(".")) {
+                int line=lookahead.getLine();
                 consume(Token.Dot); //Expected .
                 ExpressionStatement rightPart = parseArrayAccessOrStructAccess();
-                leftPart = new StructAccess(leftPart, rightPart);
+                leftPart = new StructAccess(leftPart, rightPart,line);
             } else if (isSymbolOfType(Token.OpeningSquareBracket)) {
+                int line=lookahead.getLine();
                 consume(Token.OpeningSquareBracket); //Expected [
                 ExpressionStatement index = parseExpression();
                 consume(Token.ClosingSquareBracket); //Expected ]
-                leftPart = new ArrayAccess(leftPart, index);
+                leftPart = new ArrayAccess(leftPart, index,line);
             }
         }
         return leftPart;
@@ -521,11 +523,11 @@ public class Parser {
             return new VariableAssigment(leftPart,new BinaryExpression(
                     leftPart,
                     new Symbol(Token.AdditiveOperator,"+", n_line),
-                    new Value(new Symbol(Token.IntNumber,"1",n_line))));
+                    new Value(new Symbol(Token.IntNumber,"1",n_line))),n_line);
         }
         consume(Token.AssignmentOperator);
         ExpressionStatement exp = parseExpression();
-        return new  VariableAssigment(leftPart, exp);
+        return new  VariableAssigment(leftPart, exp, identifier.getLine());
     }
 
     /*
@@ -542,14 +544,16 @@ public class Parser {
     private ExpressionStatement parseLeftPartOfVariableAssigment(ExpressionStatement leftPart) throws ParserException, IOException {
         while (isSymbolOfType(Token.Dot) || isSymbolOfType(Token.OpeningSquareBracket)) {
             if (lookahead.getValue().equals(".")) {
+                int line=lookahead.getLine();
                 consume(Token.Dot); //Expected .
                 ExpressionStatement rightPart = parseLeftPartOfVariableAssigment(new VariableReference(consume(Token.Identifier)));
-                leftPart = new StructAccess(leftPart, rightPart);
+                leftPart = new StructAccess(leftPart, rightPart,line);
             } else if (isSymbolOfType(Token.OpeningSquareBracket)) {
+                int line=lookahead.getLine();
                 consume(Token.OpeningSquareBracket); //Expected [
                 ExpressionStatement index = parseExpression();
                 consume(Token.ClosingSquareBracket); //Expected ]
-                leftPart = new ArrayAccess(leftPart, index);
+                leftPart = new ArrayAccess(leftPart, index,line);
             }
 
         }
@@ -562,6 +566,7 @@ public class Parser {
     */
 
     private ForStatement parseForStatement() throws IOException, ParserException {
+        int line_where_for_is_declared=lookahead.getLine();
         consume(Token.For); //for
         consume(Token.OpeningParenthesis); //( expected
         VariableAssigment start = null;
@@ -590,7 +595,7 @@ public class Parser {
         consume(Token.OpeningCurlyBrace); // { expected
         Block block = parseBlock();
         consume(Token.ClosingCurlyBrace); // } expected
-        return new ForStatement(start, condition, update, block);
+        return new ForStatement(start, condition, update, block,line_where_for_is_declared);
     }
 
     /*
@@ -598,6 +603,7 @@ public class Parser {
         WhileStatement -> while (Expression) Block
      */
     private WhileStatement parseWhileStatement() throws IOException, ParserException {
+        int line_where_while_is_declared=lookahead.getLine();
         consume(Token.While); //while
         consume(Token.OpeningParenthesis); //( expexted
         ExpressionStatement condition=parseExpression();
@@ -605,13 +611,14 @@ public class Parser {
         consume(Token.OpeningCurlyBrace); // { expexted
         Block block = parseBlock();
         consume(Token.ClosingCurlyBrace); // } expexted
-        return new WhileStatement(condition,block);
+        return new WhileStatement(condition,block,line_where_while_is_declared);
     }
     /*
         Parse an if statement
         IfStatement -> if (Expression) Block | if (Expression) Block else Block
      */
     private IfStatement parseIfStatement() throws IOException, ParserException {
+        int line_where_if_is_declared=lookahead.getLine();
         consume(Token.If); //if
         consume(Token.OpeningParenthesis); //( expected
         ExpressionStatement if_condition=parseExpression();
@@ -620,27 +627,29 @@ public class Parser {
         Block if_block = parseBlock();
         consume(Token.ClosingCurlyBrace); // } expected
         if(lookahead.getValue().equals("else")){
+            int line_where_else_is_declared=lookahead.getLine();
             consume(Token.Else); //else expected
             consume(Token.OpeningCurlyBrace); // { expected
             Block else_block = parseBlock();
             consume(Token.ClosingCurlyBrace); // } expected
-            return new IfElseStatement(if_condition,if_block,else_block);
+            return new IfElseStatement(if_condition,if_block,else_block,line_where_if_is_declared,line_where_else_is_declared);
         }
-        return new IfStatement(if_condition,if_block);
+        return new IfStatement(if_condition,if_block,line_where_if_is_declared);
     }
     /*
         Parse a Return statement
         ReturnStatement -> return Expression; | return;
      */
     private ReturnStatement parseReturnStatement() throws IOException, ParserException {
+        int line_where_return_is_declared=lookahead.getLine();
         consume(Token.Return); //return
         if (isSymbolOfType(Token.Semicolon)) { //return;
             consume(Token.Semicolon); //; expected
-            return new ReturnStatement();
+            return new ReturnStatement(line_where_return_is_declared);
         }
         ExpressionStatement expr = parseExpression();
         consume(Token.Semicolon); //; expected
-        return new ReturnStatement(expr);
+        return new ReturnStatement(expr,line_where_return_is_declared);
     }
 
     /*
@@ -848,10 +857,11 @@ public class Parser {
         ArrayInitialization -> BaseType[Expression]
      */
     public ArrayInitialization parseArrayInitialization() throws ParserException, IOException {
+        int curr_line= lookahead.getLine();
         Type type=new BaseType(consume(Token.BasedType));
         consume(Token.OpeningSquareBracket); //Expected [
         ExpressionStatement size=parseExpression();
         consume(Token.ClosingSquareBracket); //Expected ]
-        return new ArrayInitialization(type,size);
+        return new ArrayInitialization(type,size,curr_line);
     }
 }

@@ -10,6 +10,7 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 public abstract class ASTNode implements Visitable {
     private ASTNode next;
 
+
     public ASTNode() {
     }
 

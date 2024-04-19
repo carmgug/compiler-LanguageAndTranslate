@@ -10,13 +10,16 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 public class IfStatement extends ASTNode {
     protected ExpressionStatement ifCondition;
     protected Block ifBlock;
+    protected final int if_line;
 
-    public IfStatement(ExpressionStatement ifCondition, Block ifBlock){
+    public IfStatement(ExpressionStatement ifCondition, Block ifBlock,int if_line){
         this.ifCondition=ifCondition;
         this.ifBlock=ifBlock;
+        this.if_line=if_line;
     }
 
-    public IfStatement(){
+    public IfStatement(int ifLine){
+        if_line = ifLine;
         this.ifCondition=null;
         this.ifBlock=null;
     }
@@ -26,6 +29,10 @@ public class IfStatement extends ASTNode {
                 "ifCondition : " + ifCondition + "," +
                 "ifBlock : {" + ifBlock + "}}";
 
+    }
+
+    public int getIf_line() {
+        return if_line;
     }
 
     public ExpressionStatement getIfCondition() {

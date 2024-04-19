@@ -4,19 +4,22 @@
 package compiler;
 
 import compiler.Exceptions.ParserExceptions.ParserException;
+import compiler.Exceptions.SemanticException.SemanticErrorException;
 import compiler.Lexer.Lexer;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.Program;
 import compiler.Parser.Parser;
+import compiler.SemanticAnalysis.SemanticAnalysis;
 
 import java.io.*;
 
 
 public class Compiler {
-    public static void main(String[] args) throws IOException, ParserException {
+    public static void main(String[] args) throws IOException, ParserException, SemanticErrorException {
 
         boolean debugModeLexer = false;
         boolean debugModeParser = false;
+        boolean debugModeSemanticAnalysis = false;
         String filePath = null;
 
         // Parse command-line arguments
@@ -25,30 +28,23 @@ public class Compiler {
                 debugModeLexer = true;
             } else if("-parser".equals(args[i]) || args[i] == "-parser"){
                 debugModeParser = true;
-            }else {
+            } else if("-semantic".equals(args[i]) || args[i] == "-semantic"){
+                debugModeSemanticAnalysis = true;
+            }
+            else {
                 // Assuming the file path comes after the -lexer flag
                 filePath = args[i];
             }
         }
         // Check if file path is provided
         if (filePath == null) {
-            System.err.println("Usage: javac Main.java -lexer <filepath>");
+            System.err.println("Usage: javac Main.java -lexer -parser -semantic <filepath>");
             System.exit(1); // Exit with error
         }
 
         FileReader fileReader = new FileReader(filePath);
-
-        Parser parser = new Parser(fileReader,debugModeLexer,debugModeParser);
-        Program p= parser.getAST();
-        System.out.println(p);
-
-        /*
-            for(,,){
-
-            }
-         */
-
-
+        SemanticAnalysis s = new SemanticAnalysis(fileReader, debugModeLexer, debugModeParser, debugModeSemanticAnalysis);
+        s.performSemanticAnalysis();
 
 
 

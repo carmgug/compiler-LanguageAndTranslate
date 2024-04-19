@@ -34,5 +34,12 @@ public class SemanticStructType extends SymbolTableEntry {
         return this.type;
     }
 
+    public String toString(){
+        if(fields.size()==0){
+            return " : {}";
+        }
+        return " : "+fields.toString(2);
+    }
+
 
 }

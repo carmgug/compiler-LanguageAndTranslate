@@ -57,15 +57,17 @@ public class Procedure extends ASTNode {
     public Type getReturnType(){return this.returnType;}
 
     public Symbol getName(){return this.name;}
+    public String getProcedureName(){return this.name.getValue();}
+    /*
+        @return the line number where the procedure was declared
+     */
+    public int getLine(){return this.name.getLine();}
 
     public ArrayList<VariableDeclaration> getParameters_of_the_procedure()
     {return this.parameters_of_the_procedure;}
 
     public Block getBody(){return this.body;}
 
-    public String getProcedureName(){
-        return this.name.getValue();
-    }
 
 
 

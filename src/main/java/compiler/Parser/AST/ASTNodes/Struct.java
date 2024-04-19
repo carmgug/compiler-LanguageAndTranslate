@@ -36,6 +36,12 @@ public class Struct extends ASTNode {
     public Symbol getIdentifier(){
         return this.identifier;
     }
+    public String getStructName(){
+        return this.identifier.getValue();
+    }
+    public int getLine(){
+        return this.identifier.getLine();
+    }
 
     public String toString(){
         return "Struct: {"+

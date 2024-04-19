@@ -24,6 +24,12 @@ public class Constant extends ASTNode {
     public Symbol getIdentifier(){
         return this.identifier;
     }
+    public String getConstantName(){
+        return this.identifier.getValue();
+    }
+    public int getLine(){
+        return this.identifier.getLine();
+    }
 
     public Type getType(){
         return this.type;

@@ -10,9 +10,15 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 public class ReturnStatement extends ASTNode {
 
     private final ExpressionStatement expression;
+    private final int line;
 
-    public ReturnStatement(){//return ;
+    public ReturnStatement(int line){//return ;
         this.expression=null;
+        this.line=line;
+    }
+    public ReturnStatement(ExpressionStatement expression,int line){//return expression;
+        this.expression=expression;
+        this.line=line;
     }
 
     @Override
@@ -29,9 +35,7 @@ public class ReturnStatement extends ASTNode {
         return expression;
     }
 
-    public ReturnStatement(ExpressionStatement expression){//return expression;
-        this.expression=expression;
-    }
+
 
     public String toString(){
         if(expression==null){
@@ -41,4 +45,8 @@ public class ReturnStatement extends ASTNode {
     }
 
     public ExpressionStatement getExpression(){return  this.expression;}
+
+    public int getLine() {
+        return line;
+    }
 }

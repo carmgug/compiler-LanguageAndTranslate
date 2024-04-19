@@ -9,13 +9,15 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 public class WhileStatement extends ASTNode {
 
-    private ExpressionStatement exitCondition;
+    private final ExpressionStatement exitCondition;
 
-    private Block block;
+    private final Block block;
+    private final int line;
 
-    public WhileStatement(ExpressionStatement exitCondition, Block block){
+    public WhileStatement(ExpressionStatement exitCondition, Block block, int line){
         this.exitCondition=exitCondition;
         this.block=block;
+        this.line=line;
     }
 
 
@@ -45,4 +47,7 @@ public class WhileStatement extends ASTNode {
     }
 
 
+    public int getLine() {
+        return line;
+    }
 }

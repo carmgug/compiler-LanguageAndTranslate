@@ -8,11 +8,12 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 public class StructAccess extends ExpressionStatement {
 
-    private ExpressionStatement leftPart;
-    private ExpressionStatement rightPart;
+    private final ExpressionStatement leftPart;
+    private final ExpressionStatement rightPart;
+    private final int line;
 
-    public StructAccess(ExpressionStatement leftPart, ExpressionStatement rightPart) {
-
+    public StructAccess(ExpressionStatement leftPart, ExpressionStatement rightPart,int line) {
+        this.line= line;
         this.leftPart = leftPart;
         this.rightPart = rightPart;
     }
@@ -22,6 +23,10 @@ public class StructAccess extends ExpressionStatement {
                         "leftPart: " + leftPart + ","+
                         "rightPart: " + rightPart +
                 "}";
+    }
+
+    public int getLine() {
+        return line;
     }
 
     public ExpressionStatement getLeftPart() {

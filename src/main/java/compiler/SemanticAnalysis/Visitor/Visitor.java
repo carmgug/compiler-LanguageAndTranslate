@@ -25,6 +25,8 @@ public interface Visitor {
 
     void visit(ASTNode statement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
 
+    void visit(FunctionCall functionCall, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
+
     void visit(IfStatement ifStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
 
     void visit(IfElseStatement ifElseStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;

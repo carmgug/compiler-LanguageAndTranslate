@@ -11,10 +11,18 @@ public class VariableAssigment extends ASTNode {
 
     protected ExpressionStatement variable;
     protected ExpressionStatement right_side;
+    protected int line;
+
 
     public VariableAssigment(ExpressionStatement variable, ExpressionStatement right_side) {
         this.variable = variable;
         this.right_side = right_side;
+    }
+
+    public VariableAssigment(ExpressionStatement variable, ExpressionStatement right_side, int line) {
+        this.variable = variable;
+        this.right_side = right_side;
+        this.line= line;
     }
 
     public String toString() {
@@ -40,4 +48,7 @@ public class VariableAssigment extends ASTNode {
     }
 
 
+    public int getLine() {
+        return line;
+    }
 }
