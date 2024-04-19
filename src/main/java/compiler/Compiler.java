@@ -4,18 +4,14 @@
 package compiler;
 
 import compiler.Exceptions.ParserExceptions.ParserException;
-import compiler.Exceptions.SemanticException.SemanticErrorException;
-import compiler.Lexer.Lexer;
-import compiler.Lexer.Symbol;
-import compiler.Parser.AST.Program;
-import compiler.Parser.Parser;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.SemanticAnalysis.SemanticAnalysis;
 
 import java.io.*;
 
 
 public class Compiler {
-    public static void main(String[] args) throws IOException, ParserException, SemanticErrorException {
+    public static void main(String[] args) throws IOException, ParserException, SemanticException {
 
         boolean debugModeLexer = false;
         boolean debugModeParser = false;
@@ -44,7 +40,12 @@ public class Compiler {
 
         FileReader fileReader = new FileReader(filePath);
         SemanticAnalysis s = new SemanticAnalysis(fileReader, debugModeLexer, debugModeParser, debugModeSemanticAnalysis);
-        s.performSemanticAnalysis();
+        try{
+            s.performSemanticAnalysis();
+        }catch (SemanticException e){
+            System.err.println(e.getMessage());
+            System.exit(2);
+        }
 
 
 

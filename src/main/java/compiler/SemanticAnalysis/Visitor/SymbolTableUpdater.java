@@ -1,6 +1,8 @@
 package compiler.SemanticAnalysis.Visitor;
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Exceptions.SemanticException.ScopeError;
+import compiler.Exceptions.SemanticException.SemanticException;
+import compiler.Exceptions.SemanticException.StructError;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.*;
 import compiler.Parser.AST.ASTNodes.Expressions.FunctionCall;
@@ -21,43 +23,58 @@ import java.util.ArrayList;
 public class SymbolTableUpdater implements Visitor {
 
 
+    private String[] default_types = {"int", "float", "bool",
+    "string", "int", "for", "while"};
+
+
+
     @Override
-    public void visit(Constant constant, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(Constant constant, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         String id=constant.getIdentifier().getValue(); //Si preleva l'identifier
         Type type=constant.getType(); //Si preleva il tipo
         //Si verifica che non sia gia stata definita una variabile con stesso nome
         if(symbolTable.get(id)!=null){ //if it's already defined then you need to throw an Exception
-            throw new SemanticErrorException("Constant "+id +" already defined "+ "(line "+constant.getLine()+")");
+            throw new ScopeError("Constant "+id +" already defined "+ "(line "+constant.getLine()+")");
         }
         symbolTable.add(id,new SymbolTableType(type));
     }
 
     @Override
-    public void visit(Struct struct, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(Struct struct, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         String structName= struct.getIdentifier().getValue();
+
+        if(contains(default_types, structName)){
+            throw new StructError("Struct "+structName +" already defined as a default type "+ "(line "+struct.getLine()+")");
+        }
         if(structTable.get(structName)!=null){ //check if ther is another struct with the same name
-            throw new SemanticErrorException("Struct "+structName +" already defined "+ "(line "+struct.getLine()+")");
+            throw new StructError("Struct "+structName +" already defined "+ "(line "+struct.getLine()+")");
         }
         structTable.add(structName,new SemanticStructType(new StructType(struct.getIdentifier())));
     }
 
+    private boolean contains(String[] arr, String target) {
+        for(String s: arr){
+            if(s.equals(target)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
-    public void visit(GlobalVariable globalVariable, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException  {
+    public void visit(GlobalVariable globalVariable, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         String identifier=globalVariable.getNameOfTheVariable(); //Si preleva l'identifier
         Type type=globalVariable.getType(); //Si preleva il tipo
         //Si verifica che non sia gia stata definita una variabile con stesso nome
         if(symbolTable.get(identifier)!=null){ //if it's already defined then you need to throw an Exception
-            throw new SemanticErrorException("GlobalVariable "+identifier +" already defined "+ "(line "+globalVariable.getLine()+")");
+            throw new ScopeError("GlobalVariable "+identifier +" already defined "+ "(line "+globalVariable.getLine()+")");
         }
         symbolTable.add(identifier,new SymbolTableType(type));
     }
 
 
-
-
-
     @Override
-    public void visit(Procedure procedure, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(Procedure procedure, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         Type return_type=procedure.getReturnType(); //Si preleva il tipo
         String procedure_identifier=procedure.getProcedureName();
         ArrayList<VariableDeclaration> procedure_parameters=procedure.getParameters_of_the_procedure();
@@ -69,7 +86,7 @@ public class SymbolTableUpdater implements Visitor {
             //Ok we have two procedure with two same name
             //but the list of parameter need to be different
             if(procedures.containsAProcedureWithParameters(procedure_parameters)){
-                throw new SemanticErrorException("You have already define a procedure with the same name and same parameters"+
+                throw new ScopeError("You have already define a procedure with the same name and same parameters"+
                         "(line: "+procedure.getLine()+")");
             }
             //ok not exist the same procedure we need to add
@@ -90,12 +107,12 @@ public class SymbolTableUpdater implements Visitor {
     }
 
     @Override
-    public void visit(ASTNode statement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public void visit(ASTNode statement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
 
     }
 
     @Override
-    public void visit(FunctionCall functionCall, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public void visit(FunctionCall functionCall, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
 
     }
 
@@ -105,7 +122,7 @@ public class SymbolTableUpdater implements Visitor {
     }
 
     @Override
-    public void visit(IfElseStatement ifElseStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public void visit(IfElseStatement ifElseStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
 
     }
 
@@ -131,6 +148,11 @@ public class SymbolTableUpdater implements Visitor {
 
     @Override
     public void visit(ReturnStatement returnStatement,SymbolTable symbolTable,SymbolTable structTable){
+
+    }
+
+    @Override
+    public void visit(VariableInstantiation variableInstantiation, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
 
     }
 }

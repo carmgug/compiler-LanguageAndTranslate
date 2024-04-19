@@ -22,6 +22,12 @@ public class ArrayType extends BaseType {
         return "Array of "+super.toString();
     }
 
+    public boolean equals(Object obj){
+        if(!(obj instanceof ArrayType)) return false;
+        ArrayType arrayType_2=(ArrayType)obj;
+        return this.type.getType().equals(arrayType_2.getSymbol().getType());
+    }
+
 
 
 

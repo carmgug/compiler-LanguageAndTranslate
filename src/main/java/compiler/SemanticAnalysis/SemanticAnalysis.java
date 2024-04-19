@@ -1,7 +1,7 @@
 package compiler.SemanticAnalysis;
 
 import compiler.Exceptions.ParserExceptions.ParserException;
-import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Lexer.Symbol;
 import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNode;
@@ -20,10 +20,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.Iterator;
 
 public class SemanticAnalysis {
@@ -48,14 +46,14 @@ public class SemanticAnalysis {
     }
 
 
-    public void performSemanticAnalysis() throws SemanticErrorException, ParserException, IOException {
-        Program p=parser.getAST();
+    public void performSemanticAnalysis() throws SemanticException, ParserException, IOException {
+        Program p=parser.getAST2();
         intilizeSymbolTable(p);
         performSemanticAnalysis(p);
     }
 
 
-    public void intilizeSymbolTable(Program program) throws SemanticErrorException {
+    public void intilizeSymbolTable(Program program) throws SemanticException {
         //Dobbiamo prima di tutto inserire le funzioni di base
         addBasicProcedure();
         Iterator<ASTNode> it= program.iterator(); //Si itera sull'AST creato dal Parser
@@ -74,7 +72,7 @@ public class SemanticAnalysis {
 
     }
 
-    public void performSemanticAnalysis(Program program) throws SemanticErrorException{
+    public void performSemanticAnalysis(Program program) throws SemanticException {
         Iterator<ASTNode> it= program.iterator();
         while(it.hasNext()){
             ASTNode next=it.next();
@@ -165,22 +163,44 @@ public class SemanticAnalysis {
     private void addWrite(){
         String procedure_name="write";
         Type returnType=new VoidType(new Symbol(Token.Void,"void"));
-        Type param1=new BaseType(new Symbol(Token.StringType,"string"));
         SymbolTableProcedureType function=new SymbolTableProcedureType(new SymbolTableType(returnType));
-        function.addParameter("string",new SymbolTableType(param1));
+        function.addParameter("string",new SymbolTableType(new BaseType(new Symbol(Token.StringType,"string"))));
+
+        SymbolTableProcedureType function2=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function2.addParameter("int",new SymbolTableType(new BaseType(new Symbol(Token.IntType,"int"))));
+
+        SymbolTableProcedureType function3=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function3.addParameter("float",new SymbolTableType(new BaseType(new Symbol(Token.FloatType,"float"))));
 
         SymbolTableProceduresEntry procedures=new SymbolTableProceduresEntry();
         procedures.addFunction(function);
+        procedures.addFunction(function2);
+        procedures.addFunction(function3);
         this.globalTable.add(procedure_name,procedures);
     }
 
     private void addWriteln(){
         String procedure_name="writeln";
         Type returnType=new VoidType(new Symbol(Token.Void,"void"));
-        SymbolTableProcedureType function=new SymbolTableProcedureType(new SymbolTableType(returnType));
+
+        SymbolTableProcedureType function1=new SymbolTableProcedureType(new SymbolTableType(returnType));
+
+        SymbolTableProcedureType function2=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function2.addParameter("string",new SymbolTableType(new BaseType(new Symbol(Token.StringType,"string"))));
+
+        SymbolTableProcedureType function3=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function2.addParameter("int",new SymbolTableType(new BaseType(new Symbol(Token.IntType,"int"))));
+
+        SymbolTableProcedureType function4=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function3.addParameter("float",new SymbolTableType(new BaseType(new Symbol(Token.FloatType,"float"))));
+
 
         SymbolTableProceduresEntry procedures=new SymbolTableProceduresEntry();
-        procedures.addFunction(function);
+        procedures.addFunction(function1);
+        procedures.addFunction(function2);
+        procedures.addFunction(function3);
+        procedures.addFunction(function4);
+
         this.globalTable.add(procedure_name,procedures);
     }
 

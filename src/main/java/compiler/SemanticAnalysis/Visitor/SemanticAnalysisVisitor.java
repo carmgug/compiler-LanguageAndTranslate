@@ -1,12 +1,13 @@
 package compiler.SemanticAnalysis.Visitor;
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Exceptions.SemanticException.*;
 import compiler.Lexer.Symbol;
 import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.*;
 import compiler.Parser.AST.ASTNodes.Expressions.FunctionCall;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.BaseType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.StructType;
 
@@ -24,7 +25,7 @@ public class SemanticAnalysisVisitor implements Visitor{
     TypeCeckingVisitor typeCeckingVisitor=new TypeCeckingVisitor();
 
     @Override
-    public void visit(Constant constant, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(Constant constant, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //We are performing a semanticAnalysis on a constant
         //The costant is already in the symboltTable
         //Buw we need to check if the right part is the same type as the left part declared
@@ -37,20 +38,20 @@ public class SemanticAnalysisVisitor implements Visitor{
             return;
         }
         if(!expected_type.equals(observed_type)){
-            throw new SemanticErrorException("Type of the constant '"+constant.getConstantName()+"' at line "+constant.getLine()+
+            throw new TypeError("Type of the constant '"+constant.getConstantName()+"' at line "+constant.getLine()+
                     " is not the same as the type of the right side of the assignment " +
                     "Expected type: "+expected_type+" Observed type: "+observed_type+")");
         }
     }
 
     @Override
-    public void visit(Struct struct,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(Struct struct,SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //We are performing a semanticAnalysis on a struct
         //The struct is already in the symboltTable
         //We need to check if the struct is already defined
         String structName= struct.getStructName();
         if(structTable.get(structName)==null){ //if the struct is not defined we throw an exception
-            throw new SemanticErrorException("Struct "+structName +" is not defined"+ "(line "+struct.getLine()+")");
+            throw new StructError("Struct "+structName +" is not defined"+ "(line "+struct.getLine()+")");
         }
         SemanticStructType structEntry=new SemanticStructType(new StructType(struct.getIdentifier()));
         for(VariableDeclaration var: struct.getVariableDeclarations()){
@@ -58,7 +59,7 @@ public class SemanticAnalysisVisitor implements Visitor{
             //if the type is a struct or array of struct we need to check if the struct is already defined
             if(var_type instanceof StructType){ //include anche ArrayStructType perchè è un estensione di StructType
                 if(structTable.get(var_type.getSymbol().getValue())==null){
-                    throw new SemanticErrorException("Struct "+var_type.getNameofTheType() +" not defined "+ "(line "+var.getLine()+")");
+                    throw new StructError("Struct "+var_type.getNameofTheType() +" not defined "+ "(line "+var.getLine()+")");
                 }
                 structEntry.addField(var.getNameOfTheVariable(),new SymbolTableType(var_type));
             }
@@ -72,16 +73,24 @@ public class SemanticAnalysisVisitor implements Visitor{
     }
 
     @Override
-    public void visit(GlobalVariable globalVariable, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(GlobalVariable globalVariable, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         Type expected_type=globalVariable.getType();
         ExpressionStatement exp=globalVariable.getValue();
         Type observed_type= typeCeckingVisitor.visit(exp,symbolTable,structTable);
-        //Un float può essere un int, ma un int non può essere un float
-        if(expected_type.getSymbol().getType().equals(Token.FloatType) && observed_type.getSymbol().getType().equals(Token.IntType)){
-            return;
+
+        if(expected_type instanceof BaseType && observed_type instanceof BaseType &&
+            !(expected_type instanceof ArrayType) && !(observed_type instanceof ArrayType)){
+            if(expected_type.getSymbol().getType().equals(Token.FloatType) && observed_type.getSymbol().getType().equals(Token.IntType)){
+                return;
+            }
+        }
+        if(expected_type instanceof ArrayType && observed_type instanceof ArrayType){
+            if(expected_type.getSymbol().getType().equals(Token.FloatType) && observed_type.getSymbol().getType().equals(Token.IntType)){
+                return;
+            }
         }
         if(!expected_type.equals(observed_type)){
-            throw new SemanticErrorException("Type of the GlobalVariable '"+globalVariable.getNameOfTheVariable()+
+            throw new TypeError("Type of the GlobalVariable '"+globalVariable.getNameOfTheVariable()+
                     "' at line "+globalVariable.getLine()+
                     " is not the same as the type of the right side of the assignment.\n\t " +
                     "Expected type: "+expected_type+" Observed type: "+observed_type+")");
@@ -89,7 +98,7 @@ public class SemanticAnalysisVisitor implements Visitor{
 
     }
     @Override
-    public void visit(Procedure procedure, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(Procedure procedure, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //A procedure is a definition of a function but we have already added to symbolTable in previous phase, if it's
         //a call of a procedure we have FunctionCall (But we are here so we dont need to check the existance of the procedure but the block);
         //and the return;
@@ -99,7 +108,7 @@ public class SemanticAnalysisVisitor implements Visitor{
 
         Type expected_type=procedure.getReturnType();
         if(symbolTable.get(procedure_identifier)==null){
-            throw new SemanticErrorException(
+            throw new ScopeError(
                     "Procedure "+procedure_identifier +" used but has not been defined "+
                             "(line "+procedure.getLine()+")");
         }
@@ -119,7 +128,7 @@ public class SemanticAnalysisVisitor implements Visitor{
 
 
     @Override
-    public void visit(Block block, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public void visit(Block block, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         //We are performing a semanticAnalysis on a block
         //We need to perform semantic analysis on all of his statement and if we encounter a return
         //we need to check if the return type is the same as the expected return type
@@ -133,12 +142,12 @@ public class SemanticAnalysisVisitor implements Visitor{
     }
 
     @Override
-    public void visit(ASTNode statement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public void visit(ASTNode statement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         statement.accept(this,symbolTable,structTable);
     }
 
     @Override
-    public void visit(FunctionCall functionCall, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException{
+    public void visit(FunctionCall functionCall, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
 
         //We are performing a semanticAnalysis on a functionCall
         //We need to check if the function is defined
@@ -146,7 +155,7 @@ public class SemanticAnalysisVisitor implements Visitor{
         //We need to check if the type of the arguments is the same as the type of the parameters
         String functionName=functionCall.getFunctionName();
         if(symbolTable.get(functionName)==null){
-            throw new SemanticErrorException("Function "+functionName +" used but has not been defined "+
+            throw new ScopeError("Function "+functionName +" used but has not been defined "+
                     "(line "+functionCall.getLine()+")");
         }
         ArrayList<ExpressionStatement> arguments=functionCall.getParameters();
@@ -171,27 +180,27 @@ public class SemanticAnalysisVisitor implements Visitor{
             }
         }
         //Se sono arrivato qui allora non ho trovato, quindi la funzione esiste ma stai utilizzando i parametri sbagliati
-        throw new SemanticErrorException("Function "+functionName +" used but has not been defined, you are using the wrong parameters"+
+        throw new ArgumentError("Function "+functionName +" used but has not been defined, you are using the wrong parameters"+
                 "(line "+functionCall.getLine()+")");
 
 
     }
 
     @Override
-    public void visit(IfStatement ifStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(IfStatement ifStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //We are performing a semanticAnalysis on a ifStatement
 
         ExpressionStatement condition=ifStatement.getIfCondition();
         Type condition_type=typeCeckingVisitor.visit(condition,symbolTable,structTable);
         if(!condition_type.getSymbol().getType().equals(Token.BoolType)){
-            throw new SemanticErrorException("The condition of the if statement is not a bool (at line: +"+ifStatement.getIf_line()+")");
+            throw new MissingConditionError("The condition of the if statement is not a bool (at line: +"+ifStatement.getIf_line()+")");
         }
         SymbolTable ifBlockSymbolTable=new SymbolTable(symbolTable);
         visit(ifStatement.getIfBlock(),ifBlockSymbolTable,structTable);
     }
 
     @Override
-    public void visit(IfElseStatement ifElseStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException{
+    public void visit(IfElseStatement ifElseStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         //We are performing a semanticAnalysis on a ifElseStatement
         //ExpressionStatement condition=ifElseStatement.getIfCondition();
         //Type condition_type=typeCeckingVisitor.visit(condition,symbolTable,structTable);
@@ -207,7 +216,7 @@ public class SemanticAnalysisVisitor implements Visitor{
     }
 
     @Override
-    public void visit(ForStatement forStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(ForStatement forStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //ForStatement()
         //VariableAssigment start|null,ExpressionStatement endCondition|null, VariableAssigment update|null, Block block
         VariableAssigment start=forStatement.getStart();
@@ -217,7 +226,7 @@ public class SemanticAnalysisVisitor implements Visitor{
                 typeCeckingVisitor.visit(endCondition,symbolTable,structTable) :
                 new BaseType(new Symbol(Token.BoolType, "true"));
         if(!ob_type_endCondition.getSymbol().getType().equals(Token.BoolType)){
-            throw new SemanticErrorException("The condition of the for statement is not a boolean (line "+forStatement.getLine()+")");
+            throw new MissingConditionError("The condition of the for statement is not a boolean (line "+forStatement.getLine()+")");
         }
         VariableAssigment update=forStatement.getUpdate();
         if(update!=null) visit(update,symbolTable,structTable);
@@ -227,35 +236,74 @@ public class SemanticAnalysisVisitor implements Visitor{
     }
 
     @Override
-    public void visit(WhileStatement whileStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(WhileStatement whileStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //WhileStatement (condition1)
         //TODO: Manage the case when condition1 is missing so the while is infinite Maybe
         Type observed_type_of_the_exit_condition=typeCeckingVisitor.visit(whileStatement.getExitCondition(),symbolTable,structTable);
         if(!observed_type_of_the_exit_condition.getSymbol().getType().equals(Token.BoolType)){
-            throw new SemanticErrorException("The condition of the while statement is not a boolean (line "+whileStatement.getLine()+")");
+            throw new MissingConditionError("The condition of the while statement is not a boolean (line "+whileStatement.getLine()+")");
         }
         SymbolTable whileBlockSymbolTable=new SymbolTable(symbolTable);
         visit(whileStatement.getBlock(),whileBlockSymbolTable,structTable);
     }
 
     @Override
-    public void visit(VariableDeclaration variableDeclaration, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(VariableInstantiation variableInstantiation, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
+        //Type NameOfTheVariable=ExpressioneStatement;
+        visit((VariableDeclaration) variableInstantiation,symbolTable,structTable);
+        Type expected_type=variableInstantiation.getType();
+        Type observed_type=typeCeckingVisitor.visit(variableInstantiation.getRight_side(),symbolTable,structTable);
+
+        if(expected_type instanceof BaseType && observed_type instanceof BaseType &&
+                !(expected_type instanceof ArrayType) && !(observed_type instanceof ArrayType)){
+            if(expected_type.getSymbol().getType().equals(Token.FloatType) && observed_type.getSymbol().getType().equals(Token.IntType)){
+                return;
+            }
+        }
+        if(expected_type instanceof ArrayType && observed_type instanceof ArrayType){
+            if(expected_type.getSymbol().getType().equals(Token.FloatType) && observed_type.getSymbol().getType().equals(Token.IntType)){
+                return;
+            }
+        }
+
+        if(!expected_type.equals(observed_type)){
+            throw new TypeError("Type of the variable '"+variableInstantiation.getNameOfTheVariable()+"' at line "+variableInstantiation.getLine()+
+                    " is not the same as the type of the right side of the assignment " +
+                    "Expected type: "+expected_type+" Observed type: "+observed_type+")");
+        }
+    }
+
+    @Override
+    public void visit(VariableDeclaration variableDeclaration, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //Type NameOfTheVariable;
         String identifier = variableDeclaration.getNameOfTheVariable();
         if(symbolTable.isInTheCurrentScope(identifier)){
-            throw new SemanticErrorException("Variable "+identifier+" already declared in the current scope (line "+variableDeclaration.getLine()+")");
+            throw new ScopeError("Variable "+identifier+" already declared in the current scope (line "+variableDeclaration.getLine()+")");
         }
         symbolTable.add(identifier,new SymbolTableType(variableDeclaration.getType()));
     }
 
+
     @Override
-    public void visit(VariableAssigment variableAssigment, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(VariableAssigment variableAssigment, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         ExpressionStatement left_part= variableAssigment.getVariable();
         ExpressionStatement right_part= variableAssigment.getRight_side();
         Type left_part_type=typeCeckingVisitor.visit(left_part,symbolTable,structTable);
         Type right_part_type=typeCeckingVisitor.visit(right_part,symbolTable,structTable);
+
+        if(left_part_type instanceof BaseType && right_part_type instanceof BaseType &&
+                !(left_part_type instanceof ArrayType) && !(right_part_type instanceof ArrayType)){
+            if(left_part_type.getSymbol().getType().equals(Token.FloatType) && right_part_type.getSymbol().getType().equals(Token.IntType)){
+                return;
+            }
+        }
+        if(left_part_type instanceof ArrayType && right_part_type instanceof ArrayType){
+            if(left_part_type.getSymbol().getType().equals(Token.FloatType) && right_part_type.getSymbol().getType().equals(Token.IntType)){
+                return;
+            }
+        }
         if(!left_part_type.equals(right_part_type)){
-            throw new SemanticErrorException(
+            throw new TypeError(
                     "Type of the left part of the assignment is not the same of the type of the right part" +
                     "\n\tVariable: "+variableAssigment.getVariable()+"\n\t" +
                     "Expected type: "+left_part_type+" Observed type: "+right_part_type+
@@ -265,12 +313,12 @@ public class SemanticAnalysisVisitor implements Visitor{
 
 
     @Override
-    public void visit(ReturnStatement returnStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void visit(ReturnStatement returnStatement, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         Type observed_type= typeCeckingVisitor.visit(returnStatement.getExpression(),symbolTable,structTable);
         Type expected_type= ((SymbolTableType)symbolTable.get("return")).getType();
 
         if(expected_type==null || !expected_type.equals(observed_type)){
-            throw new SemanticErrorException("Type of the return statement  is not the same of the type of the curr Procedure " +
+            throw new ReturnError("Type of the return statement  is not the same of the type of the curr Procedure " +
                     "Expected type: "+expected_type+" Observed type: "+observed_type+" at line: "+returnStatement.getLine()+")");
         }
     }

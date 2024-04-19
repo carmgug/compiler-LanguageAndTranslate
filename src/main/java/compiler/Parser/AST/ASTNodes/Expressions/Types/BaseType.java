@@ -23,6 +23,7 @@ public class BaseType extends Type {
 
     public boolean equals(Object obj){
         if(!(obj instanceof BaseType)) return false;
+        if(obj instanceof ArrayType) return false;
         BaseType baseType_2=(BaseType)obj;
         return this.type.getType().equals(baseType_2.getSymbol().getType());
     }

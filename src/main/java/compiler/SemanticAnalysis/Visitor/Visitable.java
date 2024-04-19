@@ -1,7 +1,7 @@
 package compiler.SemanticAnalysis.Visitor;
 
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 
@@ -11,8 +11,8 @@ import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
  */
 public interface Visitable {
 
-    void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException;
-    Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
+    void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException;
+    Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException;
 
 
 }

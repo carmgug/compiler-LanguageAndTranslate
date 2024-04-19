@@ -1,7 +1,7 @@
 package compiler.Parser.AST.ASTNodes;
 
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
@@ -39,11 +39,11 @@ public class Constant extends ASTNode {
         return this.right_side;
     }
 
-    public void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         visitor.visit(this, symbolTable,structTable);
     }
 
-    public Type accept(VisitorType visitorType, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type accept(VisitorType visitorType, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         return visitorType.visit(this, symbolTable,structTable);
     }
 

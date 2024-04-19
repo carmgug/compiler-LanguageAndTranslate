@@ -15,4 +15,11 @@ public class VoidType extends Type {
         return type.getValue();
     }
 
+
+    public boolean equals(Object obj){
+        if(!(obj instanceof VoidType)) return false;
+        VoidType voidType_2=(VoidType)obj;
+        return this.type.getType().equals(voidType_2.getSymbol().getType());
+    }
+
 }

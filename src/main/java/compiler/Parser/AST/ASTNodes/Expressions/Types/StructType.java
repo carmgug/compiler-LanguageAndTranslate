@@ -17,6 +17,7 @@ public class StructType extends Type {
 
     public boolean equals(Object obj){
         if(!(obj instanceof StructType)) return false;
+        if(obj instanceof ArrayStructType) return false;
         StructType obj2=(StructType)obj;
         if(this.getNameofTheType().equals(obj2.getNameofTheType())) return true;
         else return false;

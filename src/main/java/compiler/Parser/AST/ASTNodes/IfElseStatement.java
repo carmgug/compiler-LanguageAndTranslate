@@ -1,7 +1,6 @@
 package compiler.Parser.AST.ASTNodes;
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
-import compiler.Parser.AST.ASTNode;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
@@ -37,12 +36,12 @@ public class IfElseStatement extends IfStatement {
 
 
     @Override
-    public void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         super.accept(visitor, symbolTable, structTable);
     }
 
     @Override
-    public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
-        throw new SemanticErrorException("Sould not run");
+    public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
+        throw new SemanticException("Sould not run");
     }
 }

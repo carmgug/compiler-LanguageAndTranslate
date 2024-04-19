@@ -11,4 +11,11 @@ public class ArrayStructType extends StructType{
     public String toString() {
         return "Array of "+super.toString();
     }
+
+
+    public boolean equals(Object obj){
+        if(!(obj instanceof ArrayStructType)) return false;
+        ArrayStructType arrayStructType_2=(ArrayStructType)obj;
+        return this.type.getType().equals(arrayStructType_2.getSymbol().getType());
+    }
 }

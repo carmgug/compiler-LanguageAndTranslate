@@ -1,11 +1,9 @@
 package compiler.Parser.AST;
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
-import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
-import compiler.SemanticAnalysis.Visitor.VisitorType;
 
 public abstract class ASTNode implements Visitable {
     private ASTNode next;
@@ -31,6 +29,6 @@ public abstract class ASTNode implements Visitable {
         return sb.toString();
     }
 
-    public abstract void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException;
+    public abstract void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException;
 
 }

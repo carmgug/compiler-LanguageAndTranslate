@@ -22,6 +22,7 @@ public class Symbol {
         this.n_line=-1;
     }
 
+
     public static Symbol copy(Symbol value) {
         return new Symbol(value.type, value.e, value.n_line);
     }

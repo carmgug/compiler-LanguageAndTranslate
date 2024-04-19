@@ -1,41 +1,54 @@
-final int a=3;
-final bool c=!(true || false);
-final int b=a+2;
-final float d=3/2;
-final float e=3/1.5;
-int i=3/4;
+//Good luck
+
+final string message = "Hello";
+final bool run = true;
+final int[] a = {3+3};
+final int b = 4;
+final int d = 1;
+//Todo final string c = "Hello"+"World";
+final string c = "Hello";
+
+
+
 struct Point {
     int x;
     int y;
 }
+
 struct Person {
     string name;
-    Point location;
-    int[] history;
+    int age;
 }
-Person p1 = Person("carmelo",Point(2,3),{1,2,3,4,5});
-int[] x=p1.history;
-int y=p1.location.x;
-def int sum(int a,int[] b){
-    int i;
-    for(i=0,i<len(b),i++){
-        a=a+b[i];
-    }
-    p1.name="carmelo";
-    return a;
-}
-def int len(int[] vector){
-    return 0;
-}
-int z=sum(3,{1,2,3,4,5});
 
-def void ciao(Person p){
-    write(p.name);
+Point[] p1={Point(20, 20)};
+float[] e = {3};
+int f = 3;
+
+def int square(int v) {
+    return v*v;
+}
+
+Person[] ciao= {Person("ciao", 20)};
+
+
+
+def void main(int value) {
+    writeInt(square(value));
     writeln();
+    Person[] ciao;
+    int i;
+    for (,,) {
+        while (value!=0) {
+            if (run){
+                value = value - 1;
+            } else {
+                write(message);
+            }
+        }
+    }
+    while(true){
+        writeln();
+    }
+    i = (i+2)*2;
 }
-
-
-
-
-
 

@@ -1,6 +1,6 @@
 package compiler.Parser.AST.ASTNodes.Expressions;
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
@@ -33,10 +33,10 @@ public class ArrayAccess extends ExpressionStatement{
 
     public ExpressionStatement getIndex(){return  this.index;}
 
-    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         visitor.visit(this,symbolTable,structTable);
     }
-    public Type accept(VisitorType visitorType, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type accept(VisitorType visitorType, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         return visitorType.visit(this, symbolTable,structTable);
     }
 

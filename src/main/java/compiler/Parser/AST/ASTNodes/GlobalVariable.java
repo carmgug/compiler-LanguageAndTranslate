@@ -1,6 +1,6 @@
 package compiler.Parser.AST.ASTNodes;
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Lexer.Symbol;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
@@ -52,12 +52,12 @@ public class GlobalVariable extends ASTNode {
 
 
     @Override
-    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public void accept(Visitor visitor, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         visitor.visit(this,symbolTable,structTable);
     }
 
     @Override
-    public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
-        throw new SemanticErrorException("Sould not run");
+    public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
+        throw new SemanticException("Sould not run");
     }
 }

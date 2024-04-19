@@ -1,7 +1,6 @@
 package compiler.SemanticAnalysis.SymbolTable.SymbolTableValues;
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
-import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Parser.AST.ASTNodes.VariableDeclaration;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTableEntry;
 
@@ -23,7 +22,7 @@ public class SymbolTableProceduresEntry extends SymbolTableEntry {
         procedures=new LinkedList<>();
     }
 
-    public void addFunction(ArrayList<VariableDeclaration> parameters, SymbolTableType returnType) throws SemanticErrorException{
+    public void addFunction(ArrayList<VariableDeclaration> parameters, SymbolTableType returnType) throws SemanticException {
         Map<String, SymbolTableEntry> map_parameters=new LinkedHashMap<>();
         for(VariableDeclaration v:parameters){
             String name_variable=v.getIdentifier().getIdentifier();

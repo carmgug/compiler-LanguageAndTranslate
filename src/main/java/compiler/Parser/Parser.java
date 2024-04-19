@@ -689,6 +689,21 @@ public class Parser {
                         statements_of_theblock.add(new VariableDeclaration(type, new VariableReference(identifier)));
                     }
                 }
+                else if(isSymbolOfType(Token.OpeningSquareBracket)){ //Variable Assigment or Variable Declaration of Array
+                    Type type = new ArrayStructType(curr_identifier);
+                    consume(Token.OpeningSquareBracket); //Expected [
+                    consume(Token.ClosingSquareBracket); //Expected ]
+                    Symbol identifier = consume(Token.Identifier);
+                    if (isSymbolOfType(Token.AssignmentOperator)) { //Variable Instantiation
+                        VariableInstantiation curr_variableInstantiation = parseVariableInstantiation(type, identifier);
+                        consume(Token.Semicolon); //; expected
+                        statements_of_theblock.add(curr_variableInstantiation);
+                    } else {//Variable Declaration
+                        consume(Token.Semicolon); //; expected
+                        statements_of_theblock.add(new VariableDeclaration(type, new VariableReference(identifier)));
+                    }
+
+                }
                 else  { //Variable Assignment
                     VariableAssigment curr_variableAssignment = parseVariableAssigment(curr_identifier);
                     consume(Token.Semicolon); //; expected
@@ -760,7 +775,7 @@ public class Parser {
             consume(Token.ClosingCurlyBrace); //Expected }
             return new ArrayValueDeclaration(arrayElements);
         } else {
-            throw new ParserException("Unexpected Symbol "+lookahead);
+            throw new ParserException("Unexpected Symbol "+lookahead+" at line "+lookahead.getLine());
         }
     }
 

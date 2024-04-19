@@ -1,6 +1,6 @@
 package compiler.SemanticAnalysis.Visitor;
 
-import compiler.Exceptions.SemanticException.SemanticErrorException;
+import compiler.Exceptions.SemanticException.*;
 import compiler.Lexer.Symbol;
 import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNodes.*;
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 public class TypeCeckingVisitor implements VisitorType{
 
     @Override
-    public Type visit(Constant constant, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(Constant constant, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         return null;
     }
 
@@ -44,40 +44,40 @@ public class TypeCeckingVisitor implements VisitorType{
     }
 
     @Override
-    public Type visit(VariableReference variable, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(VariableReference variable, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         if(symbolTable.get(variable.getIdentifier())==null){
-            throw new SemanticErrorException("Variable '"+variable.getIdentifier()+"' not defined at line "+variable.getLine());
+            throw new ScopeError("Variable '"+variable.getIdentifier()+"' not defined at line "+variable.getLine());
         }
         SymbolTableEntry type= symbolTable.get(variable.getIdentifier());
         return ((SymbolTableType) type).getType();
     }
     @Override
-    public Type visit(ArithmeticNegationNode arithmeticNegationNode, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(ArithmeticNegationNode arithmeticNegationNode, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type observed_Type=visit(arithmeticNegationNode.getExpression(),symbolTable,structTable);
         //Expected Type is a bool
         if(!observed_Type.equals(new BaseType(new Symbol(Token.IntType,"int"))) &&
                 !observed_Type.equals(new BaseType(new Symbol(Token.FloatType,"float")))){
-            throw new SemanticErrorException("Expected type Int or Float, found "+observed_Type.getSymbol().getType());
+            throw new TypeError("Expected type Int or Float, found "+observed_Type.getSymbol().getType());
         }
         return observed_Type;
     }
     @Override
-    public Type visit(BooleanNegationNode booleanNegationNode, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(BooleanNegationNode booleanNegationNode, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type observed_Type=visit(booleanNegationNode.getExpression(),symbolTable,structTable);
         //Expected Type is a bool
         if(!observed_Type.equals(new BaseType(new Symbol(Token.BoolType,"bool")))){
-            throw new SemanticErrorException("Expected type bool, found "+observed_Type.getSymbol().getType());
+            throw new TypeError("Expected type bool, found "+observed_Type.getSymbol().getType());
         }
         return observed_Type;
     }
     @Override
-    public Type visit(StructAccess structAccess, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(StructAccess structAccess, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type left_part=visit(structAccess.getLeftPart(),symbolTable,structTable);
         if(!(left_part instanceof StructType)){
-            throw new SemanticErrorException("Expected a struct type, found "+left_part+" at line: "+structAccess.getLine()+")");
+            throw new TypeError("Expected a struct type, found "+left_part+" at line: "+structAccess.getLine()+")");
         }
         if(structTable.get(left_part.getNameofTheType())==null){
-            throw new SemanticErrorException("You are using a Struct that has not been defined '"+left_part.getNameofTheType()+"' at line "+structAccess.getLine());
+            throw new ScopeError("You are using a Struct that has not been defined '"+left_part.getNameofTheType()+"' at line "+structAccess.getLine());
         }
         SymbolTable struct_symbol_table=((SemanticStructType)structTable.get(left_part.getNameofTheType())).getFields();
         Type right_part=visit(structAccess.getRightPart(),struct_symbol_table ,structTable);
@@ -85,26 +85,26 @@ public class TypeCeckingVisitor implements VisitorType{
     }
 
     @Override
-    public Type visit(ArrayAccess arrayAccess, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(ArrayAccess arrayAccess, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type left_part=visit(arrayAccess.getArray(),symbolTable,structTable);
         if(!(left_part instanceof ArrayType) && !(left_part instanceof ArrayStructType)){
-            throw new SemanticErrorException("Expected a ArrayType, found "+left_part+"(line: "+arrayAccess.getLine()+")");
+            throw new TypeError("Expected a ArrayType, found "+left_part+"(line: "+arrayAccess.getLine()+")");
         }
         Type index=visit(arrayAccess.getIndex(),symbolTable,structTable);
         //the index must be an int
         if(!index.getSymbol().getType().equals(Token.IntType)){
-            throw new SemanticErrorException("Expected a int, found "+index.getSymbol().getType());
+            throw new TypeError("Expected a int, found "+index.getSymbol().getType());
         }
         return  left_part;
     }
 
     @Override
-    public Type visit(ExpressionStatement expressionStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(ExpressionStatement expressionStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         return expressionStatement.accept(this,symbolTable,structTable);
     }
 
     @Override
-    public Type visit(FunctionCall functionCall,SymbolTable symbolTable,SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(FunctionCall functionCall,SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //We are performing a semanticAnalysis on a functionCall
         //The functionCall is already in the symboltTable
         //We need to check if the function is already defined
@@ -116,7 +116,7 @@ public class TypeCeckingVisitor implements VisitorType{
         if(functionEntry==null && structEntry==null){
             //if the functionName is not in the symbolTable and in the structTable we throw an exception
             //We need to check the structTable beacuse it could be a constructorCall of a new type of a existing struct
-            throw new SemanticErrorException("Function call '"+functionName +"' is not defined"+ "(line "+functionCall.getFunctionSymbol().getLine()+")");
+            throw new ScopeError("Function call '"+functionName +"' is not defined"+ "(line "+functionCall.getFunctionSymbol().getLine()+")");
         }
         //We need to check if the arguments are the same type as the parameters of the function
         //We need to check if the function is a procedure or a constructorCall
@@ -146,7 +146,7 @@ public class TypeCeckingVisitor implements VisitorType{
                 }
             }
             //Se arrivi qui problema
-            throw new SemanticErrorException("Function call '"+functionName +"' has not the same parameters as the function definition"+ "(line "+functionCall.getFunctionSymbol().getLine()+")");
+            throw new ArgumentError("Function call '"+functionName +"' has not the same parameters as the function definition"+ "(line "+functionCall.getFunctionSymbol().getLine()+")");
         }
         else{
             //we are calling a constructorCall
@@ -159,7 +159,7 @@ public class TypeCeckingVisitor implements VisitorType{
                 Type expected_type = ((SymbolTableType) structType.getFields().get(key)).getType();
                 Type observed_type = this.visit(parameters.get(idx), symbolTable, structTable);
                 if(!expected_type.equals(observed_type)) {
-                    throw new SemanticErrorException("Constructor call '" + functionName + "' has not the same parameters as the struct definition" + "(line " + functionCall.getFunctionSymbol().getLine() + ")"+
+                    throw new ArgumentError("Constructor call '" + functionName + "' has not the same parameters as the struct definition" + "(line " + functionCall.getFunctionSymbol().getLine() + ")"+
                             " Expected: "+expected_type+" Observed: "+observed_type);
                 }
                 idx++;
@@ -169,17 +169,18 @@ public class TypeCeckingVisitor implements VisitorType{
         }
     }
     @Override
-    public Type visit(BinaryExpression binaryExpression, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(BinaryExpression binaryExpression, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type leftType= visit(binaryExpression.getLeft(),symbolTable,structTable);
         Type rightType= visit(binaryExpression.getRight(),symbolTable,structTable);
+        /*
         if(!leftType.equals(rightType)){
-
             boolean case_left_int_right_float=leftType.getSymbol().getType().equals(Token.IntType) && rightType.getSymbol().getType().equals(Token.FloatType);
             boolean case_left_float_right_int=leftType.getSymbol().getType().equals(Token.FloatType) && rightType.getSymbol().getType().equals(Token.IntType);
             if(!case_left_float_right_int && !case_left_int_right_float){
-                throw new SemanticErrorException("Type mismatch in BinaryExpression: "+binaryExpression);
+                throw new SemanticException("Type mismatch in BinaryExpression: "+binaryExpression);
             }
         }
+        */
         Operator op=binaryExpression.getOperator();
         checkOperator(op,leftType,rightType); //ok the operator can be applied to the two types
         //I need to return the type of the operation (int,float,bool,string)
@@ -187,12 +188,12 @@ public class TypeCeckingVisitor implements VisitorType{
     }
 
     @Override
-    public Type visit(Operator operator, Type leftType, Type rightType) throws SemanticErrorException {
+    public Type visit(Operator operator, Type leftType, Type rightType) throws SemanticException {
         return null;
     }
 
     @Override
-    public Type visit(ArrayValueDeclaration arrayValueDeclaration, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(ArrayValueDeclaration arrayValueDeclaration, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type initialType=null;
         for(ExpressionStatement exp: arrayValueDeclaration.getValues()){
             Type observedType=this.visit(exp,symbolTable,structTable);
@@ -200,20 +201,27 @@ public class TypeCeckingVisitor implements VisitorType{
                 initialType=observedType;
             }else{
                 if(!initialType.equals(observedType)){
-                    throw new SemanticErrorException("The array contains different Type ("+initialType+", "+observedType+")");
+                    throw new TypeError("The array contains different Type ("+initialType+", "+observedType+")");
                 }
             }
         }
-        //The array is empty
-        return initialType;
+        if(initialType==null){
+            throw new TypeError("The array is empty");
+        }
+        if(initialType instanceof BaseType){
+            return new ArrayType(initialType.getSymbol());
+        }
+        else{
+            return new ArrayStructType(initialType.getSymbol());
+        }
     }
 
     @Override
-    public Type visit(ArrayInitialization arrayInitialization, SymbolTable symbolTable, SymbolTable structTable) throws SemanticErrorException {
+    public Type visit(ArrayInitialization arrayInitialization, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type type=arrayInitialization.getType();
         Type size=visit(arrayInitialization.getSize(),symbolTable,structTable);
         if(!size.getSymbol().getType().equals(Token.IntType)){
-            throw new SemanticErrorException("Expected a int as size of the array, found "+size.getSymbol().getType()+
+            throw new TypeError("Expected a int as size of the array, found "+size.getSymbol().getType()+
                     "(line: "+arrayInitialization.getLine()+")");
         }
         return type;
@@ -242,22 +250,31 @@ public class TypeCeckingVisitor implements VisitorType{
                 return new BaseType(new Symbol(Token.BoolType,"bool"));
         }
         //Never Reached
-
         return null;
     }
 
-    private void checkOperator(Operator operator,Type leftType,Type rightType) throws SemanticErrorException {
+    private void checkOperator(Operator operator,Type leftType,Type rightType) throws SemanticException {
 
         Token[] allowed_types=allowedTypes(operator);
-        boolean allowed=false;
+        boolean allowed_left=false;
         for(Token allowed_type:allowed_types){
             if(leftType.getSymbol().getType().equals(allowed_type)){
-                allowed=true;
+                allowed_left=true;
                 break;
             }
         }
-        if(!allowed){
-            throw new SemanticErrorException("Operator: " + operator + " doesn't allow type (" + leftType + ")");
+        if(!allowed_left){
+            throw new OperatorError(operator + " doesn't allow type (" + leftType + ")");
+        }
+        boolean allowed_right=false;
+        for(Token allowed_type:allowed_types){
+            if(rightType.getSymbol().getType().equals(allowed_type)){
+                allowed_right=true;
+                break;
+            }
+        }
+        if(!allowed_right){
+            throw new OperatorError(operator + " doesn't allow type (" + rightType + ")");
         }
 
     }
