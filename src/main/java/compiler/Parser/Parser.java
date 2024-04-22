@@ -130,7 +130,7 @@ public class Parser {
                 program.add(curr_procedure);
             }
         }
-        if(!isSymbolOfType(Token.EOF)) throw new ParserException("Unexpected token: "+lookahead.getType()+" expected: "+Token.EOF);
+        if(!isSymbolOfType(Token.EOF)) throw new ParserException("Unexpected token: "+lookahead.getType()+" expected: "+Token.EOF+" at line "+lookahead.getLine());
         if(debugParser) LOGGER.log(Level.DEBUG,"Program Parsed:\n"+program);
         return program;
     }

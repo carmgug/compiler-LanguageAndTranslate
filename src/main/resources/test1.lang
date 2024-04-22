@@ -29,7 +29,7 @@ def int square(int v) {
 }
 
 Person[] ciao= {Person("ciao", 20)};
-
+Person p= Person(33, 20);
 
 
 def void main(int value) {

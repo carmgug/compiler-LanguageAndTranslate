@@ -122,8 +122,28 @@ public class SemanticAnalysisVisitor implements Visitor{
         procedureSymbolTable.add("return",new SymbolTableType(expected_type));
         //Dobbiamo visitare il body
         this.visit(procedure.getBody(),procedureSymbolTable,structTable);
-
+        //Dobbiamo rivistare il body per vedere se c'è un return
+        if(!expected_type.getSymbol().getType().equals(Token.Void)){
+            //Il metodo deve contenere almeno un return;
+            if(!containsAtLeastOneReturn(procedure.getBody(),procedureSymbolTable,structTable)){
+                throw new ReturnError("Procedure "+procedure_identifier +" does not contain at least one return statement "+
+                        "(line "+procedure.getLine()+")");
+            }
+        }
     }
+    private boolean containsAtLeastOneReturn(Block block,SymbolTable symbolTable, SymbolTable structTable){
+        for(ASTNode statement:block.getStatements()){
+            if (statement instanceof Block){
+                return containsAtLeastOneReturn((Block) statement,symbolTable,structTable);
+            }
+            if(statement instanceof ReturnStatement){
+                return true;
+            }
+
+        }
+        return false;
+    }
+
 
 
 
@@ -148,7 +168,6 @@ public class SemanticAnalysisVisitor implements Visitor{
 
     @Override
     public void visit(FunctionCall functionCall, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
-
         //We are performing a semanticAnalysis on a functionCall
         //We need to check if the function is defined
         //We need to check if the number of parameters is the same as the number of arguments
@@ -233,6 +252,7 @@ public class SemanticAnalysisVisitor implements Visitor{
         //Ok then visit the block
         SymbolTable forBlockSymbolTable=new SymbolTable(symbolTable);
         visit(forStatement.getBlock(),forBlockSymbolTable,structTable);
+
     }
 
     @Override

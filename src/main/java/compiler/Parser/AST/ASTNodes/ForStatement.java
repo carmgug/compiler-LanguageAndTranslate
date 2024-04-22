@@ -55,7 +55,7 @@ public class ForStatement extends ASTNode {
 
     @Override
     public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
-        throw new SemanticException("Sould not run");
+        return null;
     }
 
     public int getLine() {

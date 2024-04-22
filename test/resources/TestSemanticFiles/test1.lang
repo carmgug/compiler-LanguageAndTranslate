@@ -1,0 +1,58 @@
+
+final int x=3;
+final float y=3;
+final bool z=true;
+final bool w=false;
+final string name="carmelo";
+
+final int x2=(3+2+4)+10+7+29+45+24;
+final float y2=(3.0+2.0+4.0)+10.0+7.0+29+45+24;
+final bool z2=true && false;
+final bool w2=true || false;
+final int[] array={1,2,3,4,5,6,7,8,9,10};
+
+struct Person {
+    int age;
+    string name;
+    bool isAdult;
+    Location location;
+}
+
+struct Location {
+    float latitude;
+    float longitude;
+}
+
+Person person=Person(22,"carmelo",true,Location(3.0,3.0));
+Person person2=Person(22,"marco",true,Location(5.0,3.0));
+Person person3=Person(23,"francesca",true,Location(3.0,3.0));
+
+int l=array[0];
+int l2=array[1];
+int l3=array[0]+array[1];
+bool person1_more_than_person2= isGreater(person,person2);
+bool person1_less_than_person2= !isGreater(person,person2);
+
+def bool isAdult(Person person){
+    return person.isAdult;
+}
+
+def bool isGreater(Person person,Person person2){
+    return person.age>person2.age;
+}
+
+def bool isGreater(Person person,int age2){
+    return person.age>age2;
+}
+
+def bool isSameLocation(Person person,Person person2){
+    bool cond1=false;
+    bool cond2=false;
+    if(person.location.latitude==person2.location.latitude){
+        cond1=true;
+    }
+    if(person.location.longitude==person2.location.longitude){
+        cond2=true;
+    }
+    return (cond1 && cond2);
+}

@@ -47,7 +47,7 @@ public class SymbolTableProceduresEntry extends SymbolTableEntry {
                 int idx=0;
                 for (Map.Entry<String, SymbolTableEntry> entry : procedure.getFields().entrySet()) {
                     VariableDeclaration curr=parameters.get(idx);
-                    boolean sameType=((SymbolTableType)entry.getValue()).getType().equals(curr.getType().getSymbol().getValue());
+                    boolean sameType=((SymbolTableType)entry.getValue()).getType().equals(curr.getType());
                     if(!sameType){
                         sameParameters=false;
                         break;

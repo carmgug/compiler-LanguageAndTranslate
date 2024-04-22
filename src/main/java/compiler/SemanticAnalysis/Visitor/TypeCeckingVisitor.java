@@ -95,7 +95,11 @@ public class TypeCeckingVisitor implements VisitorType{
         if(!index.getSymbol().getType().equals(Token.IntType)){
             throw new TypeError("Expected a int, found "+index.getSymbol().getType());
         }
-        return  left_part;
+        if(left_part instanceof ArrayType){
+            return new BaseType(left_part.getSymbol());
+        }
+        //In caso contrario l'arrey a sinistra è un array di struct
+        return new StructType(left_part.getSymbol());
     }
 
     @Override
@@ -154,8 +158,12 @@ public class TypeCeckingVisitor implements VisitorType{
             SemanticStructType structType=(SemanticStructType) structEntry;
             //Ok we take the parameters of fucntionCall
             ArrayList<ExpressionStatement> parameters = functionCall.getParameters();
+            if(parameters.size()!=structType.getFields().size()){
+                throw new ArgumentError("Constructor call '"+functionName +"' has not the same parameters as the struct definition"+ "(line "+functionCall.getFunctionSymbol().getLine()+")");
+            }
             int idx=0;
             for(String key:structType.getFields().getEntries().keySet()){
+
                 Type expected_type = ((SymbolTableType) structType.getFields().get(key)).getType();
                 Type observed_type = this.visit(parameters.get(idx), symbolTable, structTable);
                 if(!expected_type.equals(observed_type)) {
@@ -200,6 +208,13 @@ public class TypeCeckingVisitor implements VisitorType{
             if(initialType==null){
                 initialType=observedType;
             }else{
+                if(initialType.getSymbol().getType().equals(Token.FloatType) && observedType.getSymbol().getType().equals(Token.IntType)){
+                    continue;
+                }
+                if(initialType.getSymbol().getType().equals(Token.IntType) && observedType.getSymbol().getType().equals(Token.FloatType)){
+                    initialType=observedType;
+                    continue;
+                }
                 if(!initialType.equals(observedType)){
                     throw new TypeError("The array contains different Type ("+initialType+", "+observedType+")");
                 }
