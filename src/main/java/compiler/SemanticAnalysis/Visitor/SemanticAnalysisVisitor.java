@@ -136,7 +136,20 @@ public class SemanticAnalysisVisitor implements Visitor{
             if (statement instanceof Block){
                 return containsAtLeastOneReturn((Block) statement,symbolTable,structTable);
             }
-            if(statement instanceof ReturnStatement){
+            else if( statement instanceof IfStatement && !(statement instanceof IfElseStatement)){
+                if(containsAtLeastOneReturn(((IfStatement) statement).getIfBlock(),symbolTable,structTable)){
+                    return true;
+                }
+            }
+            else if(statement instanceof IfElseStatement){
+                if(containsAtLeastOneReturn(((IfStatement) statement).getIfBlock(),symbolTable,structTable)){
+                    return true;
+                }
+                if(containsAtLeastOneReturn(((IfElseStatement) statement).getElse_block(),symbolTable,structTable)){
+                    return true;
+                }
+            }
+            else if(statement instanceof ReturnStatement){
                 return true;
             }
 
@@ -180,6 +193,7 @@ public class SemanticAnalysisVisitor implements Visitor{
         ArrayList<ExpressionStatement> arguments=functionCall.getParameters();
         //Deve esistere almeno una funzione che ha lo stesso nome e lo stesso numero di parametri
         SymbolTableProceduresEntry procedures=(SymbolTableProceduresEntry) symbolTable.get(functionName);
+        ArrayList<Type> types=new ArrayList<>();
         for(SymbolTableProcedureType procedure:procedures.getProcedures()){
             if(procedure.getFields().size()==arguments.size()){
                 boolean found=true;
@@ -191,9 +205,13 @@ public class SemanticAnalysisVisitor implements Visitor{
                         found=false;
                         break;
                     }
+                    types.add(observed_type);
                     idx++;
                 }
                 if(found){
+                    functionCall.setParametersType(types);
+                    functionCall.setIsConstructor(false);
+                    functionCall.setReturnType(procedure.getReturnType().getType());
                     return;
                 }
             }

@@ -46,10 +46,19 @@ public class SemanticAnalysis {
     }
 
 
-    public void performSemanticAnalysis() throws SemanticException, ParserException, IOException {
+    public Program performSemanticAnalysis() throws SemanticException, ParserException, IOException {
         Program p=parser.getAST2();
         intilizeSymbolTable(p);
         performSemanticAnalysis(p);
+        return p;
+    }
+
+    public SymbolTable getGlobalTable(){
+        return this.globalTable;
+    }
+
+    public SymbolTable getStructTable(){
+        return this.structTable;
     }
 
 
@@ -244,6 +253,7 @@ public class SemanticAnalysis {
         procedures.addFunction(function);
         this.globalTable.add(procedure_name,procedures);
     }
+
 
 
 }

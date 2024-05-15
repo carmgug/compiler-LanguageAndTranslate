@@ -1,11 +1,15 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.CodeGenerator.CodeGenerationVisitor;
+import compiler.CodeGenerator.EvaluateVisitor;
+import compiler.CodeGenerator.ScopesTable;
 import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
 import compiler.SemanticAnalysis.Visitor.VisitorType;
+import org.objectweb.asm.MethodVisitor;
 
 public class ForStatement extends ASTNode {
 
@@ -56,6 +60,16 @@ public class ForStatement extends ASTNode {
     @Override
     public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         return null;
+    }
+
+    @Override
+    public void accept(CodeGenerationVisitor codeGenerationVisitor, ScopesTable curr_scope, MethodVisitor mw) {
+        throw new RuntimeException("Should not run!");
+    }
+
+    @Override
+    public void accept(EvaluateVisitor visitor, ScopesTable curr_scope, MethodVisitor mw) {
+        throw new RuntimeException("Should not run!");
     }
 
     public int getLine() {

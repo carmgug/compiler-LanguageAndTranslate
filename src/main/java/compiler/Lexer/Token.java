@@ -20,7 +20,6 @@ public enum Token {
     Semicolon(new String[]{";"}, "Semicolon"),
 
 
-
     //Operators
     AssignmentOperator(new String[]{"="}, "AssignmentOperator"),
 
@@ -30,7 +29,6 @@ public enum Token {
     AdditiveOperator(new String[]{"+", "-"}, "AdditiveOperator"),
 
     MultiplicativeOperator(new String[]{"*", "/", "%"}, "MultiplicativeOperator"),
-
 
 
     ComparisonOperator(new String[]{"==", "<", ">", "<=", ">=", "!="}, "ComparisonOperator"),
@@ -46,11 +44,10 @@ public enum Token {
     StringType(new String[]{"string"}, "string"),
 
 
-
     //Void added for function return type after the first assigment
     Void(new String[]{"void"}, "void"),
 
-    Keywords(new String[]{"final", "struct", "def", "for", "while", "if", "else","return"}, "Keywords"),
+    Keywords(new String[]{"final", "struct", "def", "for", "while", "if", "else", "return"}, "Keywords"),
     Final(new String[]{"final"}, "final"),
     Struct(new String[]{"struct"}, "struct"),
     Def(new String[]{"def"}, "def"),
@@ -58,7 +55,7 @@ public enum Token {
     While(new String[]{"while"}, "while"),
     If(new String[]{"if"}, "if"),
 
-    Return(new String[]{"return"},"return"),
+    Return(new String[]{"return"}, "return"),
     Else(new String[]{"else"}, "else"),
     //Numbers Boolean and Strign
     IntNumber(null, "int"),

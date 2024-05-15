@@ -1,5 +1,8 @@
 package compiler.Parser.AST.ASTNodes.Expressions.NegationNodes;
 
+import compiler.CodeGenerator.CodeGenerationVisitor;
+import compiler.CodeGenerator.EvaluateVisitor;
+import compiler.CodeGenerator.ScopesTable;
 import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
@@ -8,6 +11,7 @@ import compiler.Parser.AST.ASTNodes.Expressions.Type;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
 import compiler.SemanticAnalysis.Visitor.VisitorType;
+import org.objectweb.asm.MethodVisitor;
 
 public class BooleanNegationNode extends NegationNode {
     public BooleanNegationNode(ExpressionStatement expression) {
@@ -40,5 +44,15 @@ public class BooleanNegationNode extends NegationNode {
     @Override
     public Type accept(VisitorType visitorType, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         return visitorType.visit(this,symbolTable,structTable);
+    }
+
+    @Override
+    public void accept(CodeGenerationVisitor codeGenerationVisitor, ScopesTable curr_scope, MethodVisitor mw) {
+        throw new RuntimeException();
+    }
+
+    @Override
+    public void accept(EvaluateVisitor visitor, ScopesTable curr_scope, MethodVisitor mw) {
+        throw new RuntimeException();
     }
 }

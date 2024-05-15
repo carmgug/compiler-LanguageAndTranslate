@@ -18,4 +18,6 @@ public class Operator {
     }
 
     public Symbol getSymbol(){return this.operator;}
+
+    public String getOperator(){return this.operator.getValue();}
 }

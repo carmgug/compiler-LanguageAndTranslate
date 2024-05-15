@@ -1,10 +1,13 @@
 package compiler.Parser.AST.ASTNodes;
 
+import compiler.CodeGenerator.CodeGenerationVisitor;
+import compiler.CodeGenerator.ScopesTable;
 import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
 import compiler.SemanticAnalysis.Visitor.VisitorType;
+import org.objectweb.asm.MethodVisitor;
 
 public class IfElseStatement extends IfStatement {
 
@@ -43,5 +46,9 @@ public class IfElseStatement extends IfStatement {
     @Override
     public Type accept(VisitorType visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         throw new SemanticException("Sould not run");
+    }
+
+    public void accept(CodeGenerationVisitor visitor, ScopesTable scopesTable, MethodVisitor mw)  {
+        visitor.visit(this, scopesTable, mw);
     }
 }

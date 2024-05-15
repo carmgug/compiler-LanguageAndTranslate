@@ -27,6 +27,10 @@ public abstract class Type {
         return this.type.getValue();
     }
 
+    public Token getTokenType(){
+        return this.type.getType();
+    }
+
 
 
     public String toString(){

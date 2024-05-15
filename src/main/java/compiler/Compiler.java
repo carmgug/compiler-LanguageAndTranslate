@@ -3,15 +3,17 @@
  */
 package compiler;
 
+import compiler.CodeGenerator.CodeGenerator;
 import compiler.Exceptions.ParserExceptions.ParserException;
 import compiler.Exceptions.SemanticException.SemanticException;
+import compiler.Parser.AST.Program;
 import compiler.SemanticAnalysis.SemanticAnalysis;
 
 import java.io.*;
 
 
 public class Compiler {
-    public static void main(String[] args) throws IOException, ParserException, SemanticException {
+    public static void main(String[] args) throws IOException, ParserException, SemanticException, NoSuchFieldException, IllegalAccessException {
 
         boolean debugModeLexer = false;
         boolean debugModeParser = false;
@@ -40,12 +42,24 @@ public class Compiler {
 
         FileReader fileReader = new FileReader(filePath);
         SemanticAnalysis s = new SemanticAnalysis(fileReader, debugModeLexer, debugModeParser, debugModeSemanticAnalysis);
+        Program p=null;
         try{
-            s.performSemanticAnalysis();
+            p=s.performSemanticAnalysis();
         }catch (SemanticException e){
             System.err.println(e.getMessage());
             System.exit(2);
         }
+        System.out.println("Semantic analysis completed successfully");
+        // Generate the bytecode
+        CodeGenerator codeGenerator = new CodeGenerator(p, s.getGlobalTable(), s.getStructTable());
+        codeGenerator.generateBytecode();
+
+
+        System.out.println("Code generation completed successfully");
+
+
+
+
 
 
 

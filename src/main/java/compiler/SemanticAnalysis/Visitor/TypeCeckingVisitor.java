@@ -7,10 +7,7 @@ import compiler.Parser.AST.ASTNodes.*;
 import compiler.Parser.AST.ASTNodes.Expressions.*;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.ArithmeticNegationNode;
 import compiler.Parser.AST.ASTNodes.Expressions.NegationNodes.BooleanNegationNode;
-import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayStructType;
-import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayType;
-import compiler.Parser.AST.ASTNodes.Expressions.Types.BaseType;
-import compiler.Parser.AST.ASTNodes.Expressions.Types.StructType;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.*;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTableEntry;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTableValues.SemanticStructType;
@@ -81,6 +78,9 @@ public class TypeCeckingVisitor implements VisitorType{
         }
         SymbolTable struct_symbol_table=((SemanticStructType)structTable.get(left_part.getNameofTheType())).getFields();
         Type right_part=visit(structAccess.getRightPart(),struct_symbol_table ,structTable);
+        //ok update the structAccess for the GenerationCode
+        structAccess.setLeftType(left_part);
+        structAccess.setRightType(right_part);
         return right_part;
     }
 
@@ -104,6 +104,9 @@ public class TypeCeckingVisitor implements VisitorType{
 
     @Override
     public Type visit(ExpressionStatement expressionStatement, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
+        if(expressionStatement==null){
+            return new VoidType(new Symbol(Token.Void,"void"));
+        }
         return expressionStatement.accept(this,symbolTable,structTable);
     }
 
@@ -131,6 +134,7 @@ public class TypeCeckingVisitor implements VisitorType{
             //Ok we take the parameters of fucntionCall
             ArrayList<ExpressionStatement> parameters = functionCall.getParameters();
             //We need to check if there is a procedure with the same parameters
+            ArrayList<Type> types=new ArrayList<>();
             for(SymbolTableProcedureType procedure:proceduresEntry.getProcedures()){
                 if(procedure.getFields().size()==parameters.size()){
                     boolean sameParameters=true;
@@ -142,9 +146,15 @@ public class TypeCeckingVisitor implements VisitorType{
                             sameParameters=false;
                             break;
                         }
+                        types.add(observed_type);
                         idx++;
                     }
                     if(sameParameters){ //ho gli stessi parametri
+                        //ok we need to update the functioncall for the GenerationCode
+                        functionCall.setParametersType(types);
+                        functionCall.setReturnType(procedure.getReturnType().getType());
+                        functionCall.setIsConstructor(false);
+
                         return procedure.getReturnType().getType();
                     }
                 }
@@ -162,6 +172,7 @@ public class TypeCeckingVisitor implements VisitorType{
                 throw new ArgumentError("Constructor call '"+functionName +"' has not the same parameters as the struct definition"+ "(line "+functionCall.getFunctionSymbol().getLine()+")");
             }
             int idx=0;
+            ArrayList<Type> types=new ArrayList<>();
             for(String key:structType.getFields().getEntries().keySet()){
 
                 Type expected_type = ((SymbolTableType) structType.getFields().get(key)).getType();
@@ -170,9 +181,14 @@ public class TypeCeckingVisitor implements VisitorType{
                     throw new ArgumentError("Constructor call '" + functionName + "' has not the same parameters as the struct definition" + "(line " + functionCall.getFunctionSymbol().getLine() + ")"+
                             " Expected: "+expected_type+" Observed: "+observed_type);
                 }
+                types.add(observed_type);
                 idx++;
 
             }
+            //ok we need to update the functioncall for the GenerationCode
+            functionCall.setParametersType(types);
+            functionCall.setIsConstructor(true);
+            functionCall.setReturnType(structType.getType());
             return structType.getType();
         }
     }
