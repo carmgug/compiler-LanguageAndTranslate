@@ -11,6 +11,10 @@ public class Symbol {
     private final int n_line;
 
     public Symbol(Token type,String e,int n_line){
+        if(type.equals(Token.String)){
+            //remove the quotes
+            e=e.replaceFirst("\"","");
+        }
         this.type=type;
         this.e=e;
         this.n_line=n_line;

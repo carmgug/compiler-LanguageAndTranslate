@@ -16,6 +16,19 @@ public class ArrayAccess extends ExpressionStatement{
     private final ExpressionStatement index;
     private final int line;
 
+    //field to store the type of the array
+    //updated by semantic analysis
+    private Type type;
+
+    public void setType(Type type){
+        this.type=type;
+    }
+    public Type getType(){
+        return this.type;
+    }
+
+
+
     public ArrayAccess(ExpressionStatement array, ExpressionStatement index,int line){
         this.array=array;
         this.index=index;
@@ -51,7 +64,7 @@ public class ArrayAccess extends ExpressionStatement{
 
     @Override
     public void accept(EvaluateVisitor visitor, ScopesTable curr_scope, MethodVisitor mw) {
-        throw new RuntimeException("Should not run!");
+        visitor.visit(this, curr_scope, mw);
     }
 
 }

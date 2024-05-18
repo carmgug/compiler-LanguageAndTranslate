@@ -14,6 +14,14 @@ import compiler.SemanticAnalysis.Visitor.VisitorType;
 import org.objectweb.asm.MethodVisitor;
 
 public class ArithmeticNegationNode extends NegationNode {
+
+
+
+    //could be
+    private Type type;
+
+
+
     public ArithmeticNegationNode(ExpressionStatement expression) {
         super(expression);
     }
@@ -51,6 +59,16 @@ public class ArithmeticNegationNode extends NegationNode {
 
     @Override
     public void accept(EvaluateVisitor visitor, ScopesTable curr_scope, MethodVisitor mw) {
-        throw new RuntimeException();
+        visitor.visit(this,curr_scope,mw);
     }
+
+    public void setType(Type observedType) {
+        this.type = observedType;
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
+
 }

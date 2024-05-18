@@ -19,6 +19,7 @@ public class Compiler {
         boolean debugModeParser = false;
         boolean debugModeSemanticAnalysis = false;
         String filePath = null;
+        String outputFilePath = null;
 
         // Parse command-line arguments
         for (int i = 0; i < args.length; i++) {
@@ -28,6 +29,10 @@ public class Compiler {
                 debugModeParser = true;
             } else if("-semantic".equals(args[i]) || args[i] == "-semantic"){
                 debugModeSemanticAnalysis = true;
+            } else if("-o".equals(args[i])){
+                // Assuming the file path comes after the -o flag
+                outputFilePath = args[i+1];
+                i++; // Skip the next argument
             }
             else {
                 // Assuming the file path comes after the -lexer flag
@@ -51,8 +56,12 @@ public class Compiler {
         }
         System.out.println("Semantic analysis completed successfully");
         // Generate the bytecode
-        CodeGenerator codeGenerator = new CodeGenerator(p, s.getGlobalTable(), s.getStructTable());
+        CodeGenerator codeGenerator = new CodeGenerator(p, s.getGlobalTable(), s.getStructTable(),outputFilePath);
         codeGenerator.generateBytecode();
+
+
+
+
 
 
         System.out.println("Code generation completed successfully");

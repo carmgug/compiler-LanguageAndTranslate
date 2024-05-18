@@ -52,7 +52,7 @@ public class WhileStatement extends ASTNode {
 
     @Override
     public void accept(CodeGenerationVisitor codeGenerationVisitor, ScopesTable curr_scope, MethodVisitor mw) {
-        throw new RuntimeException("Should not run!");
+        codeGenerationVisitor.visit(this,curr_scope,mw);
     }
 
     @Override

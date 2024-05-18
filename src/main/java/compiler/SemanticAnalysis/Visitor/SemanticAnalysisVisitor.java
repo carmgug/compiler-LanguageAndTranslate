@@ -24,6 +24,7 @@ public class SemanticAnalysisVisitor implements Visitor{
 
     TypeCeckingVisitor typeCeckingVisitor=new TypeCeckingVisitor();
 
+
     @Override
     public void visit(Constant constant, SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
         //We are performing a semanticAnalysis on a constant
@@ -43,6 +44,7 @@ public class SemanticAnalysisVisitor implements Visitor{
                     "Expected type: "+expected_type+" Observed type: "+observed_type+")");
         }
     }
+
 
     @Override
     public void visit(Struct struct,SymbolTable symbolTable,SymbolTable structTable) throws SemanticException {
@@ -131,6 +133,7 @@ public class SemanticAnalysisVisitor implements Visitor{
             }
         }
     }
+
     private boolean containsAtLeastOneReturn(Block block,SymbolTable symbolTable, SymbolTable structTable){
         for(ASTNode statement:block.getStatements()){
             if (statement instanceof Block){
@@ -166,10 +169,10 @@ public class SemanticAnalysisVisitor implements Visitor{
         //We need to perform semantic analysis on all of his statement and if we encounter a return
         //we need to check if the return type is the same as the expected return type
 
-
         for(ASTNode statement:block.getStatements()){
             //if we are talking about ReturnStatement, IfBlock, IfElseBlock, ForBlock, WhileBlock we need to check the return type
-            visit(statement,symbolTable,structTable);
+            statement.accept(this,symbolTable,structTable);
+            //visit(statement,symbolTable,structTable);
         }
 
     }
@@ -233,7 +236,8 @@ public class SemanticAnalysisVisitor implements Visitor{
             throw new MissingConditionError("The condition of the if statement is not a bool (at line: +"+ifStatement.getIf_line()+")");
         }
         SymbolTable ifBlockSymbolTable=new SymbolTable(symbolTable);
-        visit(ifStatement.getIfBlock(),ifBlockSymbolTable,structTable);
+        //visit(ifStatement.getIfBlock(),ifBlockSymbolTable,structTable);
+        ifStatement.getIfBlock().accept(this,ifBlockSymbolTable,structTable);
     }
 
     @Override
@@ -246,10 +250,19 @@ public class SemanticAnalysisVisitor implements Visitor{
         //}
         //SymbolTable ifBlockSymbolTable=new SymbolTable(symbolTable);
         //visit(ifElseStatement.getIfBlock(),ifBlockSymbolTable,structTable);
-        visit((IfStatement)ifElseStatement,symbolTable,structTable);//visit the if part
+        //visit((IfStatement)ifElseStatement,symbolTable,structTable);//visit the if part
+
+        ExpressionStatement condition=ifElseStatement.getIfCondition();
+        Type condition_type=typeCeckingVisitor.visit(condition,symbolTable,structTable);
+        if(!condition_type.getSymbol().getType().equals(Token.BoolType)){
+            throw new MissingConditionError("The condition of the if statement is not a bool (at line: +"+ifElseStatement.getIf_line()+")");
+        }
+        SymbolTable ifBlockSymbolTable=new SymbolTable(symbolTable);
+        ifElseStatement.getIfBlock().accept(this,ifBlockSymbolTable,structTable);
         //visit the else part
         SymbolTable elseBlockSymbolTable=new SymbolTable(symbolTable);
-        visit(ifElseStatement.getElse_block(),elseBlockSymbolTable,structTable);
+        ifElseStatement.getElse_block().accept(this,elseBlockSymbolTable,structTable);
+        //visit(ifElseStatement.getElse_block(),elseBlockSymbolTable,structTable);
     }
 
     @Override

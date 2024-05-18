@@ -53,6 +53,6 @@ public class BooleanNegationNode extends NegationNode {
 
     @Override
     public void accept(EvaluateVisitor visitor, ScopesTable curr_scope, MethodVisitor mw) {
-        throw new RuntimeException();
+         visitor.visit(this,curr_scope,mw);
     }
 }

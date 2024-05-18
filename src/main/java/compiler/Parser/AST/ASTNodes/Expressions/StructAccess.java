@@ -5,6 +5,7 @@ import compiler.CodeGenerator.EvaluateVisitor;
 import compiler.CodeGenerator.ScopesTable;
 import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Parser.AST.ASTNodes.ExpressionStatement;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayType;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
 import compiler.SemanticAnalysis.Visitor.Visitor;
 import compiler.SemanticAnalysis.Visitor.VisitorType;
@@ -33,6 +34,10 @@ public class StructAccess extends ExpressionStatement {
     }
 
     public void setRightType(Type rightType) {
+        if(this.rightPart instanceof ArrayAccess){
+            this.rightType = new ArrayType(rightType.getSymbol());
+            return;
+        }
         this.rightType = rightType;
     }
 

@@ -16,6 +16,18 @@ public class ArrayValueDeclaration extends ExpressionStatement {
 
     ArrayList<ExpressionStatement> values;
 
+    //Value updated during semantic analysis
+    Type type;
+
+    public void setType(Type type){
+        this.type = type;
+    }
+
+    public Type getType(){
+        return this.type;
+    }
+
+
     public ArrayValueDeclaration(ArrayList<ExpressionStatement> values) {
         this.values = values;
     }
@@ -44,6 +56,6 @@ public class ArrayValueDeclaration extends ExpressionStatement {
 
     @Override
     public void accept(EvaluateVisitor visitor, ScopesTable curr_scope, MethodVisitor mw) {
-        throw new RuntimeException("Should not run!");
+        visitor.visit(this, curr_scope,mw);
     }
 }

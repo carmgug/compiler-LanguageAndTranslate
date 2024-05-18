@@ -1,15 +1,16 @@
 
 final int x=3;
-final float y=3;
+final float y=3.0;
 final bool z=true;
 final bool w=false;
-final string name="carmelo";
+final string exam="Language And Translator";
+final int[] array2={1,2,3,4,5,6,7,8,9,10};
 
 final int x2=(3+2+4)+10+7+29+45+24;
-final float y2=(3.0+2.0+4.0)+10.0+7.0+29+45+24;
+final float y2=(3.0+2.0+4.0)+10.0+7.0+29.0+45.0+24.0;
 final bool z2=true && false;
 final bool w2=true || false;
-final int[] array={1,2,3,4,5,6,7,8,9,10};
+
 
 struct Person {
     int age;
@@ -26,6 +27,7 @@ struct Location {
 Person person=Person(22,"carmelo",true,Location(3.0,3.0));
 Person person2=Person(22,"marco",true,Location(5.0,3.0));
 Person person3=Person(23,"francesca",true,Location(3.0,3.0));
+int[] array={1,2,3,4,5,6,7,8,9,10};
 
 int l=array[0];
 int l2=array[1];
@@ -55,4 +57,96 @@ def bool isSameLocation(Person person,Person person2){
         cond2=true;
     }
     return (cond1 && cond2);
+}
+
+def void main(){
+    //write int variables
+    write("x: ");
+    writeln(x);
+    //write float variables
+    write("y: ");
+    writeln(y);
+    //write bool variables
+    write("z: ");
+    writeln(z);
+    //write result of operation between int
+    int result=x+x*2+(x/2)+33+(x%2)+(3+3*(-3));
+    write("result: ");
+    writeln(result);
+    //write result of operation between float
+    float result2=y+y*2.0+(y/2.0)+33.0+(y%2.0)+(3.0+3.0*(-3.0));
+    write("result2: ");
+    writeln(result2);
+    //write result of operation between bool
+    bool result3=z && w || !z && (true || true || false);
+    write("result3: ");
+    writeln(result3);
+    //write string
+    write("exam: ");
+    writeln(exam);
+    //Test of STRUCT
+    //print field of struct
+    write("person name: ");
+    writeln(person.name);
+    write("person age: ");
+    writeln(person.age);
+    write("person isAdult: ");
+    writeln(person.isAdult);
+    //print field of struct that is a struct
+    write("person location latitude: ");
+    writeln(person.location.latitude);
+    //print field of struct that is a struct
+    write("person location longitude: ");
+    writeln(person.location.longitude);
+    //print person2
+    write("person2 name: ");
+    writeln(person2.name);
+    write("person2 age: ");
+    writeln(person2.age);
+    write("person2 isAdult: ");
+    writeln(person2.isAdult);
+    //print person2 location
+    write("person2 location latitude: ");
+    writeln(person2.location.latitude);
+    write("person2 location longitude: ");
+    writeln(person2.location.longitude);
+    //print person3
+    writeln("PERSON 3");
+    write("person3 name: ");
+    writeln(person3.name);
+    write("person3 age: ");
+    writeln(person3.age);
+    write("person3 isAdult: ");
+    writeln(person3.isAdult);
+    //print person3 location
+    write("person3 location latitude: ");
+    writeln(person3.location.latitude);
+    write("person3 location longitude: ");
+    writeln(person3.location.longitude);
+    //print array
+    write("array[0]: ");
+    writeln(l);
+    write("array[1]: ");
+    writeln(l2);
+    write("array[0]+array[1]: ");
+    writeln(l3);
+    //print result of function
+    write("isAdult(person): ");
+    writeln(isAdult(person));
+
+
+    write("p1 older than p2: ");
+    writeln(person1_more_than_person2);
+    write("p1 younger than p2: ");
+    writeln(person1_less_than_person2);
+
+    write("p1 and p2 are in the same location: ");
+    writeln(isSameLocation(person,person2));
+    write("p1 and p3 are in the same location: ");
+    writeln(isSameLocation(person,person3));
+    write("p2 and p3 are in the same location: ");
+    writeln(isSameLocation(person2,person3));
+
+
+
 }

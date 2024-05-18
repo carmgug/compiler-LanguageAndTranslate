@@ -110,6 +110,7 @@ public class SemanticAnalysis {
         addWrite();
         addWriteln();
 
+
     }
 
     private void addReadInt(){
@@ -181,10 +182,14 @@ public class SemanticAnalysis {
         SymbolTableProcedureType function3=new SymbolTableProcedureType(new SymbolTableType(returnType));
         function3.addParameter("float",new SymbolTableType(new BaseType(new Symbol(Token.FloatType,"float"))));
 
+        SymbolTableProcedureType function4=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function4.addParameter("bool",new SymbolTableType(new BaseType(new Symbol(Token.BoolType,"bool"))));
+
         SymbolTableProceduresEntry procedures=new SymbolTableProceduresEntry();
         procedures.addFunction(function);
         procedures.addFunction(function2);
         procedures.addFunction(function3);
+        procedures.addFunction(function4);
         this.globalTable.add(procedure_name,procedures);
     }
 
@@ -198,17 +203,20 @@ public class SemanticAnalysis {
         function2.addParameter("string",new SymbolTableType(new BaseType(new Symbol(Token.StringType,"string"))));
 
         SymbolTableProcedureType function3=new SymbolTableProcedureType(new SymbolTableType(returnType));
-        function2.addParameter("int",new SymbolTableType(new BaseType(new Symbol(Token.IntType,"int"))));
+        function3.addParameter("int",new SymbolTableType(new BaseType(new Symbol(Token.IntType,"int"))));
 
         SymbolTableProcedureType function4=new SymbolTableProcedureType(new SymbolTableType(returnType));
-        function3.addParameter("float",new SymbolTableType(new BaseType(new Symbol(Token.FloatType,"float"))));
+        function4.addParameter("float",new SymbolTableType(new BaseType(new Symbol(Token.FloatType,"float"))));
 
+        SymbolTableProcedureType function5=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function5.addParameter("bool",new SymbolTableType(new BaseType(new Symbol(Token.BoolType,"bool"))));
 
         SymbolTableProceduresEntry procedures=new SymbolTableProceduresEntry();
         procedures.addFunction(function1);
         procedures.addFunction(function2);
         procedures.addFunction(function3);
         procedures.addFunction(function4);
+        procedures.addFunction(function5);
 
         this.globalTable.add(procedure_name,procedures);
     }

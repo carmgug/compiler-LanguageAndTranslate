@@ -18,6 +18,14 @@ public class BinaryExpression extends ExpressionStatement {
     ExpressionStatement left;
 
 
+    //to update during semantic analysis
+    //code Generation use this to know what type of operation need to do
+    //IADD OR FADD ECC
+    private Type typeResult;
+    private Type leftType;
+    private Type rightType;
+
+
     public BinaryExpression(ExpressionStatement left, Symbol operator, ExpressionStatement right) {
         this.left=left;
         this.operator = new Operator(operator);
@@ -64,6 +72,29 @@ public class BinaryExpression extends ExpressionStatement {
         visitor.visit(this, curr_scope,mw);
     }
 
+
+    public void setResultType(Type typeResult) {
+        this.typeResult = typeResult;
+    }
+
+    public Type getResultType() {
+        return typeResult;
+    }
+
+    public void setLeftType(Type leftType) {
+        this.leftType = leftType;
+    }
+
+    public Type getLeftType() {
+        return leftType;
+    }
+
+    public void setRightType(Type rightType) {
+        this.rightType = rightType;
+    }
+    public Type getRightType() {
+        return rightType;
+    }
 
 
 }

@@ -40,7 +40,7 @@ public class IfElseStatement extends IfStatement {
 
     @Override
     public void accept(Visitor visitor, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
-        super.accept(visitor, symbolTable, structTable);
+        visitor.visit(this,symbolTable,structTable);
     }
 
     @Override

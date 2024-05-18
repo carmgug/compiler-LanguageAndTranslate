@@ -1,24 +1,22 @@
 package compiler.CodeGenerator;
 
-import compiler.Exceptions.SemanticException.SemanticException;
+import compiler.Lexer.Symbol;
+import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.*;
-import compiler.Parser.AST.ASTNodes.Expressions.FunctionCall;
+import compiler.Parser.AST.ASTNodes.Expressions.*;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
-import compiler.Parser.AST.ASTNodes.Expressions.Types.VoidType;
-import compiler.Parser.AST.ASTNodes.Expressions.VariableReference;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayStructType;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayType;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
-import compiler.SemanticAnalysis.Visitor.Visitor;
 import org.objectweb.asm.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -30,16 +28,20 @@ public class CodeGenerationVisitor  {
     private final EvaluateVisitor evaluator;
     private int stack_index = 0;
     private String program_name;
+    private String path;
+
 
 
     //To keep track of the type of the current procedure that we are visiting, instead of passing it as a parameter
     //to the visit method of the block, because when we encounter a return statement, i need to know the type of the return
     private Type type_of_current_procedure=null;
+    private boolean added_return = false;
 
-    public CodeGenerationVisitor(ClassWriter cw, String program_name, SymbolTable globalTable, SymbolTable structTable) {
+    public CodeGenerationVisitor(ClassWriter cw, String program_name, SymbolTable globalTable, SymbolTable structTable, String path) {
         this.cw = cw;
         this.evaluator = new EvaluateVisitor(this,program_name,globalTable,structTable);
         this.program_name = program_name;
+        this.path= path;
     }
 
     public void increment_stack_index(){
@@ -51,43 +53,18 @@ public class CodeGenerationVisitor  {
     }
 
     public void visit(Constant constant, ScopesTable curr_scope, MethodVisitor mw){
-        System.out.println("Visiting Constant");
         String costant_name=constant.getConstantName();
-        FieldVisitor fw=cw.visitField(ACC_PRIVATE | ACC_FINAL, costant_name, getFieldType(constant.getType()), null, null);
+        FieldVisitor fw=cw.visitField(ACC_PRIVATE | ACC_STATIC |ACC_FINAL, costant_name, getFieldType(constant.getType()), null, null);
         ExpressionStatement right_side=constant.getRight_side();
         right_side.accept(evaluator,curr_scope,mw);
         curr_scope.add(costant_name,-1,constant.getType());
-
-        //Put the field as final
-
-
-        switch (constant.getType().getNameofTheType()) {
-            case "int":
-                //Store the value in the stack as a static field
-                //how to do it?
-                //mw.visitVarInsn(ISTORE,stack_index);
-                //how can i save the variable also in the stack?
-                mw.visitFieldInsn(PUTSTATIC, program_name, costant_name, "I");
-                break;
-            case "float":
-                //mw.visitVarInsn(Opcodes.FSTORE,stack_index);
-                mw.visitFieldInsn(PUTSTATIC, program_name, costant_name, "F");
-                break;
-            case "bool":
-                //mw.visitVarInsn(ISTORE,stack_index);
-                mw.visitFieldInsn(PUTSTATIC, program_name, costant_name, "Z");
-                break;
-            case "string":
-                //mw.visitVarInsn(Opcodes.ASTORE,stack_index);
-                mw.visitFieldInsn(PUTSTATIC, program_name, costant_name, "Ljava/lang/String;");
-                break;
-        }
+        String descriptor = getFieldType(constant.getType());
+        mw.visitFieldInsn(PUTSTATIC, program_name, costant_name, descriptor);
 
         fw.visitEnd();
     }
 
     public void visit(Struct struct, ScopesTable curr_scope, MethodVisitor mw){
-        System.out.println("Visiting Struct");
         String struct_name=struct.getStructName();
         ArrayList<VariableDeclaration> fields=struct.getVariableDeclarations();
 
@@ -103,7 +80,6 @@ public class CodeGenerationVisitor  {
         Type[] paramTypes = fields.stream().map(VariableDeclaration::getType).toArray(Type[]::new);
         //define descriptor
         String descriptor = constructorDescriptor(paramTypes);
-        System.out.println(descriptor);
         MethodVisitor init = struct_cw.visitMethod(ACC_PUBLIC, "<init>", descriptor, null, null);
         init.visitCode();
         init.visitVarInsn(ALOAD, 0); // this
@@ -122,45 +98,40 @@ public class CodeGenerationVisitor  {
 
         struct_cw.visitEnd();
         byte[] bytecode = struct_cw.toByteArray();
-        System.out.println(Arrays.toString(bytecode) + " " + bytecode.length);
 
-        try (FileOutputStream outputStream = new FileOutputStream("./" + program_name + ".class")) {
+        try (FileOutputStream outputStream = new FileOutputStream(path + struct_name + ".class")) {
             outputStream.write(bytecode);
-            Files.write(Paths.get(struct_name+".class"), bytecode);
+            Files.write(Paths.get(path+struct_name+".class"), bytecode);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println("Struct "+struct_name+" created");
     }
 
 
     public void visit(GlobalVariable globalVariable, ScopesTable curr_scope, MethodVisitor mw){
-        System.out.println("Visiting Constant");
         String variable_name= globalVariable.getNameOfTheVariable();
-        FieldVisitor fw=cw.visitField(ACC_PRIVATE , variable_name, getFieldType(globalVariable.getType()), null, null);
+        FieldVisitor fw=cw.visitField(ACC_PRIVATE | ACC_STATIC, variable_name, getFieldType(globalVariable.getType()), null, null);
         ExpressionStatement right_side=globalVariable.getValue();
         right_side.accept(evaluator,curr_scope,mw);
         curr_scope.add(variable_name,-1,globalVariable.getType());
         String descriptor = getFieldType(globalVariable.getType());
         mw.visitFieldInsn(PUTSTATIC, program_name, variable_name, descriptor);
-
         fw.visitEnd();
     }
 
     public void visit(Procedure procedure,ScopesTable curr_scope, MethodVisitor mw){
-        System.out.println("Visiting Procedure");
         String procedure_name=procedure.getProcedureName();
         ArrayList<VariableDeclaration> parameters=procedure.getParameters_of_the_procedure();
         Block block = procedure.getBody();
         //Create a new curr_scope
         ScopesTable procedure_scopes_tables = new ScopesTable(curr_scope);
         type_of_current_procedure=procedure.getReturnType();
-
         //Create the method
         Type[] paramTypes = parameters.stream().map(VariableDeclaration::getType).toArray(Type[]::new);
         String descriptor = methodDescriptor(type_of_current_procedure,paramTypes);
+
         MethodVisitor procedure_visitor = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, procedure_name, descriptor, null, null);
         procedure_visitor.visitCode();
         //Add the parameters to the curr_scope
@@ -173,10 +144,13 @@ public class CodeGenerationVisitor  {
             procedure_scopes_tables.add(parameter.getNameOfTheVariable(),stack_index,parameter.getType());
             stack_index += type.getSize();
         }
-
         //Visit the block
+        added_return = false;
         block.accept(this,procedure_scopes_tables,procedure_visitor);
-
+        //if return type is void and there is no return statement, add a return statement
+        if(type_of_current_procedure.getNameofTheType().equals("void") && !added_return){
+            procedure_visitor.visitInsn(RETURN);
+        }
         procedure_visitor.visitMaxs(-1,-1);
         procedure_visitor.visitEnd();
         stack_index = orginal_stack_index;
@@ -184,7 +158,6 @@ public class CodeGenerationVisitor  {
     }
 
     public void visit(Block block, ScopesTable curr_scope, MethodVisitor mw){
-        System.out.println("Visiting Block");
         ArrayList<ASTNode> statements=block.getStatements();
         for (int i = 0; i < block.getStatements().size(); i++) {
            statements.get(i).accept(this, curr_scope, mw);
@@ -192,7 +165,6 @@ public class CodeGenerationVisitor  {
     }
 
     public void visit(IfStatement ifStatement, ScopesTable curr_scope, MethodVisitor mw){
-        System.out.println("Visiting IfStatement");
         ExpressionStatement condition = ifStatement.getIfCondition();
         Block then_block = ifStatement.getIfBlock();
         condition.accept(evaluator,curr_scope,mw);
@@ -202,49 +174,101 @@ public class CodeGenerationVisitor  {
         Label if_end = new Label();
         mw.visitJumpInsn(IFEQ, if_end);
         mw.visitLabel(if_start);
+        boolean added_return_before = added_return;
         then_block.accept(this,curr_scope,mw);
+        if(!added_return_before && added_return){
+            added_return = false;
+            //se in un if c'è un return, è come
+        }
         mw.visitLabel(if_end);
     }
 
     public void visit(IfElseStatement ifElseStatement,ScopesTable curr_scope,MethodVisitor mw){
-        System.out.println("Visiting IfElseStatement");
         ExpressionStatement condition = ifElseStatement.getIfCondition();
         Block then_block = ifElseStatement.getIfBlock();
         Block else_block = ifElseStatement.getElse_block();
         condition.accept(evaluator,curr_scope,mw);
         Label if_start = new Label();
         Label else_start = new Label();
+        Label else_end = new Label();
         mw.visitJumpInsn(IFEQ, else_start);
         mw.visitLabel(if_start);
+        boolean added_return_before = added_return;
         then_block.accept(this,curr_scope,mw);
+        if(!added_return_before && added_return){
+            added_return = false;
+        }
+        mw.visitJumpInsn(GOTO, else_end);
         mw.visitLabel(else_start);
         else_block.accept(this,curr_scope,mw);
+        mw.visitLabel(else_end);
+
+    }
+
+    public void visit(WhileStatement whileStatement,ScopesTable scopesTable,MethodVisitor mw){
+        ExpressionStatement condition = whileStatement.getExitCondition();
+        Block block = whileStatement.getBlock();
+        Label while_start = new Label();
+        Label while_end = new Label();
+        mw.visitLabel(while_start);
+        condition.accept(evaluator,scopesTable,mw);
+        mw.visitJumpInsn(IFEQ, while_end);
+        block.accept(this,scopesTable,mw);
+        mw.visitJumpInsn(GOTO, while_start);
+        mw.visitLabel(while_end);
+    }
+
+    public void visit(ForStatement forStatement,ScopesTable scopesTable,MethodVisitor mw){
+        VariableAssigment start_ass = forStatement.getStart();
+        ExpressionStatement exit_condition = forStatement.getEndCondition();
+        VariableAssigment update = forStatement.getUpdate();
+        Block block = forStatement.getBlock();
+
+
+        //The exit condition maybe is null, so if is null, we need to create
+        //a new ExpressionStatement with value true
+        exit_condition = exit_condition == null ? new Value(new Symbol(Token.BooleanValue, "true")) : exit_condition;
+        //variableInstantiation.accept(this,scopesTable,mw);
+        if (start_ass != null) {
+            start_ass.accept(this,scopesTable,mw);
+        }
+        Label for_start = new Label();
+        Label for_end = new Label();
+        mw.visitLabel(for_start);
+        exit_condition.accept(evaluator,scopesTable,mw);
+        mw.visitJumpInsn(IFEQ, for_end);
+        block.accept(this,scopesTable,mw);
+        if(update!=null ){
+            update.accept(this,scopesTable,mw);
+        }
+        mw.visitJumpInsn(GOTO, for_start);
+        mw.visitLabel(for_end);
     }
 
 
-
-
     public void visit(VariableInstantiation variableInstantiation, ScopesTable curr_scope,MethodVisitor mw){
-        System.out.println("Visiting VariableInstantiation");
         //Get name of the variable
         String var_name = variableInstantiation.getNameOfTheVariable();
         //Get type of the variable
         Type type = variableInstantiation.getType();
+
+
         //Evaluate right_side
         ExpressionStatement right_side = variableInstantiation.getRight_side();
         right_side.accept(evaluator,curr_scope,mw);
         org.objectweb.asm.Type type_op = org.objectweb.asm.Type.getType(getFieldType(type));
         mw.visitVarInsn(type_op.getOpcode(ISTORE),stack_index);
         curr_scope.add(var_name,stack_index,type);
-        stack_index+=type_op.getSize();
+        stack_index += type_op.getSize();
+
     }
 
     public void visit(VariableDeclaration variableDeclaration, ScopesTable curr_scope, MethodVisitor mw){
-        System.out.println("Visiting VariableDeclaration");
         //Get name of the variable
         String var_name = variableDeclaration.getNameOfTheVariable();
         //Get type of the variable
         Type type = variableDeclaration.getType();
+
         //Evaluate right_side
         org.objectweb.asm.Type type_op = org.objectweb.asm.Type.getType(getFieldType(type));
         curr_scope.add(var_name,stack_index,type);
@@ -252,7 +276,6 @@ public class CodeGenerationVisitor  {
     }
 
     public void visit(VariableAssigment variableAssigment,ScopesTable curr_scope, MethodVisitor mw){
-        System.out.println("Visiting VariableAssigment");
         //Evaluate right_side
         variableAssigment.getRight_side().accept(evaluator,curr_scope,mw);
         //Assign the value to the variable
@@ -260,7 +283,6 @@ public class CodeGenerationVisitor  {
     }
 
     public void visit(VariableReference variableReference,ScopesTable curr_scope,MethodVisitor mw){
-        System.out.println("Visiting VariableReference");
         //Recupera il nome della variabile
         String var_name = variableReference.getIdentifier();
         Type type = curr_scope.getType(var_name);
@@ -308,10 +330,10 @@ public class CodeGenerationVisitor  {
     }
 
     public void visit(ReturnStatement returnStatement, ScopesTable currScope, MethodVisitor mw) {
-        System.out.println("Visiting ReturnStatement");
         ExpressionStatement expressionStatement = returnStatement.getExpression();
         if(expressionStatement==null){
             mw.visitInsn(Opcodes.RETURN);
+            added_return = true;
             return;
         }
         expressionStatement.accept(evaluator,currScope,mw);
@@ -345,26 +367,42 @@ public class CodeGenerationVisitor  {
         return sb.toString();
     }
     private String getFieldType(Type type){
-        System.out.println(type.getNameofTheType());
         switch (type.getNameofTheType()) {
             case "int":
+                if (type instanceof ArrayType){
+                    return "[I";
+                }
                 return "I";
             case "float":
+                if (type instanceof ArrayType){
+                    return "[F";
+                }
+
                 return "F";
             case "bool":
+                if (type instanceof ArrayType){
+                    return "[Z";
+                }
+
                 return "Z";
             case "string":
+                if (type instanceof ArrayType){
+                    return "[Ljava/lang/String;";
+                }
+
                 return "Ljava/lang/String;";
             case "void":
                 return "V";
             default:
+                if (type instanceof ArrayStructType){
+                    return "[L"+type.getNameofTheType()+";";
+                }
                 return "L"+type.getNameofTheType()+";";
         }
     }
 
 
     public void visit(FunctionCall functionCall, ScopesTable curr_scope, MethodVisitor mw) {
-        System.out.println("Visiting FunctionCall");
         //How to call a function e pass parameters
         //Take the info about the function from the global table
         //Procedures are stored in the global table
@@ -382,6 +420,7 @@ public class CodeGenerationVisitor  {
         Type[] paramType= empty ?
                 null :
                 functionCall.getParametersType().toArray(new Type[0]);
+
         //Get the return type of the function
         if(!functionCall.isConstructor()) {
             //If it is not a constructor

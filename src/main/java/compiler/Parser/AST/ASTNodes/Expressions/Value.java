@@ -17,6 +17,7 @@ public class Value extends ExpressionStatement {
 
     public Value(Symbol value) {
         this.value = Symbol.copy(value);
+
     }
 
     public String toString() {

@@ -15,8 +15,6 @@ public class SymbolTableProcedureType {
         this.return_type=return_type;
     }
 
-
-
     public SymbolTableProcedureType(SymbolTableType return_type) {
         this.parameters=new LinkedHashMap<>();
         this.return_type=return_type;

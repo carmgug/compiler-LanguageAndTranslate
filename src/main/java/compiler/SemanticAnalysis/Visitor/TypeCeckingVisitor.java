@@ -19,6 +19,8 @@ import java.util.ArrayList;
 
 public class TypeCeckingVisitor implements VisitorType{
 
+    private SymbolTable symbol_table_of_the_code=null;
+
     @Override
     public Type visit(Constant constant, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         return null;
@@ -51,11 +53,12 @@ public class TypeCeckingVisitor implements VisitorType{
     @Override
     public Type visit(ArithmeticNegationNode arithmeticNegationNode, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type observed_Type=visit(arithmeticNegationNode.getExpression(),symbolTable,structTable);
-        //Expected Type is a bool
+        //Expected Type is a float or float
         if(!observed_Type.equals(new BaseType(new Symbol(Token.IntType,"int"))) &&
                 !observed_Type.equals(new BaseType(new Symbol(Token.FloatType,"float")))){
             throw new TypeError("Expected type Int or Float, found "+observed_Type.getSymbol().getType());
         }
+        arithmeticNegationNode.setType(observed_Type);
         return observed_Type;
     }
     @Override
@@ -76,11 +79,17 @@ public class TypeCeckingVisitor implements VisitorType{
         if(structTable.get(left_part.getNameofTheType())==null){
             throw new ScopeError("You are using a Struct that has not been defined '"+left_part.getNameofTheType()+"' at line "+structAccess.getLine());
         }
+        //TODO STRUCT PROBLEM
         SymbolTable struct_symbol_table=((SemanticStructType)structTable.get(left_part.getNameofTheType())).getFields();
+        symbol_table_of_the_code=symbolTable;
         Type right_part=visit(structAccess.getRightPart(),struct_symbol_table ,structTable);
+        symbol_table_of_the_code=null;
         //ok update the structAccess for the GenerationCode
+
         structAccess.setLeftType(left_part);
+
         structAccess.setRightType(right_part);
+
         return right_part;
     }
 
@@ -90,15 +99,24 @@ public class TypeCeckingVisitor implements VisitorType{
         if(!(left_part instanceof ArrayType) && !(left_part instanceof ArrayStructType)){
             throw new TypeError("Expected a ArrayType, found "+left_part+"(line: "+arrayAccess.getLine()+")");
         }
-        Type index=visit(arrayAccess.getIndex(),symbolTable,structTable);
+        Type index;
+        if(symbol_table_of_the_code!=null){
+            //ok we are in a struct
+            index=visit(arrayAccess.getIndex(),symbol_table_of_the_code,structTable);
+        }
+        else{
+            index=visit(arrayAccess.getIndex(),symbolTable,structTable);
+        }
         //the index must be an int
         if(!index.getSymbol().getType().equals(Token.IntType)){
             throw new TypeError("Expected a int, found "+index.getSymbol().getType());
         }
         if(left_part instanceof ArrayType){
+            arrayAccess.setType(new BaseType(left_part.getSymbol()));
             return new BaseType(left_part.getSymbol());
         }
-        //In caso contrario l'arrey a sinistra è un array di struct
+        //In caso contrario l'array a sinistra è un array di struct
+        arrayAccess.setType(new StructType(left_part.getSymbol()));
         return new StructType(left_part.getSymbol());
     }
 
@@ -208,7 +226,11 @@ public class TypeCeckingVisitor implements VisitorType{
         Operator op=binaryExpression.getOperator();
         checkOperator(op,leftType,rightType); //ok the operator can be applied to the two types
         //I need to return the type of the operation (int,float,bool,string)
-        return typeResultOperator(op,leftType,rightType);
+        binaryExpression.setLeftType(leftType);
+        binaryExpression.setRightType(rightType);
+        Type typeResult=typeResultOperator(op,leftType,rightType);
+        binaryExpression.setResultType(typeResult);
+        return typeResult;
     }
 
     @Override
@@ -239,11 +261,18 @@ public class TypeCeckingVisitor implements VisitorType{
         if(initialType==null){
             throw new TypeError("The array is empty");
         }
+        //ok semantic analysis is ok
         if(initialType instanceof BaseType){
-            return new ArrayType(initialType.getSymbol());
+            ArrayType arrayType=new ArrayType(initialType.getSymbol());
+            //ok update the arrayValueDeclaration for the GenerationCode
+            arrayValueDeclaration.setType(arrayType);
+            return arrayType;
         }
         else{
-            return new ArrayStructType(initialType.getSymbol());
+            ArrayStructType arrayType=new ArrayStructType(initialType.getSymbol());
+            //ok update the arrayValueDeclaration for the GenerationCode
+            arrayValueDeclaration.setType(arrayType);
+            return arrayType;
         }
     }
 

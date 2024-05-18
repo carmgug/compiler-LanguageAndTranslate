@@ -80,7 +80,6 @@ public class SymbolTableUpdater implements Visitor {
         ArrayList<VariableDeclaration> procedure_parameters=procedure.getParameters_of_the_procedure();
         //Io prendo la entry delle procedure con lo stesso nome stesso return type ma diversi parametri
         SymbolTableProceduresEntry procedures=(SymbolTableProceduresEntry) symbolTable.get(procedure_identifier);
-        //TODO POTREBBE RITORNARE UNA COSTANTE CHE HA LO STESSO NOME
         if(procedures!=null){
             //Procedure have been already defined
             //Ok we have two procedure with two same name
