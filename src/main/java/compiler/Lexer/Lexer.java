@@ -91,7 +91,7 @@ public class Lexer {
                 //A / as been found, so it's possibile to have a comment (//) or a division operator(/)
                 Symbol s=slideHandler(c);
                 if(s.isTypeof("Comment")){
-                    LOGGER.log(Level.DEBUG,"Comment at line "+ (curr_line-1));
+                    if(debugMode) LOGGER.log(Level.DEBUG,"Comment at line "+ (curr_line-1));
                     continue; //don't return Comment to the Parser
                 }
                 return s;//is a ArithmeticOperator

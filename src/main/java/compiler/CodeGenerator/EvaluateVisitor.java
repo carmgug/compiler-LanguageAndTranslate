@@ -28,26 +28,22 @@ import static org.objectweb.asm.Opcodes.*;
 public class EvaluateVisitor {
 
     private CodeGenerationVisitor codeGeneratorVisitor;
-    private SymbolTable globalTable;
     private String program_name;
     private boolean visiting_struct = false;
     private Type struct_type_to_visit;
     private Type struct_field_type_to_visit;
     private boolean visiting_binary_operation = false;
-    private Type binary_operation;
-    private BinaryExpression visiting_binaryExpression;
 
 
-
-
-    public EvaluateVisitor(CodeGenerationVisitor codeGeneratorVisitor, String program_name, SymbolTable globalTable,SymbolTable structTable){
+    public EvaluateVisitor(CodeGenerationVisitor codeGeneratorVisitor, String program_name){
         this.codeGeneratorVisitor = codeGeneratorVisitor;
         this.program_name = program_name;
-        this.globalTable = globalTable;
     }
+
     public void visit(Value value, ScopesTable curr_scope, MethodVisitor mw){
-        //Il value può essere un intero, un booleano, una stringa o un carattere
+        //The value could be a number, a boolean, a string or Object
         String v = value.getValue();
+        /*
         if(visiting_binary_operation){
             switch(binary_operation.getTokenType()){
                 case IntType:
@@ -65,6 +61,8 @@ public class EvaluateVisitor {
             }
             return;
         }
+
+         */
 
         switch(value.getSymbol().getType()){
             case IntNumber:
@@ -88,28 +86,18 @@ public class EvaluateVisitor {
     }
 
     public void visit(VariableReference variableReference, ScopesTable curr_scope, MethodVisitor mw){
-
-
         //Recupera il nome della variabile
         String var_name = variableReference.getIdentifier();
         Type type = curr_scope.getType(var_name);
         //Recupera l'indice della variabile
         if (visiting_struct){
-            //if i am visiting a struct so i need to use GETFIELD instead of ILOAD
-            //maybe we have struct.field.field so we need to know the type of the second field how to know?
-            mw.visitFieldInsn(GETFIELD, struct_type_to_visit.getNameofTheType(), var_name, getFieldType(struct_field_type_to_visit));
-
-            //mw.visitTypeInsn(CHECKCAST, getFieldType(struct_field_type_to_visit));
+            //if i am visiting a struct so i need to use GETFIELD instead of ALOAD
+            mw.visitFieldInsn(GETFIELD, struct_type_to_visit.getNameofTheType(), var_name, CodeGenerationUtility.getFieldType(struct_field_type_to_visit));
             return;
         }
+        //We are not visiting a struct so we can load the variable not as a field but as a variable
         int index = curr_scope.getIndex(var_name);
-
-        //se index è -1 allora parliamo di una variabile globale/final
-        //altrimenti è una variabile locale
-        loadVariable(index, type, mw,var_name);
-        //how to see the type of var on the stack at specified index
-        //Store the value of the variable in the stack
-        //mw.visitVarInsn(ASTORE,codeGeneratorVisitor.get_stack_index());
+        CodeGenerationUtility.loadVariable(index, type, mw,var_name,program_name);
 
     }
 
@@ -132,14 +120,14 @@ public class EvaluateVisitor {
             //If it is not a constructor
             //Get the return type of the function
             Type returnType = functionCall.getReturnType();
-            String descriptor = methodDescriptor(returnType, paramType);
+            String descriptor = CodeGenerationUtility.methodDescriptor(returnType, paramType);
             //Call the function
             mw.visitMethodInsn(INVOKESTATIC, program_name, functionCall.getFunctionName(), descriptor, false);
         }
         else{
             //If it is a constructor
             //Get the return type of the function
-            String descriptor = constructorDescriptor( paramType);
+            String descriptor = CodeGenerationUtility.constructorDescriptor( paramType);
             //i need to create a new object
             //Create a new object
             mw.visitMethodInsn(INVOKESPECIAL, functionCall.getFunctionName(), "<init>", descriptor, false);
@@ -178,18 +166,13 @@ public class EvaluateVisitor {
     }
 
     public void visit(ArrayValueDeclaration arrayValueDeclaration, ScopesTable curr_scope, MethodVisitor mw){
-        //Get the type of the array
+        //Get the type of the array and size
         Type type = arrayValueDeclaration.getType();
         int size = arrayValueDeclaration.getValues().size();
 
-        //Get the size of the
-        //throw new RuntimeException("Not implemented yet");
-        //Create the array
-        //Before Create load the size of the array
-        mw.visitLdcInsn(size);
-        int opStoreCode=initArray(type,mw);
-        //ok now the array is on the stack like this type[] array=new type[size];
-        //mw.visitVarInsn(ASTORE,stack_index);
+        //Initialize the array
+        int opStoreCode=CodeGenerationUtility.initArray(type,size,mw);
+        //ok now the array is on the stack
         int i=0;
         for(ExpressionStatement value:arrayValueDeclaration.getValues()){
             //Load the array
@@ -198,7 +181,6 @@ public class EvaluateVisitor {
             value.accept(this,curr_scope,mw); //load value
             mw.visitInsn(opStoreCode); //store the value
             i++;
-
         }
     }
 
@@ -206,170 +188,24 @@ public class EvaluateVisitor {
         //Go to the left part to visit array
         arrayAccess.getArray().accept(this,curr_scope,mw);
         //you have loaded the array on the stack
-
         //Load the index of the array
-        boolean changed = visiting_struct;
-        //Type struct_type = struct_type_to_visit;
-        //Type struct_field_type = struct_field_type_to_visit;
-        if(visiting_struct) {visiting_struct = false;
 
-
+        //Changed is used to know if we are visiting a struct or not, beacuse if we are visting a struct,
+        //the variable we load must to be a field of the struct
+        //Ex:
+        //Person p= Person(1,"string",{1,2,3})
+        // int a = p.array[z];
+        // if we are visting a struct, our vistior try to load z as a field of Person, instead of searching in the stack
+        // the value of z
+        boolean changed = false;
+        if(visiting_struct) {
+            visiting_struct = false;
             changed=true;
-        } //the index is not a field of a struct so the variable need to be load from the curr_scope
+        }
         arrayAccess.getIndex().accept(this,curr_scope,mw);
         if(changed) {visiting_struct = true;changed=false;}
         //Load the value of the array
-        loadValueOfArray(arrayAccess.getType(),mw);
-    }
-
-    private int initArray(Type type,MethodVisitor mw){
-        switch(type.getTokenType()){
-            case IntType:
-                mw.visitIntInsn(NEWARRAY, T_INT);
-                return IASTORE;
-            case BoolType:
-                mw.visitIntInsn(NEWARRAY, T_BOOLEAN);
-                return IASTORE;
-            case FloatType:
-                mw.visitIntInsn(NEWARRAY, T_FLOAT);
-                return FASTORE;
-            case StringType:
-                mw.visitTypeInsn(ANEWARRAY, "java/lang/String");
-                return AASTORE;
-            default:
-                //Complex Type (Struct)
-
-                mw.visitTypeInsn(ANEWARRAY, type.getNameofTheType());
-                return AASTORE;
-        }
-    }
-
-    private String methodDescriptor(Type returnType, Type[] paramTypes) {
-        StringBuilder sb = new StringBuilder();
-        sb.append('(');
-        for (Type paramType : paramTypes) {
-            sb.append(getFieldType(paramType));
-        }
-        sb.append(')');
-        sb.append(getFieldType(returnType));
-        return sb.toString();
-    }
-
-    private String constructorDescriptor( Type[] paramTypes) {
-        StringBuilder sb = new StringBuilder();
-        sb.append('(');
-        for (Type paramType : paramTypes) {
-            sb.append(getFieldType(paramType));
-        }
-        sb.append(')');
-        sb.append('V');
-        return sb.toString();
-    }
-
-    private String getFieldType(Type type){
-        switch (type.getNameofTheType()) {
-            case "int":
-                if (type instanceof ArrayType){
-                    return "[I";
-                }
-                return "I";
-            case "float":
-                if (type instanceof ArrayType){
-                    return "[F";
-                }
-                return "F";
-            case "bool":
-                if (type instanceof ArrayType){
-                    return "[Z";
-                }
-                return "Z";
-            case "string":
-                if (type instanceof ArrayType){
-                    return "[Ljava/lang/String;";
-                }
-                return "Ljava/lang/String;";
-            case "void":
-                return "V";
-            default:
-                if (type instanceof ArrayStructType){
-                    return "[L"+type.getNameofTheType()+";";
-                }
-                return "L"+type.getNameofTheType()+";";
-        }
-    }
-
-    private void loadValueOfArray(Type type,MethodVisitor mw){
-        switch (type.getTokenType()) {
-            case IntType:
-                mw.visitInsn(IALOAD);
-                break;
-            case BoolType:
-                mw.visitInsn(IALOAD);
-                break;
-            case FloatType:
-                mw.visitInsn(FALOAD);
-                break;
-            case StringType:
-                mw.visitInsn(AALOAD);
-                break;
-            default:
-                mw.visitInsn(AALOAD);
-        }
-
-    }
-
-    private void loadVariable(int index, Type type, MethodVisitor mw,String var_name){
-
-        //Could be an Array
-        if(type instanceof ArrayType || type instanceof ArrayStructType){
-            if(index==-1) {
-                mw.visitFieldInsn(GETSTATIC, program_name, var_name, getFieldType(type));
-                //mw.visitTypeInsn(Opcodes.CHECKCAST, getFieldType(type));
-                return;
-            }
-            mw.visitVarInsn(ALOAD, index);
-            //mw.visitTypeInsn(Opcodes.CHECKCAST, getFieldType(type));
-
-            return;
-        }
-        switch (type.getTokenType()) {
-            case IntType:
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, var_name, "I");
-                    return;
-                }
-                mw.visitVarInsn(ILOAD, index);
-                return;
-            case BoolType:
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, var_name, "Z");
-                    return;
-                }
-                mw.visitVarInsn(ILOAD, index);
-                return;
-            case FloatType:
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, var_name, "F");
-                    return;
-                }
-                mw.visitVarInsn(FLOAD, index);
-                return;
-            case StringType:
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, var_name, "Ljava/lang/String;");
-                    return;
-                }
-                mw.visitVarInsn(ALOAD, index);
-                break;
-            default:
-                //Ok it is a struct so like this
-                //p.field
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, var_name, "L"+type.getNameofTheType()+";");
-                    return;
-                }
-                mw.visitVarInsn(ALOAD, index);
-        }
+        CodeGenerationUtility.loadValueOfArray(arrayAccess.getType(),mw);
     }
 
     public void visit(BinaryExpression binaryExpression,ScopesTable curr_scope, MethodVisitor mw){
@@ -386,9 +222,9 @@ public class EvaluateVisitor {
 
         Type type_value_left=binaryExpression.getLeftType();
         Type type_value_right=binaryExpression.getRightType();
-        org.objectweb.asm.Type type_op= org.objectweb.asm.Type.getType(getFieldType(type_value_left));
+        org.objectweb.asm.Type type_op= org.objectweb.asm.Type.getType(CodeGenerationUtility.getFieldType(type_value_left));
 
-        //Effettua l'operazione richiesta
+        //Do the operation (IADD,FADD,ISUB,FSUB...)
         switch(binaryExpression.getOperator().getOperator()){
             case "+":
                 if(binaryExpression.getResultType().getTokenType()==Token.IntType){
@@ -457,8 +293,6 @@ public class EvaluateVisitor {
                     //string and struct
                     throw new RuntimeException("Not implemented yet");
                 }
-
-
                 break;
             case "!=":
                 //if not equal return true else false
@@ -596,15 +430,13 @@ public class EvaluateVisitor {
                 mw.visitInsn(IOR);
                 break;
         }
-
-
     }
 
 
     public void visit(ArithmeticNegationNode arithmeticNegationNode, ScopesTable currScope, MethodVisitor mw) {
-        //Visita il figlio
+        //Load the value of the expression
         arithmeticNegationNode.getExpression().accept(this, currScope, mw);
-        //Effettua la negazione aritmetica
+        //Do the arithmetic negation
         if(arithmeticNegationNode.getType().getTokenType()==Token.IntType){
             mw.visitInsn(INEG);
         }
@@ -614,9 +446,9 @@ public class EvaluateVisitor {
     }
 
     public void visit(BooleanNegationNode booleanNegationNode,ScopesTable currScope,MethodVisitor mw){
-        //Visita il figlio
+        //Load the value of the expression
         booleanNegationNode.getExpression().accept(this,currScope,mw);
-        //Effettua la negazione booleana
+        //Do the boolean negation
         mw.visitInsn(ICONST_1);
         mw.visitInsn(IXOR);
     }

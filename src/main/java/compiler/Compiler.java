@@ -56,7 +56,7 @@ public class Compiler {
         }
         System.out.println("Semantic analysis completed successfully");
         // Generate the bytecode
-        CodeGenerator codeGenerator = new CodeGenerator(p, s.getGlobalTable(), s.getStructTable(),outputFilePath);
+        CodeGenerator codeGenerator = new CodeGenerator(p,outputFilePath);
         codeGenerator.generateBytecode();
 
 

@@ -18,17 +18,20 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static compiler.CodeGenerator.CodeGenerationUtility.constructorDescriptor;
+import static compiler.CodeGenerator.CodeGenerationUtility.getFieldType;
+import static compiler.CodeGenerator.CodeGenerationUtility.methodDescriptor;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public class CodeGenerationVisitor  {
 
-
-
     private final ClassWriter cw;
     private final EvaluateVisitor evaluator;
+    private final String program_name;
+    private final String path;
     private int stack_index = 0;
-    private String program_name;
-    private String path;
+
 
 
 
@@ -37,20 +40,13 @@ public class CodeGenerationVisitor  {
     private Type type_of_current_procedure=null;
     private boolean added_return = false;
 
-    public CodeGenerationVisitor(ClassWriter cw, String program_name, SymbolTable globalTable, SymbolTable structTable, String path) {
+    public CodeGenerationVisitor(ClassWriter cw, String program_name, String path) {
         this.cw = cw;
-        this.evaluator = new EvaluateVisitor(this,program_name,globalTable,structTable);
+        this.evaluator = new EvaluateVisitor(this,program_name);
         this.program_name = program_name;
         this.path= path;
     }
 
-    public void increment_stack_index(){
-        stack_index++;
-    }
-
-    public int get_stack_index(){
-        return stack_index;
-    }
 
     public void visit(Constant constant, ScopesTable curr_scope, MethodVisitor mw){
         String costant_name=constant.getConstantName();
@@ -60,7 +56,6 @@ public class CodeGenerationVisitor  {
         curr_scope.add(costant_name,-1,constant.getType());
         String descriptor = getFieldType(constant.getType());
         mw.visitFieldInsn(PUTSTATIC, program_name, costant_name, descriptor);
-
         fw.visitEnd();
     }
 
@@ -107,8 +102,10 @@ public class CodeGenerationVisitor  {
             e.printStackTrace();
         }
 
-    }
+        //add the method len for the struct
+        CodeGenerationUtility.defineLenArrayStruct(cw,program_name,struct_name);
 
+    }
 
     public void visit(GlobalVariable globalVariable, ScopesTable curr_scope, MethodVisitor mw){
         String variable_name= globalVariable.getNameOfTheVariable();
@@ -130,7 +127,7 @@ public class CodeGenerationVisitor  {
         type_of_current_procedure=procedure.getReturnType();
         //Create the method
         Type[] paramTypes = parameters.stream().map(VariableDeclaration::getType).toArray(Type[]::new);
-        String descriptor = methodDescriptor(type_of_current_procedure,paramTypes);
+        String descriptor = CodeGenerationUtility.methodDescriptor(type_of_current_procedure,paramTypes);
 
         MethodVisitor procedure_visitor = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, procedure_name, descriptor, null, null);
         procedure_visitor.visitCode();
@@ -245,7 +242,6 @@ public class CodeGenerationVisitor  {
         mw.visitLabel(for_end);
     }
 
-
     public void visit(VariableInstantiation variableInstantiation, ScopesTable curr_scope,MethodVisitor mw){
         //Get name of the variable
         String var_name = variableInstantiation.getNameOfTheVariable();
@@ -256,7 +252,7 @@ public class CodeGenerationVisitor  {
         //Evaluate right_side
         ExpressionStatement right_side = variableInstantiation.getRight_side();
         right_side.accept(evaluator,curr_scope,mw);
-        org.objectweb.asm.Type type_op = org.objectweb.asm.Type.getType(getFieldType(type));
+        org.objectweb.asm.Type type_op = org.objectweb.asm.Type.getType(CodeGenerationUtility.getFieldType(type));
         mw.visitVarInsn(type_op.getOpcode(ISTORE),stack_index);
         curr_scope.add(var_name,stack_index,type);
         stack_index += type_op.getSize();
@@ -270,7 +266,7 @@ public class CodeGenerationVisitor  {
         Type type = variableDeclaration.getType();
 
         //Evaluate right_side
-        org.objectweb.asm.Type type_op = org.objectweb.asm.Type.getType(getFieldType(type));
+        org.objectweb.asm.Type type_op = org.objectweb.asm.Type.getType(CodeGenerationUtility.getFieldType(type));
         curr_scope.add(var_name,stack_index,type);
         stack_index+=type_op.getSize();
     }
@@ -283,51 +279,17 @@ public class CodeGenerationVisitor  {
     }
 
     public void visit(VariableReference variableReference,ScopesTable curr_scope,MethodVisitor mw){
-        //Recupera il nome della variabile
+        //We are here because we come from a visit of a VariableAssigment
+        //like a = 5;
+        //now we need to store the value in the variable
         String var_name = variableReference.getIdentifier();
         Type type = curr_scope.getType(var_name);
         //Recupera l'indice della variabile
         int index = curr_scope.getIndex(var_name);
-        //se index è -1 allora parliamo di una variabile globale/final
-        //altrimenti è una variabile locale
-        storeValueInTheVariable(index, type, mw);
-        //how to see the type of var on the stack at specified index
+        CodeGenerationUtility.storeValueInTheVariable(var_name,index, type, mw, program_name);
     }
 
-    private void storeValueInTheVariable(int index,Type type,MethodVisitor mw){
-        switch (type.getNameofTheType()) {
-            case "int":
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, "I", "I");
-                    return;
-                }
-                mw.visitVarInsn(ISTORE, index);
-                return;
-            case "bool":
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, "Z", "Z");
-                    return;
-                }
-                mw.visitVarInsn(ISTORE, index);
-                return;
-            case "float":
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, "F", "F");
-                    return;
-                }
-                mw.visitVarInsn(FSTORE, index);
-                return;
-            case "string":
-                if(index==-1) {
-                    mw.visitFieldInsn(GETSTATIC, program_name, "Ljava/lang/String;", "Ljava/lang/String;");
-                    return;
-                }
-                mw.visitVarInsn(ASTORE, index);
-                break;
-            default:
-                mw.visitVarInsn(ASTORE, index);
-        }
-    }
+
 
     public void visit(ReturnStatement returnStatement, ScopesTable currScope, MethodVisitor mw) {
         ExpressionStatement expressionStatement = returnStatement.getExpression();
@@ -337,10 +299,11 @@ public class CodeGenerationVisitor  {
             return;
         }
         expressionStatement.accept(evaluator,currScope,mw);
-        org.objectweb.asm.Type type = org.objectweb.asm.Type.getType(getFieldType(type_of_current_procedure));
+        org.objectweb.asm.Type type = org.objectweb.asm.Type.getType(CodeGenerationUtility.getFieldType(type_of_current_procedure));
         mw.visitInsn(type.getOpcode(IRETURN));
 
     }
+    /*
 
     private String methodDescriptor(Type returnType, Type[] paramTypes) {
         StringBuilder sb = new StringBuilder();
@@ -401,6 +364,8 @@ public class CodeGenerationVisitor  {
         }
     }
 
+     */
+
 
     public void visit(FunctionCall functionCall, ScopesTable curr_scope, MethodVisitor mw) {
         //How to call a function e pass parameters
@@ -433,7 +398,7 @@ public class CodeGenerationVisitor  {
         else{
             //If it is a constructor
             //Get the return type of the function
-            String descriptor = constructorDescriptor( paramType);
+            String descriptor = constructorDescriptor(paramType);
             //i need to create a new object
             //Create a new object
             mw.visitMethodInsn(INVOKESPECIAL, functionCall.getFunctionName(), "<init>", descriptor, false);

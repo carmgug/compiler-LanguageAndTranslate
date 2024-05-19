@@ -158,6 +158,9 @@ public class TypeCeckingVisitor implements VisitorType{
                     boolean sameParameters=true;
                     int idx=0;
                     for ( String curr_parameter : procedure.getFields().keySet()) {
+                        //if the current parameter is struct[] and function call is len
+                        //then pass the check
+
                         Type expected_type=((SymbolTableType) procedure.getFields().get(curr_parameter)).getType();
                         Type observed_type=this.visit(parameters.get(idx),symbolTable,structTable);
                         if(!expected_type.equals(observed_type)){

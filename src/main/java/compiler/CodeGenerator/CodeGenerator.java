@@ -25,17 +25,13 @@ public class CodeGenerator extends ClassLoader {
     private String programName;
     private ScopesTable table;
     private CodeGenerationVisitor codeGenerationVisitor;
-    private SymbolTable globalTable;
-    private SymbolTable structTable;
     private String outputFilePath;
     private String path;
 
 
 
-    public CodeGenerator(Program p, SymbolTable globalTable, SymbolTable structTable, String outputFilePath) {
+    public CodeGenerator(Program p, String outputFilePath) {
         this.program = p;
-        this.globalTable = globalTable;
-        this.structTable = structTable;
         this.table = new ScopesTable();
         this.outputFilePath = outputFilePath;
         //As the program name use the string between / and .class of the file path
@@ -57,7 +53,53 @@ public class CodeGenerator extends ClassLoader {
         mv.visitInsn(Opcodes.IRETURN);
         mv.visitMaxs(-1, -1);
         mv.visitEnd();
+        //define len method for array
+        //input array return an integer
+        //is public and static
+        mv = cw.visitMethod
+                (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "len", "([I)I", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitInsn(Opcodes.ARRAYLENGTH);
+        mv.visitInsn(Opcodes.IRETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
+        //define len method for array of Float
+        //input array return an integer
+        //is public and static
+        mv = cw.visitMethod
+                (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "len", "([F)I", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitInsn(Opcodes.ARRAYLENGTH);
+        mv.visitInsn(Opcodes.IRETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
+        //define len method for array of boolean
+        //input array return an integer
+        //is public and static
+        mv = cw.visitMethod
+                (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "len", "([Z)I", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitInsn(Opcodes.ARRAYLENGTH);
+        mv.visitInsn(Opcodes.IRETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
+        //define len method for array of string
+        //input array return an integer
+        //is public and static
+        mv = cw.visitMethod
+                (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "len", "([Ljava/lang/String;)I", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitInsn(Opcodes.ARRAYLENGTH);
+        mv.visitInsn(Opcodes.IRETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
     }
+
+
 
     private void defineChr(){
         // Method to convert an integer to a character
@@ -222,6 +264,17 @@ public class CodeGenerator extends ClassLoader {
         mv.visitMaxs(-1, -1);
         mv.visitEnd();
 
+        //print nothing to the console with \n
+        mv = cw.visitMethod
+                (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "writeln", "()V", null, null);
+        mv.visitCode();
+        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "()V", false);
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
+
+
 
     }
 
@@ -247,7 +300,7 @@ public class CodeGenerator extends ClassLoader {
         MethodVisitor mainMethodWriter= cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
                 "main", "([Ljava/lang/String;)V", null, null);
 
-        codeGenerationVisitor = new CodeGenerationVisitor(cw,programName,globalTable,structTable,path);
+        codeGenerationVisitor = new CodeGenerationVisitor(cw,programName,path);
 
         // Generate the bytecode for the AST
         Iterator<ASTNode> it= program.iterator();

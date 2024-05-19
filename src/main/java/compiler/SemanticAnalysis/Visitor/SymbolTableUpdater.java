@@ -3,11 +3,16 @@ package compiler.SemanticAnalysis.Visitor;
 import compiler.Exceptions.SemanticException.ScopeError;
 import compiler.Exceptions.SemanticException.SemanticException;
 import compiler.Exceptions.SemanticException.StructError;
+import compiler.Lexer.Symbol;
+import compiler.Lexer.Token;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.ASTNodes.*;
 import compiler.Parser.AST.ASTNodes.Expressions.FunctionCall;
 import compiler.Parser.AST.ASTNodes.Expressions.Type;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.ArrayStructType;
+import compiler.Parser.AST.ASTNodes.Expressions.Types.BaseType;
 import compiler.Parser.AST.ASTNodes.Expressions.Types.StructType;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTableValues.SymbolTableProcedureType;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTableValues.SymbolTableProceduresEntry;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTableValues.SemanticStructType;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
@@ -50,6 +55,15 @@ public class SymbolTableUpdater implements Visitor {
             throw new StructError("Struct "+structName +" already defined "+ "(line "+struct.getLine()+")");
         }
         structTable.add(structName,new SemanticStructType(new StructType(struct.getIdentifier())));
+
+        //add default methods of the struct like len(Struct[] s)
+        //Add also for the Struct
+        Type returnType=new BaseType(new Symbol(Token.IntType,"int"));
+        SymbolTableProcedureType len_currStructArray=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        len_currStructArray.addParameter("arrayOfStruct",new SymbolTableType(new ArrayStructType(struct.getIdentifier())));
+        SymbolTableProceduresEntry procedures=(SymbolTableProceduresEntry) symbolTable.get("len");
+        procedures.addFunction(len_currStructArray);
+
     }
 
     private boolean contains(String[] arr, String target) {

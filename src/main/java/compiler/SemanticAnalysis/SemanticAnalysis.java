@@ -244,9 +244,23 @@ public class SemanticAnalysis {
         SymbolTableProcedureType function2=new SymbolTableProcedureType(new SymbolTableType(returnType));
         function2.addParameter("int[]",new SymbolTableType(new ArrayType(new Symbol(Token.IntType,"int"))));
 
+        SymbolTableProcedureType function3=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function3.addParameter("float[]",new SymbolTableType(new ArrayType(new Symbol(Token.FloatType,"float"))));
+
+        //Add also for the bool array
+        SymbolTableProcedureType function4=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function4.addParameter("bool[]",new SymbolTableType(new ArrayType(new Symbol(Token.BoolType,"bool"))));
+
+        //Add also for the array of String
+        SymbolTableProcedureType function5=new SymbolTableProcedureType(new SymbolTableType(returnType));
+        function5.addParameter("string[]",new SymbolTableType(new ArrayType(new Symbol(Token.StringType,"string"))));
+        
         SymbolTableProceduresEntry procedures=new SymbolTableProceduresEntry();
         procedures.addFunction(function1);
         procedures.addFunction(function2);
+        procedures.addFunction(function3);
+        procedures.addFunction(function4);
+        procedures.addFunction(function5);
         this.globalTable.add(procedure_name,procedures);
 
     }

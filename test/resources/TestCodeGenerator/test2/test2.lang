@@ -1,0 +1,104 @@
+
+final int[] a = {1,2,3,4,5,6,7,8,9,10};
+final float[] b = {1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0};
+final bool[] c = {true,false,true,false,true,false,true,false,true,false};
+final string[] d = {"a","b","c","d","e","f","g","h","i","j"};
+
+struct Person{
+    string name;
+    int age;
+    float height;
+    bool isMale;
+}
+
+struct Student{
+    Person person;
+    float[] grades;
+}
+
+Person person = Person("John", 25, 1.75, true);
+Person person2 =  Person("Jane", 23, 1.65, false);
+Person person3 =  Person("Jack", 30, 1.85, true);
+Person person4 =  Person("Jill", 28, 1.55, false);
+Person person5 =  Person("James", 35, 1.95, true);
+Person person6 =  Person("Jenny", 33, 1.45, false);
+Person[] persons = {person, person2, person3, person4, person5, person6};
+
+Student student = Student(person, {90.0,80.0,70.0,60.0,50.0});
+Student student2 = Student(person2, {85.0,75.0,65.0,55.0,45.0});
+Student student3 = Student(person3, {95.0,85.0,75.0,65.0,55.0});
+Student student4 = Student(person4, {80.0,70.0,60.0,50.0,40.0});
+Student student5 = Student(person5, {100.0,90.0,80.0,70.0,60.0});
+Student student6 = Student(person6, {75.0,65.0,55.0,45.0,35.0});
+Student[] students = {student, student2, student3, student4, student5, student6};
+
+
+
+def void main(){
+    //iterate over array of int and print each element
+    write("int array: ");
+    int i;
+    for(i = 0, i < len(a), i++){
+        write(a[i]);
+        write(" ");
+    }
+    writeln();
+    //iterate over array of float and print each element
+    write("float array: ");
+    for(i = 0, i < len(b), i++){
+        write(b[i]);
+        write(" ");
+    }
+    writeln();
+    //iterate over array of boolean and print each element
+    write("bool array: ");
+    for(i = 0, i < len(c), i++){
+        write(c[i]);
+        write(" ");
+    }
+    writeln();
+    //iterate over array of string and print each element
+    write("string array: ");
+    for(i = 0, i < len(d), i++){
+        write(d[i]);
+        write(" ");
+    }
+    writeln();
+    //iterate over array of Person and print each element
+    write("Person array: ");
+    for(i = 0, i < len(persons), i++){
+        write(persons[i].name);
+        write(" ");
+    }
+    writeln();
+    //iterate over array of Student and print the name
+    //then iterate over the grades and print each grade
+    write("Student array: ");
+    for(i = 0, i < len(students), i++){
+        write(students[i].person.name);
+        write(" ");
+        printGrades(students[i]);
+        writeln();
+        write("Average grades: ");
+        write(average(students[i].grades));
+        writeln();
+    }
+}
+
+def float average(float[] grades){
+    float sum = 0;
+    int i = 0;
+    for(i = 0, i < len(grades), i++){
+        sum = sum + grades[i];
+    }
+    return sum/len(grades);
+}
+
+def void printGrades(Student student){
+    int i=0;
+    for(i = 0, i < len(student.grades), i++){
+        write(student.grades[i]);
+        write(" ");
+    }
+    writeln();
+}
