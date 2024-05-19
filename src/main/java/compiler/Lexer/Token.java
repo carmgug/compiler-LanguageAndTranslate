@@ -7,26 +7,62 @@ public enum Token {
 
     Comment(null, "Comment"),
     SpecialCharacter(new String[]{"(", ")", "{", "}", "[", "]", ".", ",", "\"", ";"}, "SpecialCharacter"),
+    OpeningParenthesis(new String[]{"("}, "OpeningParenthesis"),
+    ClosingParenthesis(new String[]{")"}, "ClosingParenthesis"),
+    OpeningCurlyBrace(new String[]{"{"}, "OpeningCurlyBrace"),
+    ClosingCurlyBrace(new String[]{"}"}, "ClosingCurlyBrace"),
+    OpeningSquareBracket(new String[]{"["}, "OpeningSquareBracket"),
+    ClosingSquareBracket(new String[]{"]"}, "ClosingSquareBracket"),
+    Dot(new String[]{"."}, "Dot"),
+    Comma(new String[]{","}, "Comma"),
+    DoubleQuote(new String[]{"\""}, "DoubleQuote"),
+
+    Semicolon(new String[]{";"}, "Semicolon"),
+
 
     //Operators
     AssignmentOperator(new String[]{"="}, "AssignmentOperator"),
+
+    //Non deve essere usato
     ArithmeticOperator(new String[]{"+", "-", "*", "/", "%"}, "ArithmeticOperator"),
+
+    AdditiveOperator(new String[]{"+", "-"}, "AdditiveOperator"),
+
+    MultiplicativeOperator(new String[]{"*", "/", "%"}, "MultiplicativeOperator"),
+
+
     ComparisonOperator(new String[]{"==", "<", ">", "<=", ">=", "!="}, "ComparisonOperator"),
     LogicalOperator(new String[]{"&&", "||", "!"}, "LogicalOperator"),
 
     IncrementOperator(new String[]{"++"}, "IncrementOperator"),
 
     //Tipo, forse aggiungere classi
-    BasedType(new String[]{"void","int", "float", "bool", "string"}, "BasedType"),
-    //Void added for function return type after the first assigment
-    Keywords(new String[]{"final", "struct", "def", "for", "while", "if", "else"}, "Keywords"),
+    BasedType(new String[]{"int", "float", "bool", "string"}, "BasedType"),
+    IntType(new String[]{"int"}, "int"),
+    FloatType(new String[]{"float"}, "float"),
+    BoolType(new String[]{"bool"}, "bool"),
+    StringType(new String[]{"string"}, "string"),
 
+
+    //Void added for function return type after the first assigment
+    Void(new String[]{"void"}, "void"),
+
+    Keywords(new String[]{"final", "struct", "def", "for", "while", "if", "else", "return"}, "Keywords"),
+    Final(new String[]{"final"}, "final"),
+    Struct(new String[]{"struct"}, "struct"),
+    Def(new String[]{"def"}, "def"),
+    For(new String[]{"for"}, "for"),
+    While(new String[]{"while"}, "while"),
+    If(new String[]{"if"}, "if"),
+
+    Return(new String[]{"return"}, "return"),
+    Else(new String[]{"else"}, "else"),
     //Numbers Boolean and Strign
-    IntNumber(null, "IntNumber"),
-    FloatNumber(null, "FloatNumber"),
-    BooleanValue(new String[]{"true", "false"}, "BooleanValue"),
+    IntNumber(null, "int"),
+    FloatNumber(null, "float"),
+    BooleanValue(new String[]{"true", "false"}, "bool"),
     Identifier(null, "Identifier"),
-    String(null, "String"),
+    String(null, "string"),
     EOF(null, "EOF"),
     Whitespace(new String[]{" "}, "Whitespace"),
     NewLine(new String[]{"\n"}, "NewLine"),

@@ -32,6 +32,10 @@ dependencies {
     implementation ("org.apache.logging.log4j:log4j-core:2.19.0")
     implementation ("org.apache.logging.log4j:log4j-api:2.19.0")
     testImplementation("junit:junit:4.13.1")
+    //JSON
+    implementation ("org.json:json:20210307")
+    //Code Generation Part
+    implementation("org.ow2.asm:asm:9.2")
 }
 
 application {

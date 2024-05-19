@@ -1,0 +1,54 @@
+//Good luck
+
+final string message = "Hello";
+final bool run = true;
+final int[] a = {3+3};
+final int b = 4;
+final int d = 1;
+//Todo final string c = "Hello"+"World";
+final string c = "Hello";
+
+
+
+struct Point {
+    int x;
+    int y;
+}
+
+struct Person {
+    string name;
+    int age;
+}
+
+Point[] p1={Point(20, 20)};
+float[] e = {3};
+int f = 3;
+
+def int square(int v) {
+    return v*v;
+}
+
+Person[] ciao= {Person("ciao", 20)};
+Person p= Person(33, 20);
+
+
+def void main(int value) {
+    writeInt(square(value));
+    writeln();
+    Person[] ciao;
+    int i;
+    for (,,) {
+        while (value!=0) {
+            if (run){
+                value = value - 1;
+            } else {
+                write(message);
+            }
+        }
+    }
+    while(true){
+        writeln();
+    }
+    i = (i+2)*2;
+}
+

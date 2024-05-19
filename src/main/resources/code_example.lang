@@ -1,0 +1,161 @@
+// Source is a single file. No imports, etc.
+// Comments look like this. No block comments.
+
+// The language is strongly and statically typed.
+// Base types are: 
+//    int (signed 32-bit),
+//    float (32-bit),
+//    bool (true/false), 
+//    string.
+// int values are automatically promoted to float values in mixed expressions.
+// There is no dedicated char type. Characters are represented by integers.
+// Strings are immutable.
+
+// Operations:
+//  For int and float, available operations are
+//      +, -, * , /, - (unary).
+//      ==, !=, <, >, <=, >=
+//  For int:
+//      %
+//  For boolean:
+//      && (and operator), || (or operator), ==, !=
+//  For strings
+//      + (concatenation), ==, !=
+//  The i-th characters/element in a string/array can be read by the index operator [i].
+
+// Built-in functions:
+//      bool !(bool)                negates a boolean value
+//      string chr(int)             turns the character (an int value) into a string
+//      int len(string or array)    gives the length of a string or array
+//      int floor(float)             returns the largest integer less than or equal the float value
+
+// Exceptions:
+// Run-time errors terminate the running program.
+// Can happen when:
+//    Out of memory
+//    Division by zero
+//    Out-of-bounds array and string access
+//    float->int overflow error
+
+// Operator precedence:
+//     function and constructor calls
+//     parenthesis Check
+//     index operator
+//     structure variableDeclaration access operator .
+//     *,/,% Check
+//     +,-, unary - Check
+//     ==, !=, <, >, <=, >= Check
+//     &&, || Check
+// Operators with same precedence are left-associative.
+      
+// Constants must be declared at the top of the source file.
+// Constant declarations can use expressions and other constants that
+// have been declared earlier. Only base types can be used for constants.
+final int a_abc_123_ =  3;
+//final int a_abc_123_ = 3;
+final float j = 3.256*5.0;
+final int i = 3;
+final int k = i*3;
+final string message = "Hello\n";
+final bool isEmpty = true;
+
+// Constant declarations are followed by struct definitions.
+
+struct Point {
+    int x;
+    int y;
+}
+
+struct Person {
+    string name;
+    Point location;
+    int[] history;
+}
+
+// Global variables are initialised in the order in which they appear.
+// Variables always have an initialiser, which can be an expression.
+// Accessing a variable that is not initialised (for example, by calling a procedure in the initialiser expression)
+// a procedure in the initialiser expression that accesses a global variable
+// before it has been initialised) results in undefined behaviour.
+
+int a = 3;
+
+// For arrays, only one-dimensional arrays of basetypes are allowed.
+// structure and array variables are references to a structure or array. To initialize
+// the variable, it must be assigned an existing structure or array, or a new
+// array or structure must be created.
+
+int[] c = int[5];  // new array of length 5
+Person d = Person("me", Point(3,7), int[i*2]);  // new structure
+
+// Procedures:
+// Procedures have parameters and a return type. The return type
+// can be a type or void.
+// Base type arguments are always passed by value.
+// Records and arrays are always passed by reference.
+//
+// There are built-in procedures for I/O:
+//    readInt, readFloat, readString, writeInt, writeFloat, write, writeln
+
+// Procedure calls can forward-reference procedures, even in initializers of global
+// variables, but not in constants.
+
+// Local variables:
+// Procedures and while/if/else/for blocks can declare local variables and values
+// mixed with statements.
+// Their initialization follows the same rules as for global variables.
+
+// Scope:
+// Lexical scoping.
+// Local variables can shadow variables with the same name in surrounding scopes.
+// Keywords, types, procedures, constants, and variables share one name space.
+// All names are case sensitive.
+
+// Control structures:
+// for, while, if/else
+// Control structure bodies are always block statements.
+
+// The left side of an assignment must be either:
+//    a variable
+//    an element of an array
+//         a[3] = 1234;   // a is an array of int
+//    a variableDeclaration access to a structure
+//         a.x = 123;
+//         a[3].x = 12;
+//    To simplify the compiler, the left side cannot be an expression, this is not allowed:
+//         someFunctionThatReturnsAnArray()[2] = 2;
+//    Assigning an array or structure, copies the reference.
+
+// Deallocating arrays and records:
+// We assume that there is no garbage collector and that the created
+// arrays and records have to be manually deallocated when not needed anymore.
+//       Point x = Point(3,5);
+//       free x;
+// Accessing a deallocated array or structure results in undefined behavior.
+// Deallocation is not deep. Before a structure is deallocated, it is the duty
+// of the programmer to deallocate arrays or records referenced by that structure.
+
+                                                                                              
+def int square(int v) {
+    return v*v;
+}
+
+def Point copyPoints(Point[] p) {
+    return Point(p[0].x+p[1].x, p[0].y+p[1].y);
+}
+                            
+def void main() {
+    int value = readInt();                             
+    writeln();
+    int i;
+    for (i=1, i<=100, i = i+1) {
+        while (value!=3) {
+            if (i > 10){
+                // ....
+            } else {
+                // ....
+            }
+        }
+    }
+    i = (i+2)*2;
+} 

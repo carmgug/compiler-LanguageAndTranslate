@@ -1,0 +1,83 @@
+final int x=3;
+final float z=3.0;
+final bool b=true;
+final bool c= !b;
+
+struct Person{
+    string name;
+    int age;
+    Point cordinate;
+    Phone[] phoneNumbers;
+    Point[] favoritePlaces;
+}
+
+struct Point{
+    float x;
+    float y;
+}
+
+struct Phone{
+    string number;
+    string type;
+}
+
+Person maria=Person("Maria", 25, Point(3.0, 4.0), {Phone("111","ITALIANO"),Phone("111","Eng")}, {Point(1.0, 2.0), Point(3.0, 4.0)});
+Person john=Person("John", 0, Point(3.0, 4.0), {Phone("111","ITALIANO"),Phone("111","Eng")}, {Point(1.0, 2.0), Point(3.0, 4.0)});
+
+def void main(){
+    string name=maria.name;
+    writeln(name);
+    int i=0;
+    string[] array={"ciao", "hello", "hola"};
+    string s=array[i];
+    //string x=maria.phoneNumbers[i];
+    while(i<2){
+        writeln(maria.phoneNumbers[giveMeIndex()+i+john.age].number);
+        writeln(maria.phoneNumbers[giveMeIndex()+i+john.age].type);
+        i=i+1;
+    }
+    writeln(x);
+    writeln(s);
+
+    if(b){
+        write("Maria is here");
+    }else{
+        write("Maria is not here");
+        return;
+    }
+    return;
+}
+
+def bool haveSameCoordinate(Person p1, Person p2){
+    float x1=p1.cordinate.x;
+    float y1=p1.cordinate.y;
+    float x2=p2.cordinate.x;
+    float y2=p2.cordinate.y;
+    return x1==x2 && y1==y2;
+}
+def bool haveSameAge(Person p1, Person p2){
+    return p1.age==p2.age;
+}
+def int giveMeIndex(){
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

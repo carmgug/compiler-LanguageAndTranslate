@@ -4,7 +4,6 @@ import compiler.Lexer.Symbol;
 
 public class Operator {
 
-    protected int precendence;
     protected Symbol operator;
 
     public Operator(Symbol operator){
@@ -12,6 +11,13 @@ public class Operator {
     }
 
     public String toString() {
-        return operator.toString();
+        return "Operator: {"+
+                "Type: " + operator.getType() + ","+
+                "Value: " + operator.getValue() +
+                "}";
     }
+
+    public Symbol getSymbol(){return this.operator;}
+
+    public String getOperator(){return this.operator.getValue();}
 }

@@ -17,7 +17,6 @@ public class TestLexer {
         Lexer lexer = new Lexer(reader);
         Symbol curr_symbol=lexer.getNextSymbol();
         assertNotNull(curr_symbol);
-
     }
 
 }
