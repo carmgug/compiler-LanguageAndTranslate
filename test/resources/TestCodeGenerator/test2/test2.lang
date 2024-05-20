@@ -24,12 +24,12 @@ Person person5 =  Person("James", 35, 1.95, true);
 Person person6 =  Person("Jenny", 33, 1.45, false);
 Person[] persons = {person, person2, person3, person4, person5, person6};
 
-Student student = Student(person, {90.0,80.0,70.0,60.0,50.0});
-Student student2 = Student(person2, {85.0,75.0,65.0,55.0,45.0});
-Student student3 = Student(person3, {95.0,85.0,75.0,65.0,55.0});
-Student student4 = Student(person4, {80.0,70.0,60.0,50.0,40.0});
-Student student5 = Student(person5, {100.0,90.0,80.0,70.0,60.0});
-Student student6 = Student(person6, {75.0,65.0,55.0,45.0,35.0});
+Student student = Student(person, {90.0,80.0,79.0,60.0,50.0});
+Student student2 = Student(person2, {85.0,75.0,63.0,55.0,45.0});
+Student student3 = Student(person3, {95.0,85.0,72.0,65.0,55.0});
+Student student4 = Student(person4, {80.0,70.0,64.0,50.0,40.0});
+Student student5 = Student(person5, {100.0,94.0,82.0,70.0,60.0});
+Student student6 = Student(person6, {72.0,61.0,53.0,42.0,35.2});
 Student[] students = {student, student2, student3, student4, student5, student6};
 
 
@@ -73,25 +73,25 @@ def void main(){
     writeln();
     //iterate over array of Student and print the name
     //then iterate over the grades and print each grade
-    write("Student array: ");
+    writeln("Student array: ");
     for(i = 0, i < len(students), i++){
         write(students[i].person.name);
         write(" ");
         printGrades(students[i]);
-        writeln();
         write("Average grades: ");
         write(average(students[i].grades));
+        writeln();
         writeln();
     }
 }
 
 def float average(float[] grades){
-    float sum = 0;
-    int i = 0;
+    float sum = 0.0;
+    int i;
     for(i = 0, i < len(grades), i++){
         sum = sum + grades[i];
     }
-    return sum/len(grades);
+    return sum/5.0;
 }
 
 def void printGrades(Student student){

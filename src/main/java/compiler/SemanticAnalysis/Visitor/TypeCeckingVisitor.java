@@ -70,6 +70,14 @@ public class TypeCeckingVisitor implements VisitorType{
         }
         return observed_Type;
     }
+
+    //parameters to keep track that we are in a struct_access
+    //and so if we have something like struct.field1.array[x]
+    //x is a variable and must reed from the symbolTable of the code
+    //because during a struct_access as symbolTable we have the fields of the struct.
+    boolean struct_access=false;
+    ExpressionStatement first_term=null;
+
     @Override
     public Type visit(StructAccess structAccess, SymbolTable symbolTable, SymbolTable structTable) throws SemanticException {
         Type left_part=visit(structAccess.getLeftPart(),symbolTable,structTable);
@@ -79,11 +87,18 @@ public class TypeCeckingVisitor implements VisitorType{
         if(structTable.get(left_part.getNameofTheType())==null){
             throw new ScopeError("You are using a Struct that has not been defined '"+left_part.getNameofTheType()+"' at line "+structAccess.getLine());
         }
-        //TODO STRUCT PROBLEM
+
         SymbolTable struct_symbol_table=((SemanticStructType)structTable.get(left_part.getNameofTheType())).getFields();
-        symbol_table_of_the_code=symbolTable;
+        if(!struct_access){
+            symbol_table_of_the_code=symbolTable;
+            first_term=structAccess.getLeftPart();
+            struct_access=true;
+        }
         Type right_part=visit(structAccess.getRightPart(),struct_symbol_table ,structTable);
-        symbol_table_of_the_code=null;
+        if(structAccess.getLeftPart()==first_term){
+            symbol_table_of_the_code=null;
+            struct_access=false;
+        }
         //ok update the structAccess for the GenerationCode
 
         structAccess.setLeftType(left_part);

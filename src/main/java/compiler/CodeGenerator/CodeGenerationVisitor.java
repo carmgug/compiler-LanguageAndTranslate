@@ -135,7 +135,6 @@ public class CodeGenerationVisitor  {
         int orginal_stack_index = stack_index;
         stack_index = 0;
         for (VariableDeclaration parameter: parameters) {
-            procedure_visitor.visitVarInsn(ALOAD, 0);
             org.objectweb.asm.Type type = org.objectweb.asm.Type.getType(getFieldType(parameter.getType()));
             procedure_visitor.visitVarInsn(type.getOpcode(ILOAD), stack_index);
             procedure_scopes_tables.add(parameter.getNameOfTheVariable(),stack_index,parameter.getType());
@@ -148,6 +147,8 @@ public class CodeGenerationVisitor  {
         if(type_of_current_procedure.getNameofTheType().equals("void") && !added_return){
             procedure_visitor.visitInsn(RETURN);
         }
+        procedure_visitor.visitInsn(RETURN);
+
         procedure_visitor.visitMaxs(-1,-1);
         procedure_visitor.visitEnd();
         stack_index = orginal_stack_index;
@@ -202,6 +203,7 @@ public class CodeGenerationVisitor  {
 
     }
 
+    boolean isInsideLoop = false;
     public void visit(WhileStatement whileStatement,ScopesTable scopesTable,MethodVisitor mw){
         ExpressionStatement condition = whileStatement.getExitCondition();
         Block block = whileStatement.getBlock();
@@ -210,7 +212,18 @@ public class CodeGenerationVisitor  {
         mw.visitLabel(while_start);
         condition.accept(evaluator,scopesTable,mw);
         mw.visitJumpInsn(IFEQ, while_end);
+        //useful for the understed that even i added a return,
+        // i need to add a return also outside the loop
+        //ex: def void procedure(){while(true){return;} return;}
+        boolean iChanged=false;
+        if(!isInsideLoop){
+            isInsideLoop = true;
+            iChanged = true;
+        }
         block.accept(this,scopesTable,mw);
+        if(iChanged){
+            isInsideLoop = false;
+        }
         mw.visitJumpInsn(GOTO, while_start);
         mw.visitLabel(while_end);
     }
@@ -234,7 +247,15 @@ public class CodeGenerationVisitor  {
         mw.visitLabel(for_start);
         exit_condition.accept(evaluator,scopesTable,mw);
         mw.visitJumpInsn(IFEQ, for_end);
+        boolean iChanged=false;
+        if(!isInsideLoop){
+            isInsideLoop = true;
+            iChanged = true;
+        }
         block.accept(this,scopesTable,mw);
+        if(iChanged){
+            isInsideLoop = false;
+        }
         if(update!=null ){
             update.accept(this,scopesTable,mw);
         }
@@ -295,7 +316,9 @@ public class CodeGenerationVisitor  {
         ExpressionStatement expressionStatement = returnStatement.getExpression();
         if(expressionStatement==null){
             mw.visitInsn(Opcodes.RETURN);
-            added_return = true;
+            if(!isInsideLoop){
+                added_return = true;
+            }
             return;
         }
         expressionStatement.accept(evaluator,currScope,mw);

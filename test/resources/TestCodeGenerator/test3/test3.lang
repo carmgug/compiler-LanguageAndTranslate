@@ -1,0 +1,94 @@
+
+
+//Person
+
+struct Person {
+    string name;
+    int age;
+    Book[] books;
+    Address address;
+}
+
+struct Address {
+    string street;
+    string city;
+    Point coordinates;
+}
+
+struct Point {
+    int x;
+    int y;
+}
+
+struct Book {
+    string title;
+    string[] authors;
+    int year;
+}
+
+string[] author = {"D. Knuth"};
+string title_1 = "The Art of Computer Programming";
+int year_1 = 1968;
+Book book_1 = Book(title_1, author, year_1);
+
+string[] authors = {"M. Fowler","K. Beck"};
+string title_2 = "Refactoring";
+int year_2 = 1999;
+Book book_2 = Book(title_2, authors, year_2);
+
+Book book_3 = Book("Design Patterns", {"E. Gamma", "R. Helm", "R. Johnson", "J. Vlissides"}, 1994);
+
+Person Jhon = Person("Jhon", 25, {book_1, book_2, book_3}, Address("Main St.", "Springfield", Point(10, 20)));
+
+Book[] list_of_books = {book_1, book_2, book_3};
+Point coordinates = Point(10, 20);
+Address address = Address("Main St.", "Springfield", coordinates);
+Person Victor = Person("Victor", 25, list_of_books, address);
+
+def Person create_person(string name, int age, Book[] books, Address address) {
+    return Person(name, age, books, address);
+}
+
+def void main(){
+
+    Person[] people = {Jhon, Victor, create_person("Alice", 30, list_of_books, address)};
+    int i=0;
+    while(i<len(people)){
+        write("Performing a visit to ");
+        writeln(people[i].name);
+        write("She/He lives in ");
+        write(people[i].address.street);
+        write(" in ");
+        write(people[i].address.city);
+        write(" at coordinates ");
+        write(people[i].address.coordinates.x);
+        write(" ");
+        writeln(people[i].address.coordinates.y);
+        write("She/He has ");
+        write(len(people[i].books));
+        writeln(" books:");
+        int j;
+        for( j=0,j<len(people[i].books),j++){
+            write("Book ");
+            write(j);
+            write(" is ");
+            write(people[i].books[j].title);
+            write(" by ");
+            int k;
+            for( k=0,k<len(people[i].books[j].authors),k++){
+                write(people[i].books[j].authors[k]);
+                if(k<len(people[i].books[j].authors)-1){
+                    write(", ");
+                }
+            }
+            write(" published in ");
+            writeln(people[i].books[j].year);
+        }
+        i++;
+    }
+
+
+
+
+}
+

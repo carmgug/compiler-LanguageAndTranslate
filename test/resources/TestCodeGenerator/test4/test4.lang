@@ -1,0 +1,74 @@
+
+
+final int x=2;
+
+struct Person {
+    int age;
+    Point[] favoritePlaces;
+}
+
+struct Point {
+    int x;
+    int y;
+}
+
+Person[] peoples={
+    Person(20, {Point(1,2), Point(3,4)}), Person(30, {Point(5,6), Point(7,8)}),
+    Person(40, {Point(9,10), Point(11,12)}), Person(50, {Point(13,14), Point(15,16)})
+};
+
+def int getOne() {
+    return 1;
+}
+
+def int getIndex(int x){
+    int z=3+4+x;
+    return x+0;
+}
+
+int[] array_1 = {1, 2, 3, 4, 5,6,7,8};
+
+def void main(){
+    //array of int
+    int result_1 = array_1[peoples[getOne()].favoritePlaces[getIndex(x)-1].x];
+
+    //array of float
+    float[] array_2 = {1.0, 2.0, 3.0, 4.0, 5.0,6.0,7.0,8.0};
+    float result_2 = array_2[peoples[getOne()].favoritePlaces[getIndex(x)-1].x];
+
+    //array of bool
+    bool[] array_3 = {true, false, true, false, true, false, true, false};
+    bool result_3 = array_3[peoples[getOne()].favoritePlaces[getIndex(x)-1].x];
+    //array of string
+    string[] array_4 = {"1", "2", "3", "4", "5","6","7","8th element"};
+    string result_4 = array_4[peoples[getOne()].favoritePlaces[getIndex(x)-1].x];
+    //array of Struct
+    Point[] array_5 = {Point(1,2), Point(3,4), Point(5,6), Point(7,8), Point(9,10), Point(11,12), Point(13,14), Point(15,16)};
+    Point result_5 = array_5[peoples[getOne()].favoritePlaces[getIndex(x)-1].x];
+
+
+    write("Accessing on an element of an array of int with a complex expression: ");
+    writeln(result_1);
+    write("Accessing on an element of an array of float with a complex expression: ");
+    writeln(result_2);
+    write("Accessing on an element of an array of bool with a complex expression: ");
+    writeln(result_3);
+    write("Accessing on an element of an array of string with a complex expression: ");
+    writeln(result_4);
+    write("Accessing on an element of an array of struct with a complex expression: ");
+    write("Point(");
+    write(result_5.x);
+    write(",");
+    write(result_5.y);
+    write(")");
+    while(true){
+        int i=0;
+        return;
+    }
+    for(,,){
+        int i=0;
+        return;
+    }
+
+
+}
