@@ -3,6 +3,8 @@ package compiler.CodeGenerator;
 import compiler.Parser.AST.ASTNode;
 import compiler.Parser.AST.Program;
 import compiler.SemanticAnalysis.SymbolTable.SymbolTable;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTableEntry;
+import compiler.SemanticAnalysis.SymbolTable.SymbolTableValues.SymbolTableProceduresEntry;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -27,12 +29,14 @@ public class CodeGenerator extends ClassLoader {
     private CodeGenerationVisitor codeGenerationVisitor;
     private String outputFilePath;
     private String path;
+    private SymbolTable symbolTable;
 
 
 
-    public CodeGenerator(Program p, String outputFilePath) {
+    public CodeGenerator(Program p, SymbolTable symbolTable,String outputFilePath) {
         this.program = p;
         this.table = new ScopesTable();
+        this.symbolTable = symbolTable;
         this.outputFilePath = outputFilePath;
         //As the program name use the string between / and .class of the file path
         this.programName = outputFilePath.substring(outputFilePath.lastIndexOf('/') + 1, outputFilePath.lastIndexOf('.'));
@@ -273,9 +277,36 @@ public class CodeGenerator extends ClassLoader {
         mv.visitInsn(Opcodes.RETURN);
         mv.visitMaxs(-1, -1);
         mv.visitEnd();
+    }
 
+    private void defineWriteInt(){
+        // Method to write an integer to the console
+        //input integer return void
+        //is public and static
+        MethodVisitor mv = cw.visitMethod
+                (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "writeInt", "(I)V", null, null);
+        mv.visitCode();
+        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+        mv.visitVarInsn(Opcodes.ILOAD, 0);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(I)V", false);
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
+    }
 
-
+    private void defineWriteFloat(){
+        // Method to write a float to the console
+        //input float return void
+        //is public and static
+        MethodVisitor mv = cw.visitMethod
+                (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "writeFloat", "(F)V", null, null);
+        mv.visitCode();
+        mv.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+        mv.visitVarInsn(Opcodes.FLOAD, 0);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(F)V", false);
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(-1, -1);
+        mv.visitEnd();
     }
 
 
@@ -284,8 +315,8 @@ public class CodeGenerator extends ClassLoader {
         defineReadInt();
         defineReadFloat();
         defineReadString();
-        //defineWriteInt();
-        //defineWriteFloat();
+        defineWriteInt();
+        defineWriteFloat();
         defineWrite();
         defineWriteln();
         defineLen();
@@ -311,7 +342,14 @@ public class CodeGenerator extends ClassLoader {
         }
 
         //At the last call the main function
-        mainMethodWriter.visitMethodInsn(INVOKESTATIC, programName, "main", "()V", false);
+        //if a main function is defined in the program
+        //find the procedure in the symbolTable
+        SymbolTableEntry main_function = symbolTable.get("main");
+        if(main_function!=null && main_function instanceof SymbolTableProceduresEntry){
+            //call the main function
+            mainMethodWriter.visitMethodInsn(INVOKESTATIC, programName, "main", "()V", false);
+
+        }
 
         mainMethodWriter.visitInsn(Opcodes.RETURN);
         mainMethodWriter.visitMaxs(-1, -1);

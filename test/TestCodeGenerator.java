@@ -33,7 +33,7 @@ public class TestCodeGenerator {
             }
             System.out.println("Semantic analysis completed successfully");
             // Generate the bytecode
-            CodeGenerator codeGenerator = new CodeGenerator(p, outputFilePath);
+            CodeGenerator codeGenerator = new CodeGenerator(p, s.getGlobalTable(),outputFilePath);
             codeGenerator.generateBytecode();
             //run test1.class file
             String[] command = {"java", "-cp", "test/resources/TestCodeGenerator/test1", "test1"};
@@ -98,7 +98,7 @@ public class TestCodeGenerator {
             }
             System.out.println("Semantic analysis completed successfully");
             // Generate the bytecode
-            CodeGenerator codeGenerator = new CodeGenerator(p, outputFilePath);
+            CodeGenerator codeGenerator = new CodeGenerator(p, s.getGlobalTable(),outputFilePath);
             codeGenerator.generateBytecode();
             //run test1.class file
             String[] command = {"java", "-cp", "test/resources/TestCodeGenerator/test2", "test2"};
@@ -197,7 +197,7 @@ public class TestCodeGenerator {
             }
             System.out.println("Semantic analysis completed successfully");
             // Generate the bytecode
-            CodeGenerator codeGenerator = new CodeGenerator(p, outputFilePath);
+            CodeGenerator codeGenerator = new CodeGenerator(p, s.getGlobalTable(),outputFilePath);
             codeGenerator.generateBytecode();
             //run test1.class file
             String[] command = {"java", "-cp", "test/resources/TestCodeGenerator/test3", "test3"};
@@ -263,10 +263,10 @@ public class TestCodeGenerator {
         In this test we will declare an array
         and use as index a complex expression
         the sum between 4 variables
-            1. persons[0].favoritePlaces[getIndex()].x
+            1. persons[0].favoritePlaces[peoples[getOne()].favoritePlaces[getIndex(x)-1].x].x
             2. getOne()
-            3. GlobalVaribale
-            4. Constant
+            3. where x inside x is a constant variable
+            4. and x after . is a field of the struct
         Note that favoritePlaces is an array of Point
         so:
             int[] array= {1,2,3,4,5};
@@ -292,7 +292,7 @@ public class TestCodeGenerator {
             }
             System.out.println("Semantic analysis completed successfully");
             // Generate the bytecode
-            CodeGenerator codeGenerator = new CodeGenerator(p, outputFilePath);
+            CodeGenerator codeGenerator = new CodeGenerator(p,s.getGlobalTable() ,outputFilePath);
             codeGenerator.generateBytecode();
             //run test1.class file
             String[] command = {"java", "-cp", "test/resources/TestCodeGenerator/test4", "test4"};
